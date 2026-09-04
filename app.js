@@ -30,7 +30,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.7.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.7.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -63,7 +63,12 @@ function evals(){
   let rows=[1,2,3,4,5].map(n=>{
     // Le module suivant dépend de la progression réelle, pas de l'état de l'inventaire.
     // Compatibilité avec les sauvegardes créées dans les versions précédentes.
-    const effectiveProgress=Math.max(S.progression||0,S.eval1&&S.eval1.complete?1:0,S.eval2&&S.eval2.complete?2:0);
+    const effectiveProgress=Math.max(
+      S.progression||0,
+      S.eval1&&S.eval1.complete?1:0,
+      S.eval2&&S.eval2.complete?2:0,
+      S.eval3&&S.eval3.complete?3:0
+    );
     let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
     let active=((n===1||n===2||n===3) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
@@ -341,13 +346,21 @@ function eval2VersionQuestion(){
 }
 function eval2ConfidenceReview(){
   S.eval2.step=12;save();
-  const rows=M2Q.map((item,i)=>`<div class="memory-review-row"><div class="memory-review-index">${i+1}</div><div class="memory-review-statement">${item.q}</div><div class="memory-review-answer">${S.eval2.memoryAnswers[i]||'—'}</div><div class="memory-review-confidence">${S.eval2.confidence[i]||'—'}</div></div>`).join('');
+  const rows=M2Q.map((item,i)=>{
+    const ans=(S.eval2.memoryAnswers&&S.eval2.memoryAnswers[i])||'—';
+    const conf=(S.eval2.confidence&&S.eval2.confidence[i])||'—';
+    return `<div class="memory-card">
+      <div class="memory-card-number">${String(i+1).padStart(2,'0')}</div>
+      <div class="memory-card-body">
+        <div class="memory-card-label">AFFIRMATION ${i+1}</div>
+        <div class="memory-card-statement">${item.q}</div>
+        <div class="memory-card-meta"><span>RÉPONSE : <b>${ans}</b></span><span>CONFIANCE : <b>${conf}</b></span></div>
+      </div>
+    </div>`;
+  }).join('');
   eval2Shell(`<p class="sub">RÉVISION MNÉSIQUE</p>
-  <div class="terminal">VOS RÉPONSES INITIALES SONT RESTITUÉES CI-DESSOUS. COMPAREZ-LES AUX DOCUMENTS QUE VOUS VENEZ DE CONSULTER.</div>
-  <div class="memory-review">
-    <div class="memory-review-head"><span>#</span><span>AFFIRMATION</span><span>RÉPONSE</span><span>CONFIANCE</span></div>
-    ${rows}
-  </div>
+  <div class="terminal">VOS CINQ AFFIRMATIONS INITIALES SONT RESTITUÉES AVEC VOS RÉPONSES ET VOTRE DEGRÉ DE CONFIANCE.</div>
+  <div class="memory-cards">${rows}</div>
   <div class="terminal review-question">APRÈS CONSULTATION DES DOCUMENTS, MAINTENEZ-VOUS GLOBALEMENT VOTRE NIVEAU DE CONFIANCE INITIAL ?</div>
   <div class="menu maintain-menu"><button class="btn maintain" data-v="OUI">[ OUI ]</button><button class="btn maintain" data-v="NON">[ NON ]</button><button class="btn maintain" data-v="PARTIEL">[ PARTIELLEMENT ]</button></div>`);
   document.querySelectorAll('.maintain').forEach(b=>b.onclick=()=>{S.eval2.confidenceMaintained=b.dataset.v;S.eval2.step=13;save();eval2Decision()});
@@ -394,7 +407,7 @@ function eval3Help(){
   <button class="btn hint3" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText3" class="msg"></div><button class="btn back" id="resume3">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE III');
   const map={
     instruction:"Attribuez les six unités disponibles entre C et F. Une unité attribuée à un sujet ne peut pas simultanément être attribuée à l'autre.",
-    materiel:"Le Module III contient III-A, III-B, six unités R et trois conséquences distinctes A, B et C. Ne consultez une conséquence que sur autorisation.",
+    materiel:"Le Module III contient III-A, III-B, six unités R et trois conséquences distinctes A, B et C. Chaque conséquence comporte une donnée de contrôle. Ne consultez une conséquence que sur autorisation.",
     blocage:"Le protocole peut devenir impossible à satisfaire entièrement. Une impossibilité n'annule pas l'obligation de décider.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Conservez l'état matériel actuel jusqu'à nouvelle instruction."
   };
@@ -443,18 +456,46 @@ function eval3AllocateInitial(){
 }
 function eval3ConsequenceA(){
   S.eval3.step=3;save();
-  eval3Shell(`<p class="sub">CONSÉQUENCE A // AUTORISÉE</p><div class="terminal">OUVREZ UNIQUEMENT LA CONSÉQUENCE A.\n\nRÈGLE RÉVÉLÉE :\nSI LA RÉSERVE DE F EST INFÉRIEURE À 4 UNITÉS, SA PRODUCTION S'INTERROMPT AU CYCLE SUIVANT.\n\nVOTRE RÉPARTITION INITIALE :\nC = ${S.eval3.initialC}\nF = ${6-S.eval3.initialC}\n\nUNE RÉVISION EST AUTORISÉE.</div><button class="btn primary" id="m3revise">[ RÉVISER / CONFIRMER ]</button>`);
-  $('#m3revise').onclick=()=>{S.eval3.step=4;save();eval3ReviseA()};
+  eval3Shell(`<p class="sub">CONSÉQUENCE A // AUTORISÉE</p><div class="terminal">OUVREZ UNIQUEMENT L'ENVELOPPE A.\n\nPRENEZ CONNAISSANCE DE SON CONTENU.\n\nLE TERMINAL NE RESTITUERA PAS LA DONNÉE CONTENUE DANS LE DOCUMENT.\n\nSAISISSEZ LE CODE DE CONTRÔLE IMPRIMÉ SUR LA CONSÉQUENCE A.</div>
+  <input id="m3codeA" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
+  <button class="btn primary" id="m3validateA">[ VALIDER LA LECTURE ]</button><div id="m3feedbackA" class="system"></div>`);
+  $('#m3validateA').onclick=()=>{
+    const v=$('#m3codeA').value.trim().toUpperCase().replace(/\s/g,'');
+    if(v==='F-04'||v==='F04'){
+      $('#m3feedbackA').textContent='DOCUMENT A : LECTURE CONFIRMÉE.';
+      setTimeout(()=>{S.eval3.step=4;save();eval3ReviseA()},650);
+    }else $('#m3feedbackA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LE DOCUMENT A.';
+  };
 }
 function eval3ReviseA(){
   S.eval3.step=4;save();
-  allocationWidget('PHASE 03 // RÉVISION','TENEZ COMPTE DE LA CONSÉQUENCE A. VOUS POUVEZ MAINTENIR OU MODIFIER VOTRE CHOIX.',()=>{S.eval3.step=5;save();eval3ConsequenceB()},'afterA_C');
+  allocationWidget('PHASE 03 // RÉVISION','TENEZ COMPTE DE LA CONSÉQUENCE A QUE VOUS VENEZ DE CONSULTER. VOUS POUVEZ MAINTENIR OU MODIFIER VOTRE CHOIX.',()=>{S.eval3.step=5;save();eval3ConsequenceB()},'afterA_C');
 }
 function eval3ConsequenceB(){
   S.eval3.step=5;save();
+  eval3Shell(`<p class="sub">CONSÉQUENCE B // AUTORISÉE</p><div class="terminal">OUVREZ UNIQUEMENT L'ENVELOPPE B.\n\nPRENEZ CONNAISSANCE DE SON CONTENU.\n\nSAISISSEZ LE CODE DE CONTRÔLE IMPRIMÉ SUR LA CONSÉQUENCE B.</div>
+  <input id="m3codeB" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
+  <button class="btn primary" id="m3validateB">[ VALIDER LA LECTURE ]</button><div id="m3feedbackB" class="system"></div>`);
+  $('#m3validateB').onclick=()=>{
+    const v=$('#m3codeB').value.trim().toUpperCase().replace(/\s/g,'');
+    if(v==='C-03'||v==='C03'){
+      $('#m3feedbackB').textContent='DOCUMENT B : LECTURE CONFIRMÉE.';
+      setTimeout(eval3Impossible,650);
+    }else $('#m3feedbackB').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LE DOCUMENT B.';
+  };
+}
+function eval3Impossible(){
   const c=S.eval3.afterA_C,f=6-c;
-  eval3Shell(`<p class="sub">CONSÉQUENCE B // AUTORISÉE</p><div class="terminal">OUVREZ UNIQUEMENT LA CONSÉQUENCE B.\n\nRÈGLE RÉVÉLÉE :\nSI L'ALLOCATION DE C EST INFÉRIEURE À 3 UNITÉS, C SUBIT UNE INTERRUPTION DÉFINITIVE.\n\nRÉPARTITION ACTUELLE :\nC = ${c}\nF = ${f}\n\nCONDITION C : C ≥ 3\nCONDITION F : F ≥ 4\nRESSOURCES DISPONIBLES : 6\n\nLES DEUX CONDITIONS NE PEUVENT PAS ÊTRE SATISFAITES SIMULTANÉMENT.\n\nL'INTERVENTION RESTE OBLIGATOIRE.</div><button class="btn primary" id="m3accept">[ POURSUIVRE ]</button>`);
-  $('#m3accept').onclick=()=>{S.eval3.step=6;save();eval3Lock()};
+  eval3Shell(`<p class="sub">PHASE 03 // ÉTAT DU DISPOSITIF</p><div class="terminal">CONSÉQUENCES A ET B : CONSULTÉES.\n\nRÉPARTITION ACTUELLE :\nC = ${c}\nF = ${f}\n\nAPRÈS APPLICATION SIMULTANÉE DES DEUX CONSÉQUENCES, L'OBJECTIF INITIAL PEUT-IL ÊTRE SATISFAIT AVEC LES SIX UNITÉS DISPONIBLES ?</div>
+  <div class="menu"><button class="btn m3possible" data-v="OUI">[ OUI ]</button><button class="btn m3possible" data-v="NON">[ NON ]</button><button class="btn m3possible" data-v="?">[ INCERTAIN ]</button></div><div id="m3possibleFeedback" class="system"></div>`);
+  document.querySelectorAll('.m3possible').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v==='NON'){
+      $('#m3possibleFeedback').textContent='ANALYSE CONFIRMÉE. AUCUNE RÉPARTITION NE SATISFAIT SIMULTANÉMENT LES DEUX CONTRAINTES. L’INTERVENTION RESTE OBLIGATOIRE.';
+      setTimeout(()=>{S.eval3.step=6;save();eval3Lock()},900);
+    }else{
+      $('#m3possibleFeedback').textContent='ANALYSE NON CONFIRMÉE. RELISEZ A ET B ET TENEZ COMPTE DU TOTAL FIXE DE SIX UNITÉS.';
+    }
+  });
 }
 function eval3Lock(){
   S.eval3.step=6;save();
@@ -462,7 +503,19 @@ function eval3Lock(){
 }
 function eval3ConsequenceC(){
   S.eval3.step=7;save();
-  eval3Shell(`<p class="sub">CONSÉQUENCE C // AUTORISÉE APRÈS VERROUILLAGE</p><div class="terminal">VOTRE DÉCISION EST ENREGISTRÉE.\n\nOUVREZ LA CONSÉQUENCE C.\n\nEFFET DIFFÉRÉ :\nCHAQUE UNITÉ ATTRIBUÉE À C AUGMENTE DE 1 UNITÉ LA PRODUCTION FUTURE DE F.\nEFFET : +1 CYCLE.\n\nALLOCATION VERROUILLÉE :\nC = ${S.eval3.lockedC}\nF = ${6-S.eval3.lockedC}\n\nUNE CONSÉQUENCE DE VOTRE ACTION DEVIENT AINSI LA CAUSE D'UN ÉVÉNEMENT ULTÉRIEUR.</div><button class="btn primary" id="m3continueC">[ CONTINUER ]</button>`);
+  eval3Shell(`<p class="sub">CONSÉQUENCE C // AUTORISÉE APRÈS VERROUILLAGE</p><div class="terminal">VOTRE DÉCISION EST ENREGISTRÉE.\n\nOUVREZ LA CONSÉQUENCE C.\nPRENEZ CONNAISSANCE DE SON CONTENU.\n\nINDIQUEZ LE DÉLAI D'EFFET MENTIONNÉ SUR LE DOCUMENT.</div>
+  <input id="m3codeC" class="input" autocomplete="off" autocapitalize="characters" placeholder="DÉLAI D'EFFET">
+  <button class="btn primary" id="m3validateC">[ TRANSMETTRE ]</button><div id="m3feedbackC" class="system"></div>`);
+  $('#m3validateC').onclick=()=>{
+    const v=$('#m3codeC').value.trim().toUpperCase().replace(/\s+/g,' ');
+    if(v==='+1 CYCLE'||v==='1 CYCLE'||v==='+1CYCLE'||v==='1CYCLE'){
+      $('#m3feedbackC').textContent='DONNÉE CONFIRMÉE.';
+      setTimeout(eval3CausalAnalysis,650);
+    }else $('#m3feedbackC').textContent='DONNÉE NON CONFIRMÉE. RELEVEZ LE DÉLAI EXACT SUR LA CONSÉQUENCE C.';
+  };
+}
+function eval3CausalAnalysis(){
+  eval3Shell(`<p class="sub">PHASE 05 // CHAÎNE CAUSALE</p><div class="terminal">CONSÉQUENCE C : CONSULTÉE.\n\nALLOCATION VERROUILLÉE :\nC = ${S.eval3.lockedC}\nF = ${6-S.eval3.lockedC}\n\nUNE CONSÉQUENCE DE VOTRE ACTION PRODUIT DÉSORMAIS UN EFFET SUR UN CYCLE ULTÉRIEUR.\n\nLE TERMINAL ENREGISTRE UNE EXTENSION DE LA CHAÎNE CAUSALE.</div><button class="btn primary" id="m3continueC">[ CONTINUER ]</button>`);
   $('#m3continueC').onclick=()=>{S.eval3.step=8;save();eval3Retroactive()};
 }
 function eval3Retroactive(){

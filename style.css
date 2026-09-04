@@ -252,3 +252,31 @@ button,input{font:inherit}
   .causal-allocation strong{font-size:25px}
   .causal-allocation span{font-size:7px}
 }
+
+/* V0.7.1 — correctif définitif Révision mnésique */
+.memory-cards{display:grid;gap:9px;margin:18px 0 24px}
+.memory-card{display:grid;grid-template-columns:54px minmax(0,1fr);border:1px solid var(--line);background:rgba(4,7,6,.42)}
+.memory-card-number{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);font-size:18px;color:var(--muted)}
+.memory-card-body{padding:13px 15px}
+.memory-card-label{font-size:7px;color:var(--muted);letter-spacing:.15em;margin-bottom:7px}
+.memory-card-statement{font-size:11px;line-height:1.55;color:var(--fg)}
+.memory-card-meta{display:flex;gap:24px;flex-wrap:wrap;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:8px;color:var(--muted);letter-spacing:.06em}
+.memory-card-meta b{font-weight:normal;color:var(--fg)}
+@media(min-width:800px) and (orientation:landscape){
+  .memory-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .memory-card:last-child{grid-column:1/-1}
+}
+@media(min-width:600px) and (orientation:portrait){
+  .memory-card{grid-template-columns:62px minmax(0,1fr)}
+  .memory-card-number{font-size:21px}
+  .memory-card-statement{font-size:13px}
+  .memory-card-body{padding:16px 18px}
+  .memory-card-meta{font-size:9px}
+}
+@media(max-width:599px){
+  .memory-card{grid-template-columns:42px minmax(0,1fr)}
+  .memory-card-number{font-size:14px}
+  .memory-card-body{padding:11px 12px}
+  .memory-card-statement{font-size:10px}
+  .memory-card-meta{gap:10px;font-size:7px}
+}

@@ -73,3 +73,20 @@ V0.7 — ÉVALUATION III
 - Question finale de responsabilité causale.
 - Micro-anomalie ACTION ↓ CONSÉQUENCE devenant brièvement ACTION ↑ CONSÉQUENCE.
 - Déverrouillage du Module IV.
+
+
+V0.7.1 — CORRECTIF IMPORTANT
+1. Évaluation III : déverrouillage corrigé après validation du Module II, y compris pour les sauvegardes existantes.
+2. Révision mnésique : écran reconstruit. Les 5 affirmations sont maintenant affichées explicitement avec réponse + confiance.
+3. Cache GitHub/PWA : version de cache modifiée et app.js/style.css chargés avec ?v=071 pour empêcher l'ancienne interface de rester affichée.
+Aucun reset de progression requis.
+
+
+V0.7.2 — ÉVALUATION III / PREUVE DE LECTURE PHYSIQUE
+- Le Terminal ne révèle plus le contenu des Conséquences A, B et C avant leur consultation physique.
+- A demande le code de contrôle F-04.
+- B demande le code de contrôle C-03.
+- Après A+B, le candidat doit lui-même conclure que l'objectif est impossible avec six unités.
+- C demande le délai d'effet +1 CYCLE.
+- Le Terminal analyse seulement après preuve de lecture.
+- Principe retenu pour les futurs dossiers : toute information découverte physiquement exige une preuve de consultation avant traitement numérique.
