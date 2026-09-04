@@ -1,3 +1,7 @@
+OCI-TERM V1.7.0 — ARCHIVES OMBRE I COMPLÈTES
+
+15 documents OMBRE I intégrés. OI-RAP-021 retiré et remplacé par OI-RAP-001. Cartographie interactive prévue pour la prochaine étape.
+
 ORDRE DES CINQ OMBRES — TERMINAL V0.3
 
 Cette version rapproche l'accueil CANDIDAT de la maquette validée :
