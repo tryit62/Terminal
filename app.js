@@ -36,7 +36,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.1.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.2.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -1038,18 +1038,88 @@ function oathTransition(){
   S.accreditation='OMBRE I';
   S.initiationDate=new Date().toISOString();
   save();
-  document.body.classList.add('initiated');
-  shell(`<div class="initiate-reveal">
-    <div class="initiate-small">PROTOCOLE 000 // TERMINÉ</div>
-    <div class="initiate-old">CANDIDAT</div>
-    <div class="initiate-separator">↓</div>
-    <div class="initiate-new">INITIÉ</div>
-    <div class="initiate-clearance">ACCRÉDITATION // OMBRE I</div>
-    <div class="initiate-division">${S.affectation}</div>
-    <div class="terminal initiate-message">IDENTITÉ ENREGISTRÉE.\nAFFECTATION CONFIRMÉE.\nACCÈS CANDIDAT RÉVOQUÉ.\n\nBIENVENUE DANS L'ORDRE.</div>
-    <button class="btn primary" id="enterInitiate">[ OUVRIR LE TERMINAL ]</button>
-  </div>`,'ACCÈS // OMBRE I');
-  $('#enterInitiate').onclick=initiateHome;
+  document.body.classList.remove('initiated');
+  initiateCinematic();
+}
+function initiateCinematic(){
+  const divisionKey=Object.keys(DIVISIONS).find(k=>DIVISIONS[k].name===S.affectation)||'PERCEPTION';
+  const d=DIVISIONS[divisionKey];
+  const divisionClass={
+    PERCEPTION:'div-eye',
+    ADAPTATION:'div-flame',
+    CONSEQUENCE:'div-hand',
+    CONTINUITE:'div-spiral',
+    TEMPORISATION:'div-hourglass'
+  }[divisionKey];
+
+  document.body.classList.add('cinematic-mode');
+  shell(`<div class="init-cine ${divisionClass}" id="initCine">
+    <div class="cine-phase cine-black active" id="cineBlack">
+      <div class="cine-black-copy">ORDRE DES CINQ OMBRES<br><span>INITIALISATION...</span></div>
+    </div>
+
+    <div class="cine-phase cine-orbit" id="cineOrbit">
+      <div class="orbit-system">
+        <div class="orbit-ring orbit-ring-a"></div>
+        <div class="orbit-ring orbit-ring-b"></div>
+        <div class="orbit-ring orbit-ring-c"></div>
+        <img class="orbit-order-logo" src="order-logo.png" alt="">
+        ${[
+          ['division-1-oeil-fendu.png','PERCEPTION'],
+          ['division-2-flamme-inversee.png','ADAPTATION'],
+          ['division-3-main-cassee.png','CONSEQUENCE'],
+          ['division-4-spirale-os.png','CONTINUITE'],
+          ['division-5-sablier-noir.png','TEMPORISATION']
+        ].map((x,i)=>`<div class="orbit-node node-${i+1} ${x[1]===divisionKey?'chosen':''}" data-key="${x[1]}"><div class="node-glow"></div><img src="${x[0]}" alt=""></div>`).join('')}
+      </div>
+      <div class="cine-caption" id="cineCaption">SYNCHRONISATION DES CINQ MATRICES</div>
+    </div>
+
+    <div class="cine-phase cine-focus" id="cineFocus">
+      <div class="focus-rings"></div>
+      <img class="focus-symbol" src="${d.img}" alt="">
+      <div class="focus-name">${d.name}</div>
+    </div>
+
+    <div class="cine-phase cine-load" id="cineLoad">
+      <div class="load-kicker">ACCÈS INITIÉ</div>
+      <div class="load-name">${d.name}</div>
+      <div class="load-line"></div>
+      <div class="load-status">INTERFACE EN COURS DE CHARGEMENT...</div>
+      <div class="load-progress"><span></span></div>
+    </div>
+  </div>`,'');
+  const phase=id=>document.getElementById(id);
+  const show=id=>{
+    document.querySelectorAll('.cine-phase').forEach(x=>x.classList.remove('active'));
+    phase(id)?.classList.add('active');
+  };
+
+  // 0–5 s : noir presque total.
+  setTimeout(()=>show('cineOrbit'),5000);
+
+  // 5–11 s : rotation des cinq divisions autour de l'Ordre.
+  setTimeout(()=>{const c=$('#cineCaption'); if(c)c.textContent='ROTATION DES MATRICES // ANALYSE DE COMPATIBILITÉ';},7200);
+  setTimeout(()=>{const c=$('#cineCaption'); if(c)c.textContent='STABILISATION // AFFECTATION CONFIRMÉE'; document.querySelector('.orbit-system')?.classList.add('stabilizing');},9500);
+
+  // 11–14 s : les autres s'effacent, division choisie.
+  setTimeout(()=>{
+    document.querySelectorAll('.orbit-node:not(.chosen)').forEach(x=>x.classList.add('fade-node'));
+    document.querySelector('.orbit-node.chosen')?.classList.add('select-node');
+  },11000);
+
+  // 14–16.5 s : symbole de division plein écran.
+  setTimeout(()=>show('cineFocus'),14000);
+
+  // 16.5–19.5 s : écran d'accès initié.
+  setTimeout(()=>show('cineLoad'),16500);
+
+  // ~20 s : interface finale.
+  setTimeout(()=>{
+    document.body.classList.remove('cinematic-mode');
+    document.body.classList.add('initiated',divisionClass);
+    initiateHome();
+  },20000);
 }
 function initiateHome(){home()}
 function assignmentConfirmed(){

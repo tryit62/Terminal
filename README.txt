@@ -197,3 +197,20 @@ V1.1 — SERMENT / OMBRE I
 - Affectation devient définitive dans le dossier local.
 - Première rupture visuelle uniquement après acceptation du Serment.
 - Accueil et Profil reflètent INITIÉ / OMBRE I après validation.
+
+
+V1.2 — TRANSITION CINÉMATIQUE INITIÉ
+- Déclenchement uniquement après J'ACCEPTE et validation du Serment.
+- 0–5 s : écran noir / initialisation discrète.
+- 5–11 s : logo de l'Ordre central et rotation des cinq logos de Division.
+- 11–14 s : stabilisation, extinction progressive des quatre Divisions non retenues.
+- 14–16,5 s : symbole de la Division attribuée au centre de l'écran.
+- 16,5–20 s : ACCÈS INITIÉ / nom de Division / chargement.
+- ~20 s : apparition du Terminal final.
+- Couleur d'interface dépend désormais de l'affectation, uniquement après le Serment.
+- Œil Fendu : spectral bleuté.
+- Flamme Inversée : pourpre/rouge incandescent.
+- Main Cassée : vert osseux.
+- Spirale d'Os : bleu sombre.
+- Sablier Noir : violet/noir ébène.
+- Responsive tablette, mobile et desktop.

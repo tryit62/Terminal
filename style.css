@@ -644,3 +644,137 @@ body.initiated .nav-card{
   .initiate-reveal{margin-top:5vh}
   .initiate-new{font-size:46px}
 }
+
+/* ============================================================
+   V1.2 — TRANSITION CINÉMATIQUE CANDIDAT -> INITIÉ
+   ============================================================ */
+body.cinematic-mode{overflow:hidden;background:#000}
+body.cinematic-mode .brand,
+body.cinematic-mode .rule,
+body.cinematic-mode .status{display:none!important}
+body.cinematic-mode main,
+body.cinematic-mode .shell{width:100%!important;max-width:none!important;padding:0!important;margin:0!important}
+.init-cine{
+  --division-accent:220,225,220;
+  position:fixed;inset:0;background:#000;color:#f2f2ef;z-index:9999;
+  font-family:inherit;overflow:hidden
+}
+.init-cine.div-eye{--division-accent:205,220,232}
+.init-cine.div-flame{--division-accent:218,62,55}
+.init-cine.div-hand{--division-accent:116,185,132}
+.init-cine.div-spiral{--division-accent:72,118,184}
+.init-cine.div-hourglass{--division-accent:150,125,175}
+.cine-phase{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .75s ease;background:#000
+}
+.cine-phase.active{opacity:1}
+.cine-black-copy{
+  text-align:center;font-size:clamp(13px,1.5vw,18px);letter-spacing:.32em;
+  animation:blackPulse 5s ease-in-out both
+}
+.cine-black-copy span{display:block;font-size:.58em;color:#858b87;margin-top:15px;letter-spacing:.28em}
+@keyframes blackPulse{0%,30%{opacity:0}55%{opacity:.35}75%{opacity:.8}100%{opacity:.2}}
+
+.orbit-system{
+  position:relative;width:min(76vw,760px);height:min(76vw,760px);
+  border-radius:50%;animation:systemIn 1.2s ease-out both
+}
+@keyframes systemIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+.orbit-order-logo{
+  position:absolute;width:22%;height:22%;object-fit:contain;left:39%;top:39%;
+  filter:grayscale(1) brightness(1.7);z-index:4;animation:corePulse 2.5s ease-in-out infinite
+}
+@keyframes corePulse{50%{filter:grayscale(1) brightness(2.2);transform:scale(1.04)}}
+.orbit-ring{
+  position:absolute;border:1px solid rgba(230,235,230,.17);border-radius:50%;
+  left:50%;top:50%;transform:translate(-50%,-50%)
+}
+.orbit-ring-a{width:54%;height:54%;animation:ringSpin 12s linear infinite}
+.orbit-ring-b{width:72%;height:72%;border-style:dashed;animation:ringSpin 18s linear infinite reverse}
+.orbit-ring-c{width:91%;height:91%;opacity:.45;animation:ringSpin 25s linear infinite}
+@keyframes ringSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.orbit-node{
+  position:absolute;width:13%;height:13%;left:43.5%;top:43.5%;
+  transform-origin:50% 50%;transition:opacity 1s ease,filter 1s ease,transform 1.2s ease
+}
+.orbit-node img{
+  position:absolute;inset:12%;width:76%;height:76%;object-fit:contain;
+  filter:grayscale(1) brightness(1.5);z-index:2
+}
+.node-glow{
+  position:absolute;inset:0;border:1px solid rgba(230,235,230,.3);border-radius:50%;
+  box-shadow:0 0 20px rgba(220,225,220,.06)
+}
+.node-1{animation:orbit1 8s linear infinite}
+.node-2{animation:orbit2 8s linear infinite}
+.node-3{animation:orbit3 8s linear infinite}
+.node-4{animation:orbit4 8s linear infinite}
+.node-5{animation:orbit5 8s linear infinite}
+@keyframes orbit1{from{transform:rotate(-90deg) translateX(285%) rotate(90deg)}to{transform:rotate(270deg) translateX(285%) rotate(-270deg)}}
+@keyframes orbit2{from{transform:rotate(-18deg) translateX(285%) rotate(18deg)}to{transform:rotate(342deg) translateX(285%) rotate(-342deg)}}
+@keyframes orbit3{from{transform:rotate(54deg) translateX(285%) rotate(-54deg)}to{transform:rotate(414deg) translateX(285%) rotate(-414deg)}}
+@keyframes orbit4{from{transform:rotate(126deg) translateX(285%) rotate(-126deg)}to{transform:rotate(486deg) translateX(285%) rotate(-486deg)}}
+@keyframes orbit5{from{transform:rotate(198deg) translateX(285%) rotate(-198deg)}to{transform:rotate(558deg) translateX(285%) rotate(-558deg)}}
+.orbit-system.stabilizing .orbit-node{animation-play-state:paused}
+.orbit-node.fade-node{opacity:.08;filter:blur(2px)}
+.orbit-node.select-node .node-glow{
+  border-color:rgba(var(--division-accent),.9);
+  box-shadow:0 0 34px rgba(var(--division-accent),.55),inset 0 0 24px rgba(var(--division-accent),.15)
+}
+.orbit-node.select-node img{filter:none}
+.cine-caption{
+  position:absolute;bottom:7vh;left:0;right:0;text-align:center;
+  font-size:clamp(9px,1vw,12px);letter-spacing:.26em;color:#aeb3af
+}
+.cine-focus{flex-direction:column;background:radial-gradient(circle at center,rgba(var(--division-accent),.12),#000 48%)}
+.focus-rings{
+  position:absolute;width:min(58vw,560px);height:min(58vw,560px);border-radius:50%;
+  border:1px solid rgba(var(--division-accent),.38);
+  box-shadow:0 0 50px rgba(var(--division-accent),.12);
+  animation:focusSpin 3s linear infinite
+}
+.focus-rings:before,.focus-rings:after{content:"";position:absolute;border-radius:50%;border:1px dashed rgba(var(--division-accent),.22)}
+.focus-rings:before{inset:10%}.focus-rings:after{inset:22%}
+@keyframes focusSpin{to{transform:rotate(360deg)}}
+.focus-symbol{width:min(30vw,280px);height:min(30vw,280px);object-fit:contain;filter:drop-shadow(0 0 25px rgba(var(--division-accent),.5));z-index:2}
+.focus-name{z-index:2;margin-top:34px;font-size:clamp(20px,3vw,36px);letter-spacing:.28em;color:rgb(var(--division-accent))}
+.cine-load{flex-direction:column;background:linear-gradient(180deg,#020202,#080808)}
+.load-kicker{font-size:10px;letter-spacing:.35em;color:#a0a5a1}
+.load-name{font-size:clamp(34px,6vw,72px);letter-spacing:.22em;color:rgb(var(--division-accent));margin:22px 0}
+.load-line{height:1px;width:min(70vw,720px);background:rgba(var(--division-accent),.45)}
+.load-status{font-size:11px;letter-spacing:.24em;margin-top:28px;color:#c3c7c3}
+.load-progress{width:min(55vw,560px);height:2px;background:#202220;margin-top:26px;overflow:hidden}
+.load-progress span{display:block;height:100%;background:rgb(var(--division-accent));animation:loadBar 3.2s ease-out forwards}
+@keyframes loadBar{from{width:0}to{width:100%}}
+
+/* Couleur d'appartenance, activée uniquement après le Serment. */
+body.initiated.div-eye{--division-ui:#cddce8}
+body.initiated.div-flame{--division-ui:#da3e37}
+body.initiated.div-hand{--division-ui:#74b984}
+body.initiated.div-spiral{--division-ui:#4876b8}
+body.initiated.div-hourglass{--division-ui:#967daf}
+body.initiated{
+  --line:color-mix(in srgb,var(--division-ui) 42%,#545854);
+}
+body.initiated .brand,
+body.initiated .home-head h1,
+body.initiated .datum-value,
+body.initiated .nav-mark{
+  color:var(--division-ui)
+}
+body.initiated .identity-panel,
+body.initiated .main-console,
+body.initiated .nav-card{
+  border-color:color-mix(in srgb,var(--division-ui) 42%,#4c504c)
+}
+body.initiated .identity-logo{
+  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--division-ui) 25%,transparent))
+}
+@media(max-width:650px){
+  .orbit-system{width:88vw;height:88vw}
+  .cine-caption{bottom:10vh;padding:0 24px;line-height:1.7}
+  .focus-rings{width:82vw;height:82vw}
+  .focus-symbol{width:42vw;height:42vw}
+  .load-name{font-size:30px;text-align:center;padding:0 16px}
+}
