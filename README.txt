@@ -294,3 +294,10 @@ V1.4.3 — CORRECTIF ROUTAGE INITIÉ
 - [ ENTRER ] ouvre désormais réellement le tableau de bord Initié.
 - Après cinématique : première initialisation affichée une seule fois, puis accès direct au tableau de bord lors des connexions suivantes.
 - Nouveau cache Service Worker et query params.
+
+
+V1.4.4 — CORRECTIF TERMINAL INITIÉ
+- Cause exacte identifiée : le nouveau tableau de bord appelait divisionLogo(), fonction absente du code.
+- Cela provoquait une ReferenceError au clic sur [ ENTRER ], donc l'écran semblait ne rien faire.
+- Ajout du mapping officiel des cinq logos de Division.
+- Cache Service Worker et query params renouvelés.

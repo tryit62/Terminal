@@ -182,6 +182,16 @@ function adminJump(step,division){
   }
 }
 
+function divisionLogo(name){
+ const logos={
+  'ŒIL FENDU':'division-1-oeil-fendu.png',
+  'FLAMME INVERSÉE':'division-2-flamme-inversee.png',
+  'MAIN CASSÉE':'division-3-main-cassee.png',
+  'SPIRALE D’OS':'division-4-spirale-os.png',
+  'SABLIER NOIR':'division-5-sablier-noir.png'
+ };
+ return logos[name]||'order-logo.png';
+}
 function divisionMeta(name){
  const m={
   'ŒIL FENDU':{cls:'div-eye',verb:'OBSERVER',msg:`Votre affectation n'est pas une récompense.\n\nVous avez été placé parmi ceux dont la fonction est d'observer ce que les autres ne doivent pas nécessairement voir.\n\nNe confondez jamais observation et vérité.\n\nVous recevrez bientôt votre première affectation.`},
@@ -318,7 +328,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.4.3 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.4.4 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
