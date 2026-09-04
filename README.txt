@@ -1,3 +1,13 @@
+OCI-TERM V1.8.1 — CORRECTIF CARTOGRAPHIE
+
+- Continents remplacés par un véritable planisphère Natural Earth.
+- Proportions géographiques réalistes.
+- Carte agrandie et ratio planisphère.
+- Sur iPad/ordinateur, la fiche se superpose à droite sans réduire la carte.
+- Sur mobile/tablette étroite, la fiche remonte depuis le bas.
+- Zoom, déplacement, filtres et 17 références OMBRE I conservés.
+- Carte embarquée localement : aucun service cartographique externe requis.
+
 OCI-TERM V1.8.0 — CARTOGRAPHIE OPÉRATIONNELLE
 
 NOUVEAU
