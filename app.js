@@ -1,9 +1,11 @@
 const $=s=>document.querySelector(s); const app=$('#app');
 const defaults={matricule:'',statut:'CANDIDAT',accreditation:'0',affectation:'—',inventaire:null,progression:0,messages:1,installed:false,
 eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,versions:null,memoryCount:null,complete:false},
+eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,versionFirst:null,confidenceMaintained:null,decision:null,sincereFalse:null,authenticFalse:null,complete:false},
 tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0}};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
+S.eval2={...defaults.eval2,...(S.eval2||{})};
 S.tendances={...defaults.tendances,...(S.tendances||{})};
 function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
@@ -23,7 +25,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.5.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.6.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -55,7 +57,7 @@ function inventory(){shell(`<h1 class="title">CONTRÔLE DU MATÉRIEL</h1><div cl
 function evals(){
   let rows=[1,2,3,4,5].map(n=>{
     let st=n<=S.progression?'ENREGISTRÉ':n===S.progression+1&&S.inventaire?'DISPONIBLE':'VERROUILLÉ';
-    let active=(n===1 && st==='DISPONIBLE') ? ` data-eval="1" role="button" tabindex="0"` : '';
+    let active=((n===1||n===2) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
     return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
@@ -63,6 +65,8 @@ function evals(){
   wireBack();
   const e1=document.querySelector('[data-eval="1"]');
   if(e1){e1.onclick=eval1Start;e1.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval1Start()}}}
+  const e2=document.querySelector('[data-eval="2"]');
+  if(e2){e2.onclick=eval2Start;e2.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval2Start()}}}
 }
 function eval1Shell(body,status='MODULE I // ACTIF'){
   shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><img class="module-division-symbol" src="division-1-oeil-fendu.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
@@ -225,6 +229,140 @@ function eval1CompleteScreen(){
   eval1Shell(`<div class="terminal">MODULE I\n\nSTATUT : ENREGISTRÉ\n\nAUCUNE INTERPRÉTATION SUPPLÉMENTAIRE N'EST REQUISE.\n\nLE MODULE II EST DÉSORMAIS DISPONIBLE.</div>
   <div class="menu"><button class="btn primary" id="returnHome">[ RETOUR AU TERMINAL ]</button></div>`,'MODULE I // ENREGISTRÉ');
   $('#returnHome').onclick=home;
+}
+
+function eval2Shell(body,status='MODULE II // ACTIF'){
+  shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION II</span><h1 class="title">MODULE II</h1></div><img class="module-division-symbol" src="division-2-flamme-inversee.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp2">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
+  const h=$('#moduleHelp2');if(h)h.onclick=eval2Help;
+}
+function eval2Help(){
+  eval2Shell(`<h2 class="sub">SUPERVISION — II</h2><div class="terminal">SÉLECTIONNEZ LE MOTIF DE LA SOLLICITATION.</div><div class="menu">
+  <button class="btn hint2" data-h="instruction">> INSTRUCTION INCOMPRISE</button>
+  <button class="btn hint2" data-h="materiel">> MATÉRIEL NON IDENTIFIÉ</button>
+  <button class="btn hint2" data-h="blocage">> BLOCAGE DANS LE PROTOCOLE</button>
+  <button class="btn hint2" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText2" class="msg"></div><button class="btn back" id="resume2">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE II');
+  const map={
+    instruction:"Suivez uniquement l'instruction active. Une restitution de mémoire n'est pas une épreuve de réussite.",
+    materiel:"Le Module II doit contenir II-A et une enveloppe scellée II-B. N'ouvrez II-B que sur autorisation du Terminal.",
+    blocage:"Lorsque mémoire et document divergent, ne cherchez pas immédiatement laquelle des deux sources « gagne ». Consignez d'abord ce que vous constatez.",
+    irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne détruisez ni ne corrigez aucun document. Poursuivez si le protocole reste exécutable."
+  };
+  document.querySelectorAll('.hint2').forEach(b=>b.onclick=()=>$('#hintText2').textContent=map[b.dataset.h]);
+  $('#resume2').onclick=eval2Resume;
+}
+function eval2Resume(){
+  const s=S.eval2.step||0;
+  if(s<=0)return eval2Start();
+  if(s===1)return eval2ReadA();
+  if(s===2)return eval2MemoryIntro();
+  if(s>=3&&s<=7)return eval2MemoryQuestion(s-3);
+  if(s===8)return eval2Compare();
+  if(s===9)return eval2Epistemic();
+  if(s===10)return eval2OpenB();
+  if(s===11)return eval2VersionQuestion();
+  if(s===12)return eval2ConfidenceReview();
+  if(s===13)return eval2Decision();
+  if(s===14)return eval2Philosophy1();
+  if(s===15)return eval2Philosophy2();
+  return eval2CompleteScreen();
+}
+function eval2Start(){
+  if(S.eval2.complete)return eval2CompleteScreen();
+  S.eval2.step=0;save();
+  eval2Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-2-flamme-inversee.png" alt=""><div class="terminal">AUTORISATION DU MODULE II...\n\nRÉFÉRENCE : ÉVALUATION II\nSTATUT : DISPONIBLE\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
+  <div class="menu"><button class="btn primary" id="m2present">[ MODULE PRÉSENT ]</button><button class="btn" id="m2missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
+  $('#m2present').onclick=()=>{S.eval2.step=1;save();eval2ReadA()};
+  $('#m2missing').onclick=()=>{eval2Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE DE :\nII-A — ARCHIVE 02-1668-CR-09 / COPIE 09-B\nII-B — CONTRÔLE DOCUMENTAIRE SCELLÉ\n\nN'OUVREZ PAS II-B.</div><button class="btn primary" id="m2retry">[ REPRENDRE ]</button>`,'MODULE II // VÉRIFICATION');$('#m2retry').onclick=eval2Start}
+}
+function eval2ReadA(){
+  S.eval2.step=1;save();
+  eval2Shell(`<p class="sub">PHASE 01 // ACQUISITION</p><div class="terminal">OUVREZ LE MODULE II.\n\nPRENEZ UNIQUEMENT II-A.\nLAISSEZ II-B SCELLÉ.\n\nLISEZ II-A UNE FOIS, À VOTRE RYTHME.\nAUCUN CHRONOMÈTRE N'EST UTILISÉ.\n\nLorsque votre lecture est terminée, replacez II-A DANS LE MODULE ET REFERMEZ-LE.</div><button class="btn primary" id="m2read">[ II-A REFERMÉ ]</button>`);
+  $('#m2read').onclick=()=>{S.eval2.step=2;save();eval2MemoryIntro()};
+}
+const M2Q=[
+  {q:"LE CORBEAU EST INSTALLÉ SUR UN ARBRE.",opts:["OUI","NON","INCERTAIN"]},
+  {q:"LE RENARD S'ADRESSE AU CORBEAU AVANT QUE CELUI-CI NE CHANTE.",opts:["OUI","NON","INCERTAIN"]},
+  {q:"LE RENARD COMPARE EXPLICITEMENT LE RAMAGE AU PLUMAGE.",opts:["OUI","NON","INCERTAIN"]},
+  {q:"LE FROMAGE TOMBE APRÈS L'OUVERTURE DU BEC.",opts:["OUI","NON","INCERTAIN"]},
+  {q:"LE CORBEAU RÉCUPÈRE LE FROMAGE À LA FIN DU TEXTE.",opts:["OUI","NON","INCERTAIN"]}
+];
+function eval2MemoryIntro(){
+  S.eval2.step=2;save();
+  eval2Shell(`<p class="sub">PHASE 02 // RESTITUTION</p><div class="terminal">NE ROUVREZ PAS II-A.\n\nCINQ ÉNONCÉS VONT ÊTRE PRÉSENTÉS.\nPOUR CHACUN, INDIQUEZ VOTRE SOUVENIR PUIS VOTRE DEGRÉ DE CONFIANCE.\n\nAUCUNE ERREUR DE MÉMOIRE N'INTERROMPT L'ÉVALUATION.</div><button class="btn primary" id="m2beginmem">[ COMMENCER ]</button>`);
+  $('#m2beginmem').onclick=()=>eval2MemoryQuestion(0);
+}
+function eval2MemoryQuestion(i){
+  S.eval2.step=3+i;save();
+  const item=M2Q[i];
+  eval2Shell(`<p class="sub">RESTITUTION // ${i+1} / 5</p><div class="terminal">${item.q}</div><div class="menu">${item.opts.map(o=>`<button class="btn m2ans" data-v="${o}">[ ${o} ]</button>`).join('')}</div><div id="confidenceBox"></div>`);
+  document.querySelectorAll('.m2ans').forEach(b=>b.onclick=()=>{
+    S.eval2.memoryAnswers[i]=b.dataset.v;save();
+    $('#confidenceBox').innerHTML=`<div class="rule"></div><p class="sub">DEGRÉ DE CONFIANCE</p><div class="menu"><button class="btn conf" data-v="CERTAIN">[ CERTAIN ]</button><button class="btn conf" data-v="PROBABLE">[ PROBABLE ]</button><button class="btn conf" data-v="INCERTAIN">[ INCERTAIN ]</button></div>`;
+    document.querySelectorAll('.conf').forEach(c=>c.onclick=()=>{
+      S.eval2.confidence[i]=c.dataset.v;save();
+      if(i<4)eval2MemoryQuestion(i+1);else{S.eval2.step=8;save();eval2Compare()}
+    });
+  });
+}
+function eval2Compare(){
+  S.eval2.step=8;save();
+  eval2Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p><div class="terminal">ROUVREZ LE MODULE.\n\nREPRENEZ II-A ET COMPAREZ LE DOCUMENT À VOS CINQ RÉPONSES.\n\nAVEZ-VOUS CONSTATÉ AU MOINS UNE DIVERGENCE ENTRE VOTRE SOUVENIR ET LE DOCUMENT ?</div><div class="menu"><button class="btn div2" data-v="OUI">[ OUI ]</button><button class="btn div2" data-v="NON">[ NON ]</button><button class="btn div2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
+  document.querySelectorAll('.div2').forEach(b=>b.onclick=()=>{S.eval2.divergence=b.dataset.v;S.eval2.step=9;save();eval2Epistemic()});
+}
+function eval2Epistemic(){
+  S.eval2.step=9;save();
+  eval2Shell(`<p class="sub">PHASE 03 // APPRÉCIATION</p><div class="terminal">SI VOTRE SOUVENIR ET LE DOCUMENT MATÉRIEL SE CONTREDISENT, QUELLE SOURCE DOIT ÊTRE PRIVILÉGIÉE EN PREMIER ?</div><div class="menu">
+  <button class="btn m2epi" data-t="PERCEPTION">A — CE QUI PEUT ÊTRE OBSERVÉ ET VÉRIFIÉ INDÉPENDAMMENT.</button>
+  <button class="btn m2epi" data-t="ADAPTATION">B — LA VERSION LA PLUS COHÉRENTE POUR POURSUIVRE.</button>
+  <button class="btn m2epi" data-t="CONSEQUENCE">C — LA VERSION DONT L'ERREUR AURAIT LES CONSÉQUENCES LES MOINS GRAVES.</button>
+  <button class="btn m2epi" data-t="CONTINUITE">D — LES TRACES LES PLUS ANCIENNES ET LEUR CHAÎNE DE CONSERVATION.</button>
+  <button class="btn m2epi" data-t="TEMPORISATION">E — AUCUNE : JE SUSPENDS LA CONCLUSION JUSQU'À VÉRIFICATION.</button></div>`);
+  document.querySelectorAll('.m2epi').forEach(b=>b.onclick=()=>{S.eval2.epistemic=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+1;S.eval2.step=10;save();eval2OpenB()});
+}
+function eval2OpenB(){
+  S.eval2.step=10;save();
+  eval2Shell(`<p class="sub">PHASE 04 // CONTRÔLE DOCUMENTAIRE</p><div class="terminal">PRENEZ II-B.\n\nVÉRIFIEZ QUE LE SCELLÉ EST INTACT.\n\nOUVERTURE DE II-B : AUTORISÉE.\n\nOUVREZ L'ENVELOPPE ET CONSULTEZ SON CONTENU, RECTO PUIS VERSO.\n\nNE MODIFIEZ PAS II-A.</div><button class="btn primary" id="m2opened">[ II-B CONSULTÉ ]</button>`);
+  $('#m2opened').onclick=()=>{S.eval2.step=11;save();eval2VersionQuestion()};
+}
+function eval2VersionQuestion(){
+  S.eval2.step=11;save();
+  eval2Shell(`<p class="sub">PHASE 04 // DIVERGENCE</p><div class="terminal">DEUX COPIES PORTANT LA MÊME RÉFÉRENCE DOCUMENTAIRE SONT MAINTENANT ACCESSIBLES.\n\nSELON VOTRE SOUVENIR, LAQUELLE AVEZ-VOUS OBSERVÉE EN PREMIER ?\n\nAUCUNE RÉPONSE N'EST CONSIDÉRÉE COMME UNE PREUVE.</div><div class="menu"><button class="btn vfirst" data-v="09-B">[ COPIE 09-B ]</button><button class="btn vfirst" data-v="09-A">[ COPIE 09-A ]</button><button class="btn vfirst" data-v="?">[ INCERTAIN ]</button></div>`);
+  document.querySelectorAll('.vfirst').forEach(b=>b.onclick=()=>{S.eval2.versionFirst=b.dataset.v;S.eval2.step=12;save();eval2ConfidenceReview()});
+}
+function eval2ConfidenceReview(){
+  S.eval2.step=12;save();
+  const summary=S.eval2.confidence.map((c,i)=>`${i+1}. ${c||'—'}`).join('\n');
+  eval2Shell(`<p class="sub">RÉVISION MNÉSIQUE</p><div class="terminal">DEGRÉS DE CONFIANCE INITIAUX :\n${summary}\n\nAPRÈS CONSULTATION DES DOCUMENTS, MAINTENEZ-VOUS GLOBALEMENT VOTRE NIVEAU DE CONFIANCE INITIAL ?</div><div class="menu"><button class="btn maintain" data-v="OUI">[ OUI ]</button><button class="btn maintain" data-v="NON">[ NON ]</button><button class="btn maintain" data-v="PARTIEL">[ PARTIELLEMENT ]</button></div>`);
+  document.querySelectorAll('.maintain').forEach(b=>b.onclick=()=>{S.eval2.confidenceMaintained=b.dataset.v;S.eval2.step=13;save();eval2Decision()});
+}
+function eval2Decision(){
+  S.eval2.step=13;save();
+  eval2Shell(`<p class="sub">DÉCISION COMPORTEMENTALE</p><div class="terminal">UNE DIVERGENCE DOCUMENTAIRE DOIT ÊTRE TRAITÉE SANS INTERROMPRE UNE OPÉRATION EN COURS.\n\nQUELLE ACTION PRIVILÉGIEZ-VOUS ?</div><div class="menu">
+  <button class="btn m2dec" data-t="PERCEPTION">A — RECHERCHER UNE SOURCE INDÉPENDANTE OBSERVABLE.</button>
+  <button class="btn m2dec" data-t="ADAPTATION">B — RETENIR TEMPORAIREMENT LA VERSION LA PLUS COHÉRENTE OPÉRATIONNELLEMENT.</button>
+  <button class="btn m2dec" data-t="CONSEQUENCE">C — RETENIR LA VERSION DONT L'ERREUR PRODUIRAIT LE COÛT LE PLUS FAIBLE.</button>
+  <button class="btn m2dec" data-t="CONTINUITE">D — RECONSTRUIRE LA CHAÎNE DES VERSIONS ET RECHERCHER LES TRACES ANTÉRIEURES.</button>
+  <button class="btn m2dec" data-t="TEMPORISATION">E — SUSPENDRE L'USAGE DES DEUX COPIES ET LES ISOLER.</button></div>`);
+  document.querySelectorAll('.m2dec').forEach(b=>b.onclick=()=>{S.eval2.decision=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;S.eval2.step=14;save();eval2Philosophy1()});
+}
+function eval2Philosophy1(){
+  S.eval2.step=14;save();
+  eval2Shell(`<p class="sub">QUESTION DE CLÔTURE // 1</p><div class="terminal">UN SOUVENIR SINCÈRE PEUT-IL ÊTRE FAUX ?</div><div class="menu"><button class="btn ph1" data-v="OUI">[ OUI ]</button><button class="btn ph1" data-v="NON">[ NON ]</button><button class="btn ph1" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
+  document.querySelectorAll('.ph1').forEach(b=>b.onclick=()=>{S.eval2.sincereFalse=b.dataset.v;S.eval2.step=15;save();eval2Philosophy2()});
+}
+function eval2Philosophy2(){
+  S.eval2.step=15;save();
+  eval2Shell(`<p class="sub">QUESTION DE CLÔTURE // 2</p><div class="terminal">UN DOCUMENT AUTHENTIQUE PEUT-IL CONTENIR UNE INFORMATION FAUSSE ?</div><div class="menu"><button class="btn ph2" data-v="OUI">[ OUI ]</button><button class="btn ph2" data-v="NON">[ NON ]</button><button class="btn ph2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
+  document.querySelectorAll('.ph2').forEach(b=>b.onclick=()=>{S.eval2.authenticFalse=b.dataset.v;save();eval2Processing()});
+}
+function eval2Processing(){
+  eval2Shell(`<div class="terminal">TRAITEMENT DU MODULE II...\n\nRESTITUTION MNÉSIQUE : <span id="m2count">5 / 5</span>\nDIVERGENCES : CONSIGNÉES\nRÉVISION : ENREGISTRÉE\n\nANALYSE EN COURS...</div>`,'MODULE II // TRAITEMENT');
+  setTimeout(()=>{const x=$('#m2count');if(x){x.textContent='6 / 5';setTimeout(()=>x.textContent='5 / 5',430)}},850);
+  setTimeout(()=>{S.eval2.complete=true;S.eval2.step=16;S.progression=Math.max(S.progression,2);save();eval2CompleteScreen()},1900);
+}
+function eval2CompleteScreen(){
+  eval2Shell(`<div class="terminal">MODULE II\n\nSTATUT : ENREGISTRÉ\n\nLES RÉPONSES ONT ÉTÉ CONSIGNÉES.\nAUCUNE CORRECTION MNÉSIQUE N'EST REQUISE.\n\nLE MODULE III EST DÉSORMAIS DISPONIBLE.</div><button class="btn primary" id="m2home">[ RETOUR AU TERMINAL ]</button>`,'MODULE II // ENREGISTRÉ');
+  $('#m2home').onclick=home;
 }
 function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}

@@ -31,3 +31,16 @@ V0.4 — ÉVALUATION I
 
 
 V0.5 — Symboles officiels des cinq modules intégrés à la racine GitHub. Les noms des Divisions restent cachés pendant le recrutement.
+
+
+V0.6 — ÉVALUATION II + portrait
+- Évaluation II complète intégrée au Terminal.
+- Symbole officiel du Module II, sans révéler le nom de la Division.
+- Lecture II-A, fermeture, 5 restitutions mémoire et confiance.
+- Comparaison après réouverture.
+- Autorisation d'ouverture de II-B et divergence documentaire.
+- Révision de confiance, décision comportementale et questions de clôture.
+- Micro-anomalie 6/5.
+- Moteur d'affectation caché alimenté.
+- Mise en page portrait renforcée : symbole plus lisible, bloc d'instruction cadré, boutons verticaux plus confortables.
+- Tous les fichiers restent à la racine pour GitHub.

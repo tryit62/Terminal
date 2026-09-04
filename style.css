@@ -171,3 +171,39 @@ button,input{font:inherit}
   .module-division-symbol{width:44px;height:44px}
   .eval-symbol{width:25px;height:25px}
 }
+
+/* V0.6 — Présentation des modules, portrait enrichi */
+.module-head{padding:10px 4px 2px}
+.module-head .title{font-size:clamp(28px,4vw,46px);margin-top:5px}
+.module-code{letter-spacing:.22em}
+.module-help .btn{min-height:54px}
+.module-identify{border:1px solid var(--line);padding:26px 28px;background:rgba(4,7,6,.42)}
+.module-identify:before{content:"";position:absolute}
+.module-identify .terminal{font-size:clamp(12px,1.35vw,15px)}
+.module-identify-symbol{filter:grayscale(1) contrast(1.12)}
+@media(min-width:600px) and (orientation:portrait){
+  .shell:not(.home-shell){width:min(900px,100%);padding-left:clamp(30px,7vw,70px);padding-right:clamp(30px,7vw,70px)}
+  .module-head{padding-top:18px}
+  .module-head .title{font-size:42px;letter-spacing:.12em}
+  .module-division-symbol{width:82px;height:82px}
+  .module-identify{grid-template-columns:180px 1fr;gap:34px;padding:36px 34px;margin:10px 0 18px;min-height:270px}
+  .module-identify-symbol{width:165px;height:165px}
+  .module-identify .terminal{font-size:15px;line-height:1.8}
+  .module-identify + .menu{grid-template-columns:1fr;gap:12px}
+  .module-identify + .menu .btn{min-height:70px;padding:18px 22px;font-size:14px}
+  .module-help{margin-top:16px}
+  .module-help .btn{min-height:64px;padding:16px 20px}
+  .fact-options,.menu{gap:10px}
+  .btn{line-height:1.45}
+}
+@media(min-width:900px) and (orientation:portrait){
+  .module-identify{grid-template-columns:220px 1fr;min-height:310px}
+  .module-identify-symbol{width:195px;height:195px}
+}
+@media(max-width:599px) and (orientation:portrait){
+  .module-head .title{font-size:27px}
+  .module-identify{padding:20px 16px;min-height:0}
+  .module-identify .terminal{font-size:12px;line-height:1.65}
+  .module-identify + .menu{grid-template-columns:1fr}
+  .module-identify + .menu .btn{min-height:58px}
+}
