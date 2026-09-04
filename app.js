@@ -209,12 +209,26 @@ DIVISION : ${S.affectation||'NON RENSEIGNÉ'}
 CHARGEMENT DU DOSSIER PERSONNEL...</div>
  <button class="btn primary hidden" id="enterInitiate">[ ENTRER ]</button>
  </div>`,'TERMINAL // ACCÈS INITIÉ');
- const box=$('#initSeq'), btn=$('#enterInitiate');
+ const box=$('#initSeq');
+ const enterInitiate=()=>{
+   S.initieAccueilVu=true;
+   save();
+   initiateHome();
+ };
+ // Bind immediately and also re-bind at reveal as a safeguard for iOS/PWA DOM timing.
+ const initialBtn=$('#enterInitiate');
+ if(initialBtn) initialBtn.addEventListener('click',enterInitiate);
  setTimeout(()=>box.textContent+=`\nOUVERTURE DES ARCHIVES AUTORISÉES...`,1300);
  setTimeout(()=>box.textContent+=`\nÉTABLISSEMENT DU CANAL DE DIVISION...`,2600);
  setTimeout(()=>box.textContent+=`\n\n3 NOUVEAUX MESSAGES.`,3900);
- setTimeout(()=>{box.textContent+=`\n\nTERMINAL // ACCÈS INITIÉ`;btn.classList.remove('hidden')},5000);
- btn.onclick=()=>{S.initieAccueilVu=true;save();initiateHome()};
+ setTimeout(()=>{
+   box.textContent+=`\n\nTERMINAL // ACCÈS INITIÉ`;
+   const btn=$('#enterInitiate');
+   if(btn){
+     btn.classList.remove('hidden');
+     btn.onclick=enterInitiate;
+   }
+ },5000);
 }
 function initiateHome(){
  applyInitiateTheme();
@@ -304,7 +318,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.4.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.4.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>

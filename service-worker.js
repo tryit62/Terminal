@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v141-oeil-spectral';
+const CACHE='ordre-terminal-v142-fix-enter-initie';
 const ASSETS=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',
   './division-1-oeil-fendu.png',
   './division-2-flamme-inversee.png',

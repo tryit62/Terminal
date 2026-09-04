@@ -279,3 +279,10 @@ V1.4.1 — ŒIL FENDU / BLANC SPECTRAL
 - Traduction numérique post-Serment : cyan spectral / bleu glacé #B9E8F2.
 - Accent renforcé sur le logo de Division et les interactions du Terminal Initié.
 - Aucun changement de couleur avant le Serment.
+
+
+V1.4.2 — CORRECTIF ENTRÉE TERMINAL INITIÉ
+- Correction du bouton [ ENTRER ] de l'écran de première initialisation OMBRE I.
+- Le bouton appelle désormais explicitement initiateHome() après sauvegarde de l'état.
+- Liaison de l'événement renforcée pour Safari iOS / PWA.
+- Nouveau cache Service Worker et query params afin d'éviter le chargement de l'ancien app.js.
