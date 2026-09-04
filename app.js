@@ -23,7 +23,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.4.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.5.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -56,7 +56,8 @@ function evals(){
   let rows=[1,2,3,4,5].map(n=>{
     let st=n<=S.progression?'ENREGISTRÉ':n===S.progression+1&&S.inventaire?'DISPONIBLE':'VERROUILLÉ';
     let active=(n===1 && st==='DISPONIBLE') ? ` data-eval="1" role="button" tabindex="0"` : '';
-    return `<div class="eval ${active?'eval-open':''}"${active}><span>◇ &nbsp; ${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
+    const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
+    return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
   shell(`<h1 class="title">ÉVALUATIONS</h1>${rows}<p class="sub">PROGRESSION : ${S.progression} / 5</p>${back()}`);
   wireBack();
@@ -64,7 +65,7 @@ function evals(){
   if(e1){e1.onclick=eval1Start;e1.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval1Start()}}}
 }
 function eval1Shell(body,status='MODULE I // ACTIF'){
-  shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><div class="module-glyph">◉</div></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
+  shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><img class="module-division-symbol" src="division-1-oeil-fendu.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
   const h=$('#moduleHelp'); if(h) h.onclick=()=>moduleHelp('I');
 }
 function moduleHelp(module){
@@ -101,7 +102,7 @@ function eval1Resume(){
 function eval1Start(){
   if(S.eval1.complete) return eval1CompleteScreen();
   S.eval1.step=0;save();
-  eval1Shell(`<div class="terminal">AUTORISATION DU MODULE I...\n\nRÉFÉRENCE : ÉVALUATION I\nSTATUT : DISPONIBLE\n\nCONFIRMEZ QUE LE MODULE I EST PRÉSENT DANS VOTRE COLIS.</div>
+  eval1Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-1-oeil-fendu.png" alt=""><div class="terminal">AUTORISATION DU MODULE I...\n\nRÉFÉRENCE : ÉVALUATION I\nSTATUT : DISPONIBLE\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="present">[ MODULE PRÉSENT ]</button><button class="btn" id="missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#present').onclick=()=>{S.eval1.step=1;save();eval1Phase1()};
   $('#missing').onclick=()=>{eval1Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE DES RÉFÉRENCES :\nI-A\nI-B\nI-C\n\nAUCUNE PÉNALITÉ N'EST ASSOCIÉE À CETTE VÉRIFICATION.</div><button class="btn primary" id="retry">[ REPRENDRE ]</button>`,'MODULE I // VÉRIFICATION');$('#retry').onclick=eval1Start}

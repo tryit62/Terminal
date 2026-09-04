@@ -152,3 +152,22 @@ button,input{font:inherit}
 @media(min-width:800px) and (orientation:landscape){
   .fact-options{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Symboles de modules — visibles, noms de divisions volontairement masqués */
+.eval-id{display:flex;align-items:center;gap:13px}
+.eval-symbol{width:34px;height:34px;object-fit:contain;filter:grayscale(1);opacity:.88}
+.module-division-symbol{width:72px;height:72px;object-fit:contain;filter:grayscale(1);opacity:.92}
+.module-identify{display:grid;grid-template-columns:150px minmax(0,1fr);gap:28px;align-items:center;padding:18px 0}
+.module-identify-symbol{width:140px;height:140px;object-fit:contain;filter:grayscale(1);opacity:.94}
+@media(max-width:599px) and (orientation:portrait){
+  .module-identify{grid-template-columns:1fr;text-align:center;gap:12px}
+  .module-identify-symbol{width:112px;height:112px;margin:auto}
+  .module-division-symbol{width:54px;height:54px}
+  .eval-symbol{width:29px;height:29px}
+}
+@media(max-height:520px) and (orientation:landscape){
+  .module-identify{grid-template-columns:90px 1fr;gap:16px;padding:4px 0}
+  .module-identify-symbol{width:82px;height:82px}
+  .module-division-symbol{width:44px;height:44px}
+  .eval-symbol{width:25px;height:25px}
+}

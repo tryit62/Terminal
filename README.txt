@@ -28,3 +28,6 @@ V0.4 — ÉVALUATION I
 - Micro-anomalie visuelle à la clôture.
 - Déverrouillage du Module II.
 - Assistance diégétique spécifique au Module I.
+
+
+V0.5 — Symboles officiels des cinq modules intégrés à la racine GitHub. Les noms des Divisions restent cachés pendant le recrutement.
