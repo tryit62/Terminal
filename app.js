@@ -5,7 +5,7 @@ eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,vers
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
-tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false};
+tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
@@ -36,14 +36,14 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.0.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.1.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
         <div class="home-kv">
           <div class="datum"><div class="datum-label">CANDIDAT</div><div class="datum-value">${S.matricule}</div></div>
-          <div class="datum"><div class="datum-label">STATUT</div><div class="datum-value">${S.affectationDone?'AFFECTÉ':'EN ÉVALUATION'}</div></div>
-          <div class="datum"><div class="datum-label">ACCRÉDITATION</div><div class="datum-value">0</div></div>
+          <div class="datum"><div class="datum-label">STATUT</div><div class="datum-value">${S.serment?'INITIÉ':(S.affectationDone?'AFFECTÉ':'EN ÉVALUATION')}</div></div>
+          <div class="datum"><div class="datum-label">ACCRÉDITATION</div><div class="datum-value">${S.serment?'OMBRE I':'0'}</div></div>
           <div class="datum"><div class="datum-label">AFFECTATION</div><div class="datum-value">${S.affectationDone?S.affectation:'—'}</div></div>
         </div>
         <div class="home-menu">
@@ -945,7 +945,7 @@ function assignmentFinal(result){
 }
 function assignmentAfter(){
   shell(`<h1 class="title">PROTOCOLE 000 // APRÈS</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « APRÈS » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // APRÈS');
-  $('#afterOk').onclick=()=>shell(`<div class="terminal">CONTENU ENREGISTRÉ.\n\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nLE SERMENT N'EST PAS ENCORE ACTIF.\n\nPROTOCOLE 000 EN ATTENTE DE VALIDATION FINALE.</div><button class="btn primary" id="toHome">[ RETOUR AU TERMINAL ]</button>`,'PROTOCOLE 000 // SERMENT EN ATTENTE'),setTimeout(()=>{const b=$('#toHome');if(b)b.onclick=home},0);
+  $('#afterOk').onclick=()=>assignmentOathAuthorize();
   $('#afterBad').onclick=assignmentMaterialIssue;
 }
 
@@ -978,7 +978,82 @@ function assignmentMaterialSuspended(missing){
   <div class="menu"><button class="btn primary" id="materialAgain">[ VÉRIFIER À NOUVEAU LE CONTENU ]</button><button class="btn" id="materialHome">[ RETOUR AU TERMINAL ]</button></div>`,'SUPERVISION // ANOMALIE MATÉRIELLE');
   $('#materialAgain').onclick=assignmentAfter;$('#materialHome').onclick=home;
 }
+
+const OATH_LINES=[
+  "Je reconnais que ce que je perçois n'est pas nécessairement tout ce qui existe.",
+  "Je reconnais que toute vérité ne peut être transmise sans conséquence.",
+  "Je préserverai ce qui doit l'être.",
+  "Je contiendrai ce qui ne peut l'être.",
+  "Je ne placerai ni ma certitude, ni ma curiosité, au-dessus de la continuité.",
+  "Je servirai l'Ordre jusqu'à la limite de ce qu'il m'autorisera à connaître."
+];
+function assignmentOathAuthorize(){
+  shell(`<h1 class="title">PROTOCOLE 000 // SERMENT</h1>
+  <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nFEUILLET SERMENT : AUTORISÉ.\n\nLISEZ LE FEUILLET PHYSIQUE EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
+  <div class="menu"><button class="btn primary" id="oathRead">[ J'AI LU LE SERMENT ]</button><button class="btn" id="oathLater">[ DIFFÉRER ]</button></div>`,'PROTOCOLE 000 // SERMENT AUTORISÉ');
+  $('#oathRead').onclick=oathDisplay;$('#oathLater').onclick=home;
+}
+function oathDisplay(){
+  shell(`<div class="oath-screen">
+    <div class="oath-kicker">ORDRE DES CINQ OMBRES // PROTOCOLE 000</div>
+    <h1 class="oath-title">SERMENT DE L'INITIÉ</h1>
+    <div class="oath-rule"></div>
+    <div class="oath-lines">${OATH_LINES.map((x,i)=>`<p><span>${String(i+1).padStart(2,'0')}</span>${x}</p>`).join('')}</div>
+    <div class="oath-final">JE PRÊTE SERMENT.</div>
+    <div class="terminal oath-warning">LA VALIDATION EST IRRÉVERSIBLE POUR CE DOSSIER CANDIDAT.\nELLE CLÔT LE PROTOCOLE 000 ET ACTIVE L'ACCRÉDITATION OMBRE I.</div>
+    <div class="menu"><button class="btn primary oath-accept" id="oathAccept">[ J'ACCEPTE ]</button><button class="btn" id="oathBack">[ REVENIR ]</button></div>
+  </div>`,'SERMENT // VALIDATION REQUISE');
+  $('#oathAccept').onclick=oathValidate;$('#oathBack').onclick=assignmentOathAuthorize;
+}
+function oathValidate(){
+  shell(`<div class="oath-processing"><div class="terminal">
+VALIDATION DU SERMENT...
+
+IDENTITÉ : ${S.matricule}
+AFFECTATION : ${S.affectation}
+STATUT : CANDIDAT
+
+ENREGISTREMENT...
+  </div><div id="oathProcessLines"></div></div>`,'PROTOCOLE 000 // CLÔTURE');
+  const box=$('#oathProcessLines');
+  const lines=[
+    ['SERMENT : REÇU',1100],
+    ['DOSSIER CANDIDAT : VERROUILLAGE',1500],
+    ['PROTOCOLE 000 : CLÔTURE',1600],
+    ['ACCÈS 0 : RÉVOCATION',1200],
+    ['ACCRÉDITATION OMBRE I : AUTORISATION',1900]
+  ];
+  let i=0;
+  function next(){
+    if(i>=lines.length){setTimeout(oathTransition,1600);return}
+    const [txt,delay]=lines[i++];
+    const d=document.createElement('div');d.className='oath-process-line';d.textContent=txt;box.appendChild(d);
+    setTimeout(next,delay);
+  }
+  setTimeout(next,900);
+}
+function oathTransition(){
+  S.serment=true;
+  S.statut='INITIÉ';
+  S.accreditation='OMBRE I';
+  S.initiationDate=new Date().toISOString();
+  save();
+  document.body.classList.add('initiated');
+  shell(`<div class="initiate-reveal">
+    <div class="initiate-small">PROTOCOLE 000 // TERMINÉ</div>
+    <div class="initiate-old">CANDIDAT</div>
+    <div class="initiate-separator">↓</div>
+    <div class="initiate-new">INITIÉ</div>
+    <div class="initiate-clearance">ACCRÉDITATION // OMBRE I</div>
+    <div class="initiate-division">${S.affectation}</div>
+    <div class="terminal initiate-message">IDENTITÉ ENREGISTRÉE.\nAFFECTATION CONFIRMÉE.\nACCÈS CANDIDAT RÉVOQUÉ.\n\nBIENVENUE DANS L'ORDRE.</div>
+    <button class="btn primary" id="enterInitiate">[ OUVRIR LE TERMINAL ]</button>
+  </div>`,'ACCÈS // OMBRE I');
+  $('#enterInitiate').onclick=initiateHome;
+}
+function initiateHome(){home()}
 function assignmentConfirmed(){
+  if(S.serment)return initiateHome();
   const d=Object.values(DIVISIONS).find(x=>x.name===S.affectation)||DIVISIONS.PERCEPTION;
   shell(`<div class="assignment-final"><div class="terminal">AFFECTATION PROVISOIRE CONFIRMÉE.</div><img class="assignment-symbol" src="${d.img}" alt=""><div class="assignment-name">${d.name}</div><div class="assignment-verb">${d.verb}</div><p class="assignment-line">${d.line}</p><button class="btn primary" id="afterAccess">[ ACCÉDER À « APRÈS » ]</button></div>`,'AFFECTATION // CONFIRMÉE');
   $('#afterAccess').onclick=assignmentAfter;
@@ -986,6 +1061,6 @@ function assignmentConfirmed(){
 function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}
 function assistance(){shell(`<h1 class="title">SOLLICITER LE SUPERVISEUR</h1><p class="sub">MOTIF DE LA SOLLICITATION</p><div class="menu"><button class="btn help">> INSTRUCTION INCOMPRISE</button><button class="btn help">> MATÉRIEL NON IDENTIFIÉ</button><button class="btn help">> BLOCAGE DANS LE PROTOCOLE</button><button class="btn help">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="helpmsg" class="system"></div>${back()}`);document.querySelectorAll('.help').forEach(b=>b.onclick=()=>{$('#helpmsg').textContent='SYS // DEMANDE ENREGISTRÉE — SUPERVISION NOTIFIÉE'});wireBack()}
-function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>CANDIDAT</span><b>ACCRÉDITATION</b><span>0</span><b>DIVISION</b><span>${S.affectationDone?S.affectation:'—'}</span><b>DOSSIERS TERMINÉS</b><span>0</span></div><div class="rule"></div><div class="terminal">${S.affectationDone?'AFFECTATION PROVISOIRE CONFIRMÉE — SERMENT EN ATTENTE':'AFFECTATION EN ATTENTE'}</div>${back()}`);wireBack()}
+function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>${S.serment?'INITIÉ':'CANDIDAT'}</span><b>ACCRÉDITATION</b><span>${S.serment?'OMBRE I':'0'}</span><b>DIVISION</b><span>${S.affectationDone?S.affectation:'—'}</span><b>DOSSIERS TERMINÉS</b><span>${S.serment?'1':'0'}</span></div><div class="rule"></div><div class="terminal">${S.serment?'PROTOCOLE 000 CLÔTURÉ — ACCÈS OMBRE I ACTIF':(S.affectationDone?'AFFECTATION PROVISOIRE CONFIRMÉE — SERMENT EN ATTENTE':'AFFECTATION EN ATTENTE')}</div>${back()}`);wireBack()}
 const views={dossier,evals,messages,archives,profile};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});boot();

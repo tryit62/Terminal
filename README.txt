@@ -183,3 +183,17 @@ V1.0.2 — PASSE RESPONSIVE GLOBALE PRÉ-SERMENT
 - Tablette paysage : meilleure occupation de la largeur et de la hauteur.
 - Mobile conservé compact mais plus lisible.
 - Aucun changement de couleur/style Initié avant le Serment.
+
+
+V1.1 — SERMENT / OMBRE I
+- Le contenu conforme de l'enveloppe APRÈS autorise désormais le Serment.
+- Lecture physique obligatoire avant validation dans le Terminal.
+- Les six clauses validées sont également affichées dans le Terminal.
+- Aucune donnée vocale enregistrée.
+- Validation finale : [ J'ACCEPTE ].
+- Traitement narratif de clôture du protocole 000.
+- Passage explicite CANDIDAT -> INITIÉ.
+- Accréditation 0 -> OMBRE I.
+- Affectation devient définitive dans le dossier local.
+- Première rupture visuelle uniquement après acceptation du Serment.
+- Accueil et Profil reflètent INITIÉ / OMBRE I après validation.
