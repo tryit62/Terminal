@@ -90,3 +90,29 @@ V0.7.2 — ÉVALUATION III / PREUVE DE LECTURE PHYSIQUE
 - C demande le délai d'effet +1 CYCLE.
 - Le Terminal analyse seulement après preuve de lecture.
 - Principe retenu pour les futurs dossiers : toute information découverte physiquement exige une preuve de consultation avant traitement numérique.
+
+
+V0.8 — ÉVALUATION IV
+- Module IV complet : reconstruction chronologique.
+- Symbole officiel de la Spirale d'Os, nom caché pendant le recrutement.
+- Reconstruction des cinq événements avec cartes physiques IV-B.
+- IV-C reste inaccessible jusqu'à autorisation.
+- Preuve de lecture physique Face A via code H-05.
+- Face B doit être réellement consultée : le candidat relève lui-même les quatre événements conservés.
+- Identification de la divergence 04-3.
+- Décision archivistique reliée au moteur d'affectation caché.
+- Micro-anomalie ÉLÉMENTS DÉTECTÉS : 4, puis retour à 3.
+- Module V déverrouillé après validation.
+
+
+V0.8.1 — TEMPORALITÉ NARRATIVE
+- Les traitements I à IV ne répondent plus instantanément.
+- Apparition progressive de plusieurs opérations d'analyse.
+- Traitements majeurs d'environ 7 à 12 secondes selon le module.
+- Anomalies visibles environ 1,7 à 2 secondes.
+- Après chaque anomalie, le Terminal revient à un état normal sans la reconnaître.
+- I : anomalie de marquage.
+- II : RESTITUTION MNÉSIQUE 6/5.
+- III : inversion CONSÉQUENCE ↓ ACTION.
+- IV : ÉLÉMENTS DÉTECTÉS 4 au lieu de 3.
+- Les délais sont narratifs et non des chargements techniques réels.

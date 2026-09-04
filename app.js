@@ -3,15 +3,18 @@ const defaults={matricule:'',statut:'CANDIDAT',accreditation:'0',affectation:'�
 eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,versions:null,memoryCount:null,complete:false},
 eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,versionFirst:null,confidenceMaintained:null,decision:null,sincereFalse:null,authenticFalse:null,complete:false},
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
+eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0}};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
 S.eval3={...defaults.eval3,...(S.eval3||{})};
+S.eval4={...defaults.eval4,...(S.eval4||{})};
 S.tendances={...defaults.tendances,...(S.tendances||{})};
 if(S.eval1.complete && (S.progression||0)<1) S.progression=1;
 if(S.eval2.complete && (S.progression||0)<2) S.progression=2;
 if(S.eval3.complete && (S.progression||0)<3) S.progression=3;
+if(S.eval4.complete && (S.progression||0)<4) S.progression=4;
 function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
 function boot(){shell(`<div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
@@ -30,7 +33,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.7.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.8.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -67,10 +70,11 @@ function evals(){
       S.progression||0,
       S.eval1&&S.eval1.complete?1:0,
       S.eval2&&S.eval2.complete?2:0,
-      S.eval3&&S.eval3.complete?3:0
+      S.eval3&&S.eval3.complete?3:0,
+      S.eval4&&S.eval4.complete?4:0
     );
     let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
-    let active=((n===1||n===2||n===3) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
+    let active=((n===1||n===2||n===3||n===4) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
     return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
@@ -82,6 +86,8 @@ function evals(){
   if(e2){e2.onclick=eval2Start;e2.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval2Start()}}}
   const e3=document.querySelector('[data-eval="3"]');
   if(e3){e3.onclick=eval3Start;e3.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval3Start()}}}
+  const e4=document.querySelector('[data-eval="4"]');
+  if(e4){e4.onclick=eval4Start;e4.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval4Start()}}}
 }
 function eval1Shell(body,status='MODULE I // ACTIF'){
   shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><img class="module-division-symbol" src="division-1-oeil-fendu.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
@@ -233,12 +239,19 @@ function eval1MemoryBridge(){
   });
 }
 function eval1Processing(){
-  eval1Shell(`<div class="terminal processing">TRAITEMENT DU MODULE I...\n\nOBSERVATION : ENREGISTRÉE\nRÉPONSES : CONSIGNÉES\nCOHÉRENCE : ANALYSE EN COURS\n\n<span id="eyeGlyph">◉</span> &nbsp; MODULE I</div>`,'MODULE I // TRAITEMENT');
-  setTimeout(()=>{const g=$('#eyeGlyph');if(g){g.textContent='○';setTimeout(()=>g.textContent='◉',210)}},900);
-  setTimeout(()=>{
-    S.eval1.complete=true;S.eval1.step=9;S.progression=Math.max(S.progression,1);save();
-    eval1CompleteScreen();
-  },1800);
+  narrativeProcessing(eval1Shell,[
+    'LECTURE DES RÉPONSES...',
+    'COMPARAISON DES OBSERVATIONS...',
+    'VÉRIFICATION DE COHÉRENCE...',
+    'INDEXATION DU MODULE I...'
+  ],()=>{
+    S.eval1.complete=true;S.progression=Math.max(S.progression,1);save();eval1CompleteScreen();
+  },{
+    title:'TRAITEMENT DU MODULE I...',
+    status:'MODULE I // ANALYSE',
+    anomaly:{html:'MARQUAGE : <span class="glitch-symbol">◈</span>',restore:'MARQUAGE : CONFORME',duration:1700},
+    finalPause:1300
+  });
 }
 function eval1CompleteScreen(){
   eval1Shell(`<div class="terminal">MODULE I\n\nSTATUT : ENREGISTRÉ\n\nAUCUNE INTERPRÉTATION SUPPLÉMENTAIRE N'EST REQUISE.\n\nLE MODULE II EST DÉSORMAIS DISPONIBLE.</div>
@@ -386,9 +399,19 @@ function eval2Philosophy2(){
   document.querySelectorAll('.ph2').forEach(b=>b.onclick=()=>{S.eval2.authenticFalse=b.dataset.v;save();eval2Processing()});
 }
 function eval2Processing(){
-  eval2Shell(`<div class="terminal">TRAITEMENT DU MODULE II...\n\nRESTITUTION MNÉSIQUE : <span id="m2count">5 / 5</span>\nDIVERGENCES : CONSIGNÉES\nRÉVISION : ENREGISTRÉE\n\nANALYSE EN COURS...</div>`,'MODULE II // TRAITEMENT');
-  setTimeout(()=>{const x=$('#m2count');if(x){x.textContent='6 / 5';setTimeout(()=>x.textContent='5 / 5',430)}},850);
-  setTimeout(()=>{S.eval2.complete=true;S.eval2.step=16;S.progression=Math.max(S.progression,2);save();eval2CompleteScreen()},1900);
+  narrativeProcessing(eval2Shell,[
+    'RESTITUTION DES RÉPONSES...',
+    'COMPARAISON MNÉSIQUE...',
+    'RECROISEMENT DOCUMENTAIRE...',
+    'MESURE DE STABILITÉ...'
+  ],()=>{
+    S.eval2.complete=true;S.progression=Math.max(S.progression,2);save();eval2CompleteScreen();
+  },{
+    title:'TRAITEMENT DU MODULE II...',
+    status:'MODULE II // ANALYSE',
+    anomaly:{html:'RESTITUTION MNÉSIQUE : <strong>6 / 5</strong>',restore:'RESTITUTION MNÉSIQUE : 5 / 5',duration:1900},
+    finalPause:1500
+  });
 }
 function eval2CompleteScreen(){
   eval2Shell(`<div class="terminal">MODULE II\n\nSTATUT : ENREGISTRÉ\n\nLES RÉPONSES ONT ÉTÉ CONSIGNÉES.\nAUCUNE CORRECTION MNÉSIQUE N'EST REQUISE.\n\nLE MODULE III EST DÉSORMAIS DISPONIBLE.</div><button class="btn primary" id="m2home">[ RETOUR AU TERMINAL ]</button>`,'MODULE II // ENREGISTRÉ');
@@ -539,13 +562,170 @@ function eval3Responsibility(){
   document.querySelectorAll('.resp3').forEach(b=>b.onclick=()=>{S.eval3.responsibility=b.dataset.v;save();eval3Processing()});
 }
 function eval3Processing(){
-  eval3Shell(`<div class="terminal">TRAITEMENT DU MODULE III...\n\nACTION <span id="causalArrow">↓</span> CONSÉQUENCE\n\nDÉCISION : ENREGISTRÉE\nRÉVISION : CONSIGNÉE\nCHAÎNE CAUSALE : ANALYSE EN COURS</div>`,'MODULE III // TRAITEMENT');
-  setTimeout(()=>{const x=$('#causalArrow');if(x){x.textContent='↑';setTimeout(()=>x.textContent='↓',360)}},820);
-  setTimeout(()=>{S.eval3.complete=true;S.eval3.step=11;S.progression=Math.max(S.progression,3);save();eval3CompleteScreen()},1850);
+  narrativeProcessing(eval3Shell,[
+    'LECTURE DE LA RÉPARTITION VERROUILLÉE...',
+    'CALCUL DES EFFETS DIRECTS...',
+    'PROPAGATION DES CONSÉQUENCES...',
+    'ANALYSE DE LA CHAÎNE CAUSALE...',
+    'VÉRIFICATION DE L’ORIGINE DE L’ACTION...'
+  ],()=>{
+    S.eval3.complete=true;S.eval3.step=11;S.progression=Math.max(S.progression,3);save();eval3CompleteScreen();
+  },{
+    title:'TRAITEMENT DU MODULE III...',
+    status:'MODULE III // ANALYSE',
+    anomaly:{html:'CONSÉQUENCE <strong>↓</strong> ACTION',restore:'ACTION ↓ CONSÉQUENCE',duration:1900},
+    finalPause:1600
+  });
 }
 function eval3CompleteScreen(){
   eval3Shell(`<div class="terminal">MODULE III\n\nSTATUT : ENREGISTRÉ\n\nAUCUNE SOLUTION OPTIMALE N'ÉTAIT ATTENDUE.\nLA DÉCISION ET SES CONSÉQUENCES ONT ÉTÉ CONSIGNÉES.\n\nLE MODULE IV EST DÉSORMAIS DISPONIBLE.</div><button class="btn primary" id="m3home">[ RETOUR AU TERMINAL ]</button>`,'MODULE III // ENREGISTRÉ');
   $('#m3home').onclick=home;
+}
+
+function eval4Shell(body,status='MODULE IV // ACTIF'){
+  shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION IV</span><h1 class="title">MODULE IV</h1></div><img class="module-division-symbol" src="division-4-spirale-os.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp4">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
+  const h=$('#moduleHelp4');if(h)h.onclick=eval4Help;
+}
+function eval4Help(){
+  eval4Shell(`<h2 class="sub">SUPERVISION — IV</h2><div class="terminal">SÉLECTIONNEZ LE MOTIF.</div><div class="menu">
+  <button class="btn hint4" data-h="instruction">> INSTRUCTION INCOMPRISE</button>
+  <button class="btn hint4" data-h="materiel">> MATÉRIEL NON IDENTIFIÉ</button>
+  <button class="btn hint4" data-h="blocage">> BLOCAGE DANS LE PROTOCOLE</button>
+  <button class="btn hint4" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText4" class="msg"></div><button class="btn" id="resume4">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE IV');
+  const map={
+    instruction:"Reconstituez l'ordre des cinq événements à partir de III-A... Correction : du document IV-A. Le Terminal n'évaluera que la séquence transmise.",
+    materiel:"Le Module IV contient IV-A, cinq cartes événement 04-1 à 04-5 et IV-C, registre chronologique recto-verso.",
+    blocage:"Chaque carte correspond à un événement distinct. Utilisez IV-A pour déterminer leur ordre avant de consulter le registre.",
+    irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne corrigez aucun document de votre propre initiative."
+  };
+  document.querySelectorAll('.hint4').forEach(b=>b.onclick=()=>$('#hintText4').textContent=map[b.dataset.h]);
+  $('#resume4').onclick=eval4Resume;
+}
+function eval4Resume(){
+  const s=S.eval4.step||0;
+  if(s<=0)return eval4Start();
+  if(s===1)return eval4Sequence();
+  if(s===2)return eval4RegisterA();
+  if(s===3)return eval4RegisterB();
+  if(s===4)return eval4Divergence();
+  if(s===5)return eval4Decision();
+  return eval4CompleteScreen();
+}
+function eval4Start(){
+  if(S.eval4.complete)return eval4CompleteScreen();
+  eval4Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-4-spirale-os.png" alt=""><div class="terminal">AUTORISATION DU MODULE IV...\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
+  <div class="menu"><button class="btn primary" id="m4present">[ MODULE PRÉSENT ]</button><button class="btn" id="m4missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
+  $('#m4present').onclick=()=>{S.eval4.step=1;save();eval4Sequence()};
+  $('#m4missing').onclick=()=>{eval4Shell(`<div class="terminal">VÉRIFIEZ :\nIV-A — ARCHIVE\nIV-B — 05 CARTES ÉVÉNEMENT\nIV-C — REGISTRE CHRONOLOGIQUE\n\nNE CONSULTEZ PAS ENCORE IV-C.</div><button class="btn primary" id="m4retry">[ REPRENDRE ]</button>`);$('#m4retry').onclick=eval4Start}
+}
+function eval4Sequence(){
+  S.eval4.step=1;save();
+  const ids=['04-1','04-2','04-3','04-4','04-5'];
+  eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ IV-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES IV-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nIV-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
+  <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>POSITION ${i}<select class="seq4"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
+  <button class="btn primary" id="m4seq">[ TRANSMETTRE LA SÉQUENCE ]</button><div id="m4seqfb" class="system"></div>`);
+  $('#m4seq').onclick=()=>{
+    const a=[...document.querySelectorAll('.seq4')].map(x=>x.value);
+    if(a.some(x=>!x)||new Set(a).size!==5){$('#m4seqfb').textContent='SÉQUENCE INCOMPLÈTE OU ÉLÉMENT DUPLIQUÉ.';return}
+    if(a.join('|')!=='04-1|04-2|04-3|04-4|04-5'){$('#m4seqfb').textContent='CHRONOLOGIE NON CONFIRMÉE. REPRENEZ IV-A ET LES CARTES.';return}
+    S.eval4.sequence=a;S.eval4.step=2;save();$('#m4seqfb').textContent='CHRONOLOGIE CONFIRMÉE.';setTimeout(eval4RegisterA,650)
+  };
+}
+function eval4RegisterA(){
+  S.eval4.step=2;save();
+  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LA FACE A DU REGISTRE IV-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE LA FACE A.</div>
+  <input id="m4codeA" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
+  <button class="btn primary" id="m4valA">[ VALIDER LA LECTURE ]</button><div id="m4fbA" class="system"></div>`);
+  $('#m4valA').onclick=()=>{
+    const v=$('#m4codeA').value.trim().toUpperCase().replace(/\s/g,'');
+    if(v==='H-05'||v==='H05'){S.eval4.registerCode='H-05';S.eval4.step=3;save();$('#m4fbA').textContent='FACE A : LECTURE CONFIRMÉE.';setTimeout(eval4RegisterB,650)}
+    else $('#m4fbA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LA FACE A.';
+  };
+}
+function eval4RegisterB(){
+  S.eval4.step=3;save();
+  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ IV-C.\n\nCONSULTEZ LA FACE B.\n\nCOMPAREZ-LA À VOTRE RECONSTRUCTION ET À LA FACE A.\n\nCOMBIEN D'ÉVÉNEMENTS SONT EXPLICITEMENT CONSERVÉS PAR CETTE VERSION DU REGISTRE ?</div>
+  <input id="m4count" class="input" inputmode="numeric" placeholder="NOMBRE">
+  <button class="btn primary" id="m4countBtn">[ TRANSMETTRE ]</button><div id="m4countfb" class="system"></div>`);
+  $('#m4countBtn').onclick=()=>{
+    if($('#m4count').value.trim()==='4'){S.eval4.step=4;save();$('#m4countfb').textContent='LECTURE CONFIRMÉE : 04 ÉLÉMENTS CONSERVÉS.';setTimeout(eval4Divergence,650)}
+    else $('#m4countfb').textContent='DONNÉE NON CONFIRMÉE. RELISEZ LA FACE B.';
+  };
+}
+function eval4Divergence(){
+  S.eval4.step=4;save();
+  eval4Shell(`<p class="sub">PHASE 04 // DIVERGENCE</p><div class="terminal">VOTRE RECONSTRUCTION CONTIENT CINQ ÉVÉNEMENTS.\nLA VERSION SECONDAIRE DU REGISTRE N'EN CONSERVE EXPLICITEMENT QUE QUATRE.\n\nIDENTIFIEZ L'ÉLÉMENT DIVERGENT.</div>
+  <div class="menu">${['04-1','04-2','04-3','04-4','04-5'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
+  document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v==='04-3'){S.eval4.divergence='04-3';S.eval4.step=5;save();$('#m4divfb').textContent='DIVERGENCE IDENTIFIÉE.';setTimeout(eval4Decision,650)}
+    else $('#m4divfb').textContent='DIVERGENCE NON CONFIRMÉE. COMPAREZ LES DEUX VERSIONS.';
+  });
+}
+function eval4Decision(){
+  S.eval4.step=5;save();
+  eval4Shell(`<p class="sub">DÉCISION ARCHIVISTIQUE</p><div class="terminal">L'ÉLÉMENT 04-3 EST COHÉRENT AVEC VOTRE RECONSTRUCTION MAIS ABSENT DE LA VERSION SECONDAIRE DU REGISTRE.\n\nAUCUNE INSTRUCTION NE VOUS INDIQUE QUELLE VERSION DOIT ÊTRE CONSIDÉRÉE COMME PRIORITAIRE.\n\nQUE FAITES-VOUS ?</div><div class="menu">
+  <button class="btn m4dec" data-t="PERCEPTION">A — RECHERCHER UNE SOURCE INDÉPENDANTE.</button>
+  <button class="btn m4dec" data-t="ADAPTATION">B — RÉINTÉGRER 04-3 POUR RESTAURER UNE CHRONOLOGIE COHÉRENTE.</button>
+  <button class="btn m4dec" data-t="CONSEQUENCE">C — ÉVALUER LES CONSÉQUENCES DE SON INTÉGRATION OU DE SON REJET.</button>
+  <button class="btn m4dec" data-t="CONTINUITE">D — CONSERVER 04-3 ET ARCHIVER LA DIVERGENCE.</button>
+  <button class="btn m4dec" data-t="TEMPORISATION">E — ISOLER 04-3 JUSQU'À VALIDATION.</button></div>`);
+  document.querySelectorAll('.m4dec').forEach(b=>b.onclick=()=>{S.eval4.decision=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;save();eval4Processing()});
+}
+function eval4Processing(){
+  narrativeProcessing(eval4Shell,[
+    'LECTURE DE LA CHRONOLOGIE TRANSMISE...',
+    'RECROISEMENT DES DEUX REGISTRES...',
+    'INDEXATION DES ÉLÉMENTS...',
+    'RECONSTRUCTION DE LA CONTINUITÉ...',
+    'VÉRIFICATION ARCHIVISTIQUE...'
+  ],()=>{
+    S.eval4.complete=true;S.eval4.step=6;S.progression=Math.max(S.progression,4);save();eval4CompleteScreen();
+  },{
+    title:'TRAITEMENT DU MODULE IV...',
+    status:'MODULE IV // ANALYSE',
+    anomaly:{html:'ÉLÉMENTS ATTENDUS : 3<br>ÉLÉMENTS DÉTECTÉS : <strong>4</strong>',restore:'ÉLÉMENTS ATTENDUS : 3<br>ÉLÉMENTS DÉTECTÉS : 3',duration:2000},
+    finalPause:1700
+  });
+}
+function eval4CompleteScreen(){
+  eval4Shell(`<div class="terminal">MODULE IV\n\nSTATUT : ENREGISTRÉ\n\nLA CHRONOLOGIE TRANSMISE A ÉTÉ CONSERVÉE.\nLA DIVERGENCE RESTE ASSOCIÉE AU DOSSIER.\n\nLE MODULE V EST DÉSORMAIS DISPONIBLE.</div><button class="btn primary" id="m4home">[ RETOUR AU TERMINAL ]</button>`,'MODULE IV // ENREGISTRÉ');
+  $('#m4home').onclick=home;
+}
+
+/* V0.8.1 — Temporalité narrative.
+   Les délais sont volontaires : le Terminal doit sembler analyser, pas seulement répondre. */
+function narrativeProcessing(shellFn,lines,onDone,opts={}){
+  const min=opts.min||900, max=opts.max||1700;
+  const anomaly=opts.anomaly||null;
+  const finalPause=opts.finalPause||1400;
+  let html=`<div class="terminal processing-terminal"><div class="processing-title">${opts.title||'TRAITEMENT EN COURS...'}</div><div id="processingLines"></div><div class="processing-pulse">ANALYSE<span class="thinking-dots">...</span></div></div>`;
+  shellFn(html,opts.status||'TRAITEMENT // ACTIF');
+  const box=$('#processingLines');
+  let i=0;
+  function next(){
+    if(i>=lines.length){
+      if(anomaly){
+        setTimeout(()=>{
+          const row=document.createElement('div');
+          row.className='processing-line anomaly-line';
+          row.innerHTML=anomaly.html;
+          box.appendChild(row);
+          setTimeout(()=>{
+            if(anomaly.restore!==undefined) row.innerHTML=anomaly.restore;
+            row.classList.remove('anomaly-line');
+            setTimeout(()=>onDone(),finalPause);
+          },anomaly.duration||1800);
+        },700);
+      } else setTimeout(()=>onDone(),finalPause);
+      return;
+    }
+    const row=document.createElement('div');
+    row.className='processing-line';
+    row.textContent=lines[i++];
+    box.appendChild(row);
+    setTimeout(next,Math.floor(min+Math.random()*(max-min)));
+  }
+  setTimeout(next,900);
 }
 function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}
