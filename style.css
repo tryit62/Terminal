@@ -778,3 +778,28 @@ body.initiated .identity-logo{
   .focus-symbol{width:42vw;height:42vw}
   .load-name{font-size:30px;text-align:center;padding:0 16px}
 }
+
+/* V1.2.1 — rappel explicite des réponses initiales avant comparaison Eval II */
+.memory-recall{margin:22px 0 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.memory-recall-title{padding:12px 10px;font-size:10px;letter-spacing:.16em;color:var(--muted);border-bottom:1px solid var(--line)}
+.memory-recall-row{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:18px;align-items:center;padding:14px 10px;border-bottom:1px solid rgba(190,195,190,.15)}
+.memory-recall-row:last-child{border-bottom:0}
+.memory-recall-label{font-size:13px;line-height:1.55}
+.memory-recall-answer{text-align:right}
+.memory-recall-answer b{display:block;font-size:14px;letter-spacing:.08em}
+.memory-recall-answer span{display:block;margin-top:4px;font-size:9px;color:var(--muted);letter-spacing:.08em}
+@media(min-width:600px){
+  .memory-recall-row{min-height:64px;padding:15px 14px}
+  .memory-recall-label{font-size:15px}
+  .memory-recall-answer b{font-size:16px}
+}
+@media(max-width:599px){
+  .memory-recall-row{grid-template-columns:1fr;gap:7px}
+  .memory-recall-answer{text-align:left;display:flex;gap:12px;align-items:center}
+  .memory-recall-answer span{margin-top:0}
+}
+
+/* V1.2.2 — reprise du Serment différé */
+.oath-resume-card{border-color:rgba(220,225,220,.42)!important}
+.oath-resume-card .nav-title{letter-spacing:.12em}
+.oath-resume-card .nav-sub{color:#c3c7c3}

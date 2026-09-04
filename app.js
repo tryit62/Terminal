@@ -5,7 +5,7 @@ eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,vers
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
-tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null};
+tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null,sermentDisponible:false};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
@@ -36,7 +36,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.2.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.2.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -52,6 +52,7 @@ function home(){
           <button class="nav-card" data-go="messages"><span class="nav-mark">□</span><span class="nav-title">MESSAGERIE</span><span class="nav-sub">${S.messages?S.messages+' NOUVEAU MESSAGE':'AUCUN NOUVEAU MESSAGE'}</span><span class="nav-arrow">›</span><span class="nav-index">03</span></button>
           <button class="nav-card" data-go="archives"><span class="nav-mark">≡</span><span class="nav-title">ARCHIVES</span><span class="nav-sub">ACCÈS REFUSÉ</span><span class="nav-arrow">›</span><span class="nav-index">04</span></button>
           ${S.eval5.complete&&!S.affectationDone?`<button class="nav-card assignment-card" id="assignment"><span class="nav-mark">◇</span><span class="nav-title">AFFECTATION</span><span class="nav-sub">PROCÉDURE DISPONIBLE</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>`:''}
+          ${S.affectationDone&&!S.serment&&S.sermentDisponible?`<button class="nav-card oath-resume-card" id="resumeOath"><span class="nav-mark">◇</span><span class="nav-title">SERMENT</span><span class="nav-sub">VALIDATION EN ATTENTE</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>`:''}
           <button class="nav-card" data-go="profile"><span class="nav-mark">○</span><span class="nav-title">PROFIL</span><span class="nav-sub">${S.matricule}</span><span class="nav-arrow">›</span><span class="nav-index">${S.eval5.complete&&!S.affectationDone?'06':'05'}</span></button>
           <button class="nav-card" id="assist"><span class="nav-mark">⌁</span><span class="nav-title">ASSISTANCE</span><span class="nav-sub">SOLLICITER LE SUPERVISEUR</span><span class="nav-arrow">›</span><span class="nav-index">06</span></button>
         </div>
@@ -63,6 +64,7 @@ function home(){
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>views[b.dataset.go]());
   document.querySelector('#assist').onclick=assistance;
   const assignment=$('#assignment'); if(assignment)assignment.onclick=assignmentStart;
+  const resumeOath=$('#resumeOath'); if(resumeOath)resumeOath.onclick=assignmentOathAuthorize;
 }
 const back=()=>`<button class="btn back" id="back">[ RETOUR ]</button>`;function wireBack(){let b=$('#back');if(b)b.onclick=home}
 function dossier(){if(S.inventaire===null){shell(`<h1 class="title">DOSSIER 000</h1><div class="kv"><b>DÉSIGNATION</b><span>RECRUTEMENT</span><b>STATUT</b><span>ACTIF</span><b>OBJECTIF</b><span>ÉVALUATION DU CANDIDAT</span><b>MODULES</b><span>5</span></div><div class="rule"></div><p class="sub">INSTRUCTION ACTIVE</p><div class="terminal">PROCÉDER À L'INVENTAIRE DU MATÉRIEL REÇU.</div><div class="menu"><button class="btn primary" id="start">[ COMMENCER ]</button></div>${back()}`);$('#start').onclick=inventory;wireBack()}else{shell(`<h1 class="title">DOSSIER 000</h1><div class="terminal">INVENTAIRE : ENREGISTRÉ\nÉVALUATIONS : ${S.progression} / 5\n\nINSTRUCTION ACTIVE : ${S.progression? 'POURSUIVRE LE PROTOCOLE.' : 'PROCÉDER AU MODULE I.'}</div>${back()}`);wireBack()}}
@@ -342,7 +344,27 @@ function eval2MemoryQuestion(i){
 }
 function eval2Compare(){
   S.eval2.step=8;save();
-  eval2Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p><div class="terminal">ROUVREZ LE MODULE.\n\nREPRENEZ II-A ET COMPAREZ LE DOCUMENT À VOS CINQ RÉPONSES.\n\nAVEZ-VOUS CONSTATÉ AU MOINS UNE DIVERGENCE ENTRE VOTRE SOUVENIR ET LE DOCUMENT ?</div><div class="menu"><button class="btn div2" data-v="OUI">[ OUI ]</button><button class="btn div2" data-v="NON">[ NON ]</button><button class="btn div2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
+  eval2Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p>
+<div class="memory-recall">
+  <div class="memory-recall-title">RAPPEL // VOS RÉPONSES INITIALES</div>
+  ${(()=>{
+    const labels=[
+      "01 — Le Renard qualifie d’abord le Corbeau de « joli ».",
+      "02 — Le Renard emploie ensuite le mot « beau ».",
+      "03 — Le mot « ramage » apparaît avant « plumage ».",
+      "04 — Le Renard affirme parler « sans mentir ».",
+      "05 — Le Corbeau tient le fromage dans son bec."
+    ];
+    const a=(S.eval2&&S.eval2.answers)||[];
+    return labels.map((label,i)=>{
+      const r=a[i]||{};
+      const answer=r.answer||r.reponse||r.value||r.a||'—';
+      const confidence=r.confidence||r.certitude||r.c||'—';
+      return `<div class="memory-recall-row"><div class="memory-recall-label">${label}</div><div class="memory-recall-answer"><b>${answer}</b><span>${confidence}</span></div></div>`;
+    }).join('');
+  })()}
+</div>
+<div class="terminal">ROUVREZ LE MODULE.\n\nREPRENEZ II-A ET COMPAREZ LE DOCUMENT À VOS CINQ RÉPONSES.\n\nAVEZ-VOUS CONSTATÉ AU MOINS UNE DIVERGENCE ENTRE VOTRE SOUVENIR ET LE DOCUMENT ?</div><div class="menu"><button class="btn div2" data-v="OUI">[ OUI ]</button><button class="btn div2" data-v="NON">[ NON ]</button><button class="btn div2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
   document.querySelectorAll('.div2').forEach(b=>b.onclick=()=>{S.eval2.divergence=b.dataset.v;S.eval2.step=9;save();eval2Epistemic()});
 }
 function eval2Epistemic(){
@@ -945,7 +967,7 @@ function assignmentFinal(result){
 }
 function assignmentAfter(){
   shell(`<h1 class="title">PROTOCOLE 000 // APRÈS</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « APRÈS » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // APRÈS');
-  $('#afterOk').onclick=()=>assignmentOathAuthorize();
+  $('#afterOk').onclick=()=>{S.sermentDisponible=true;save();assignmentOathAuthorize()};
   $('#afterBad').onclick=assignmentMaterialIssue;
 }
 
@@ -988,6 +1010,7 @@ const OATH_LINES=[
   "Je servirai l'Ordre jusqu'à la limite de ce qu'il m'autorisera à connaître."
 ];
 function assignmentOathAuthorize(){
+  S.sermentDisponible=true;save();
   shell(`<h1 class="title">PROTOCOLE 000 // SERMENT</h1>
   <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nFEUILLET SERMENT : AUTORISÉ.\n\nLISEZ LE FEUILLET PHYSIQUE EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
   <div class="menu"><button class="btn primary" id="oathRead">[ J'AI LU LE SERMENT ]</button><button class="btn" id="oathLater">[ DIFFÉRER ]</button></div>`,'PROTOCOLE 000 // SERMENT AUTORISÉ');
@@ -1034,6 +1057,7 @@ ENREGISTREMENT...
 }
 function oathTransition(){
   S.serment=true;
+  S.sermentDisponible=false;
   S.statut='INITIÉ';
   S.accreditation='OMBRE I';
   S.initiationDate=new Date().toISOString();

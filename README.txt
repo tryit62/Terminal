@@ -214,3 +214,20 @@ V1.2 — TRANSITION CINÉMATIQUE INITIÉ
 - Spirale d'Os : bleu sombre.
 - Sablier Noir : violet/noir ébène.
 - Responsive tablette, mobile et desktop.
+
+
+V1.2.1 — CORRECTIF ÉVALUATION II
+- Phase 03 / Contrôle affiche désormais les cinq affirmations initiales.
+- Pour chacune : réponse initiale + niveau de confiance mémorisé.
+- Le rappel apparaît AVANT la question sur la divergence entre souvenir et document.
+- Le joueur peut donc comparer réellement II-A à ce qu'il avait déclaré, sans devoir mémoriser ses réponses au Terminal.
+- Cache PWA incrémenté.
+
+
+V1.2.2 — REPRISE DU SERMENT
+- Si le candidat choisit DIFFÉRER, le Serment reste disponible.
+- Une tuile SERMENT / VALIDATION EN ATTENTE apparaît sur l'accueil candidat.
+- La tuile rouvre la séquence d'autorisation et de lecture du Serment.
+- L'état est persisté dans localStorage.
+- Après J'ACCEPTE, la tuile disparaît et le passage INITIÉ / OMBRE I se déroule normalement.
+- Cache PWA incrémenté.
