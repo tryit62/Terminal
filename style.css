@@ -351,3 +351,238 @@ button,input{font:inherit}
 .material-check input{margin-top:2px}
 .material-check strong,.material-check span{display:block}
 .material-check span{font-size:9px;color:var(--muted);margin-top:4px}
+
+
+/* ============================================================
+   V1.0.2 — PASSE RESPONSIVE GLOBALE PRÉ-SERMENT
+   Objectif : utiliser l'écran comme un terminal natif, sans
+   transformer l'identité visuelle avant le Serment.
+   ============================================================ */
+
+/* Marque globale : le nom de l'Ordre devient un vrai repère visuel. */
+.brand{
+  min-height:54px;
+  font-size:clamp(12px,1.35vw,18px);
+  letter-spacing:.27em;
+  gap:16px;
+  color:#aeb2ae;
+}
+.brand:before{
+  width:clamp(42px,5vw,68px);
+  height:clamp(42px,5vw,68px);
+  flex:0 0 auto;
+}
+.rule{margin:10px 0 clamp(22px,3vh,36px)}
+
+/* Écrans internes : plus larges et plus présents. */
+.shell:not(.home-shell){
+  width:min(1240px,100%);
+}
+.shell:not(.home-shell)>.title{
+  font-size:clamp(30px,4.2vw,50px);
+  margin-bottom:18px;
+}
+.shell:not(.home-shell)>.terminal{
+  font-size:clamp(14px,1.55vw,18px);
+  line-height:1.82;
+}
+.shell:not(.home-shell)>.sub{
+  font-size:clamp(12px,1.25vw,15px);
+}
+.shell:not(.home-shell)>.menu{
+  gap:12px;
+  margin:24px 0;
+}
+.shell:not(.home-shell)>.menu .btn,
+.shell:not(.home-shell)>.back{
+  min-height:58px;
+  padding:16px 18px;
+  font-size:clamp(12px,1.15vw,14px);
+}
+.shell:not(.home-shell)>.status{
+  padding-top:18px;
+  font-size:11px;
+}
+
+/* Initialisation : occupe volontairement le centre utile de l'écran
+   au lieu de rester tassée en haut à gauche. */
+.boot-screen{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  width:min(820px,88%);
+  margin:0 auto;
+  padding-bottom:8vh;
+}
+.boot-screen .terminal{
+  font-size:clamp(16px,2vw,22px)!important;
+  line-height:1.9!important;
+  letter-spacing:.025em;
+}
+
+/* Liste des évaluations : grandes lignes, grands symboles. */
+.eval-list{display:grid;gap:0;margin-top:6px}
+.eval{
+  min-height:88px;
+  padding:16px 18px;
+  align-items:center;
+  font-size:clamp(14px,1.55vw,18px);
+}
+.eval-id{gap:22px}
+.eval-symbol{
+  width:clamp(48px,5.5vw,72px);
+  height:clamp(48px,5.5vw,72px);
+}
+.eval-state{font-size:clamp(11px,1.2vw,14px);letter-spacing:.06em}
+.evals-progress{
+  margin:22px 0 4px;
+  padding:14px 2px;
+  border-top:1px solid var(--line);
+  font-size:13px;
+  letter-spacing:.08em;
+}
+
+/* Modules : symboles et blocs physiques plus généreux. */
+.module-head{align-items:center;padding-top:8px}
+.module-head .title{font-size:clamp(34px,4.8vw,54px)}
+.module-code{font-size:11px}
+.module-division-symbol{
+  width:clamp(82px,9vw,118px);
+  height:clamp(82px,9vw,118px);
+}
+.module-identify{
+  grid-template-columns:minmax(180px,25%) minmax(0,1fr);
+  gap:clamp(28px,4vw,52px);
+  min-height:300px;
+  padding:clamp(30px,4vw,48px);
+}
+.module-identify-symbol{
+  width:min(100%,210px);
+  height:auto;
+  aspect-ratio:1;
+  justify-self:center;
+}
+.module-identify .terminal{
+  font-size:clamp(14px,1.55vw,18px);
+  line-height:1.85;
+}
+.module-help{margin-top:26px;padding-top:16px}
+.module-help .btn{min-height:62px}
+
+/* Accueil : renforce la hiérarchie sans passer au style Initié. */
+.home-topline{
+  min-height:42px;
+  font-size:11px;
+  letter-spacing:.15em;
+}
+.identity-panel{padding:34px 28px}
+.identity-logo{width:min(78%,330px)}
+.identity-name{font-size:clamp(17px,1.8vw,23px)}
+.identity-sub{font-size:12px}
+.home-head{padding:28px 30px}
+.home-head h1{font-size:clamp(27px,3vw,42px)}
+.home-kv{padding:22px 26px}
+.datum-label{font-size:10px}
+.datum-value{font-size:clamp(18px,2vw,25px)}
+.nav-card{min-height:170px;padding:28px 25px}
+.nav-mark{font-size:31px}
+.nav-title{font-size:clamp(16px,1.6vw,21px)}
+.nav-sub{font-size:10px}
+.home-footer{padding:18px 24px}
+
+/* Tablette portrait : la cible principale observée sur les captures. */
+@media (min-width:600px) and (orientation:portrait){
+  .shell:not(.home-shell){
+    width:min(940px,100%);
+    padding-left:clamp(38px,6vw,72px);
+    padding-right:clamp(38px,6vw,72px);
+  }
+  .brand{
+    min-height:68px;
+    font-size:clamp(15px,2.05vw,20px);
+  }
+  .brand:before{
+    width:68px;
+    height:68px;
+  }
+  .rule{margin:12px 0 30px}
+  .shell:not(.home-shell)>.title{font-size:44px}
+  .shell:not(.home-shell)>.terminal{font-size:17px}
+  .boot-screen{
+    width:90%;
+    min-height:68vh;
+    padding-bottom:12vh;
+  }
+  .boot-screen .terminal{font-size:20px!important}
+  .eval{
+    min-height:106px;
+    padding:20px 22px;
+  }
+  .eval-symbol{width:70px;height:70px}
+  .eval-id{gap:25px;font-size:19px}
+  .eval-state{font-size:14px}
+  .module-head .title{font-size:48px}
+  .module-division-symbol{width:106px;height:106px}
+  .module-identify{
+    grid-template-columns:220px 1fr;
+    min-height:330px;
+    padding:42px 38px;
+  }
+  .module-identify-symbol{width:205px}
+  .module-identify .terminal{font-size:17px}
+  .module-identify + .menu .btn{min-height:76px;font-size:15px}
+  .home-layout{gap:14px}
+  .identity-panel{
+    grid-template-columns:190px 1fr;
+    column-gap:30px;
+    padding:24px 30px;
+    min-height:225px;
+  }
+  .identity-logo{width:180px}
+  .identity-name{font-size:22px}
+  .identity-sub{font-size:12px;line-height:1.75}
+  .main-console{padding:12px;gap:14px}
+  .home-head{padding:26px 25px}
+  .home-head h1{font-size:34px}
+  .home-kv{padding:22px 24px;row-gap:20px}
+  .datum-label{font-size:10px}
+  .datum-value{font-size:21px}
+  .nav-card{min-height:155px;padding:25px 22px}
+  .nav-mark{font-size:28px}
+  .nav-title{font-size:18px}
+  .nav-sub{font-size:9px}
+}
+
+/* Tablette paysage : exploite davantage la largeur ET la hauteur. */
+@media (min-width:700px) and (orientation:landscape) and (min-height:600px){
+  .shell:not(.home-shell){
+    width:min(1280px,100%);
+    padding-left:clamp(30px,4vw,58px);
+    padding-right:clamp(30px,4vw,58px);
+  }
+  .brand{font-size:16px;min-height:62px}
+  .brand:before{width:62px;height:62px}
+  .eval{min-height:90px}
+  .eval-symbol{width:62px;height:62px}
+  .module-identify{min-height:290px}
+  .home-layout{grid-template-columns:minmax(255px,29%) minmax(0,1fr)}
+}
+
+/* Mobile : présence renforcée sans sacrifier la place utile. */
+@media(max-width:599px) and (orientation:portrait){
+  .brand{min-height:48px;font-size:11px;gap:11px}
+  .brand:before{width:42px;height:42px}
+  .rule{margin:8px 0 20px}
+  .shell:not(.home-shell)>.title{font-size:28px}
+  .shell:not(.home-shell)>.terminal{font-size:13px;line-height:1.7}
+  .boot-screen{width:100%;min-height:64vh;padding-bottom:8vh}
+  .boot-screen .terminal{font-size:15px!important}
+  .eval{min-height:76px;padding:12px 10px}
+  .eval-symbol{width:44px;height:44px}
+  .eval-id{gap:14px}
+  .eval-state{font-size:10px}
+  .module-division-symbol{width:64px;height:64px}
+  .module-identify{grid-template-columns:1fr;min-height:0;padding:24px 18px}
+  .module-identify-symbol{width:125px}
+}

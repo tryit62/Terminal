@@ -170,3 +170,16 @@ V1.0.1 — UI AFFECTATION + SUPERVISION APRÈS
 - Sélection des éléments A–E manquants/non conformes.
 - Transmission avec traitement narratif.
 - Protocole suspendu avec deux sorties utiles : vérifier à nouveau ou retourner au Terminal.
+
+
+V1.0.2 — PASSE RESPONSIVE GLOBALE PRÉ-SERMENT
+- Refonte des proportions, pas de changement de direction artistique.
+- Logo et ORDRE DES CINQ OMBRES renforcés sur tous les écrans.
+- Écrans internes plus larges et typographies mieux proportionnées.
+- Initialisation recentrée et dimensionnée comme un véritable écran plein format.
+- Liste ÉVALUATIONS : lignes, symboles et états nettement agrandis.
+- Modules I–V : titres, symboles et blocs d'identification agrandis.
+- Accueil tablette portrait : identité, titre, données et tuiles renforcés.
+- Tablette paysage : meilleure occupation de la largeur et de la hauteur.
+- Mobile conservé compact mais plus lisible.
+- Aucun changement de couleur/style Initié avant le Serment.

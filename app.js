@@ -20,7 +20,7 @@ if(S.eval4.complete && (S.progression||0)<4) S.progression=4;
 if(S.eval5.complete && (S.progression||0)<5) S.progression=5;
 function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
-function boot(){shell(`<div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
+function boot(){shell(`<div class="boot-screen"><div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div></div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
 function identify(){shell(`<h1 class="title">PROTOCOLE 000</h1><p class="sub">RECRUTEMENT // IDENTIFICATION REQUISE</p><div class="rule"></div><label class="tiny">IDENTIFIANT CANDIDAT</label><input id="id" class="input" maxlength="20" placeholder="C-021-7F3" autocomplete="off"><div class="menu"><button class="btn primary" id="ok">[ VALIDER ]</button></div><div id="err" class="system"></div>`);$('#ok').onclick=()=>{let v=$('#id').value.trim().toUpperCase();if(v.length<5){$('#err').textContent='SYS // IDENTIFIANT NON RECONNU';return}S.matricule=v;save();shell(`<div class="terminal">IDENTIFIANT RECONNU.\n\nOUVERTURE D'UNE SESSION TEMPORAIRE...</div>`,'AUTHENTIFICATION');later(environment,900)}}
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 function environment(){if(standalone()){S.installed=true;save();shell(`<div class="terminal">POINT D'ACCÈS DÉTECTÉ.\n\nAPPAREIL ENREGISTRÉ.\nCANAL CANDIDAT ÉTABLI.\n\nPROTOCOLE 000 AUTORISÉ.</div>`,'POINT D’ACCÈS ACTIF');later(home,1100)}else{shell(`<h1 class="title">ENVIRONNEMENT NON PERSISTANT</h1><p class="sub">Installation d'un point d'accès local recommandée. Cette opération permet les connexions ultérieures depuis votre appareil.</p><div class="menu"><button class="btn primary" id="install">[ ÉTABLIR LE POINT D'ACCÈS ]</button><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`);$('#install').onclick=installHelp;$('#continue').onclick=home}}
@@ -36,7 +36,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.0.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.0.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -82,9 +82,9 @@ function evals(){
     let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
     let active=((n===1||n===2||n===3||n===4||n===5) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
-    return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
+    return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span class="eval-state">${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
-  shell(`<h1 class="title">ÉVALUATIONS</h1>${rows}<p class="sub">PROGRESSION : ${S.progression} / 5</p>${back()}`);
+  shell(`<h1 class="title">ÉVALUATIONS</h1><div class="eval-list">${rows}</div><p class="sub evals-progress">PROGRESSION : ${S.progression} / 5</p>${back()}`);
   wireBack();
   const e1=document.querySelector('[data-eval="1"]');
   if(e1){e1.onclick=eval1Start;e1.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval1Start()}}}
