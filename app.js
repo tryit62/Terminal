@@ -18,13 +18,169 @@ if(S.eval2.complete && (S.progression||0)<2) S.progression=2;
 if(S.eval3.complete && (S.progression||0)<3) S.progression=3;
 if(S.eval4.complete && (S.progression||0)<4) S.progression=4;
 if(S.eval5.complete && (S.progression||0)<5) S.progression=5;
-function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
+function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S));profileSave()} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
-function boot(){shell(`<div class="boot-screen"><div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div></div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
-function identify(){shell(`<h1 class="title">PROTOCOLE 000</h1><p class="sub">RECRUTEMENT // IDENTIFICATION REQUISE</p><div class="rule"></div><label class="tiny">IDENTIFIANT CANDIDAT</label><input id="id" class="input" maxlength="20" placeholder="C-021-7F3" autocomplete="off"><div class="menu"><button class="btn primary" id="ok">[ VALIDER ]</button></div><div id="err" class="system"></div>`);$('#ok').onclick=()=>{let v=$('#id').value.trim().toUpperCase();if(v.length<5){$('#err').textContent='SYS // IDENTIFIANT NON RECONNU';return}S.matricule=v;save();shell(`<div class="terminal">IDENTIFIANT RECONNU.\n\nOUVERTURE D'UNE SESSION TEMPORAIRE...</div>`,'AUTHENTIFICATION');later(environment,900)}}
+
+/* V1.3 — PROTOTYPE : profils locaux par matricule + administration locale.
+   IMPORTANT : l'accès admin local est volontairement réservé au prototype.
+   Il devra être remplacé par une authentification serveur avant diffusion publique. */
+const ADMIN_MATRICULE='OCI-ADMIN-000';
+let ADMIN_MODE=false;
+let ACTIVE_PROFILE=null;
+
+function profileKey(m){return 'ordre_terminal_profile_'+String(m||'').trim().toUpperCase()}
+function profileLoad(m){
+  const key=profileKey(m);
+  try{
+    const raw=localStorage.getItem(key);
+    if(raw)return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function profileSave(){
+  if(ADMIN_MODE||!S.matricule)return;
+  localStorage.setItem(profileKey(S.matricule),JSON.stringify(S));
+  localStorage.setItem('ordre_terminal_last_profile',S.matricule);
+}
+function profileCreate(m){
+  const fresh=JSON.parse(JSON.stringify(defaults));
+  fresh.matricule=m;
+  return fresh;
+}
+function profileSwitch(m){
+  m=String(m||'').trim().toUpperCase();
+  if(!m)return false;
+  ACTIVE_PROFILE=m;
+  const found=profileLoad(m);
+  S=found?Object.assign(JSON.parse(JSON.stringify(defaults)),found):profileCreate(m);
+  S.matricule=m;
+  profileSave();
+  return !!found;
+}
+function adminSnapshot(){
+  return JSON.parse(JSON.stringify(S));
+}
+function adminPrepare(divisionName){
+  ADMIN_MODE=true;
+  S=JSON.parse(JSON.stringify(defaults));
+  S.matricule='SIMULATION';
+  S.affectation=divisionName||'SPIRALE D’OS';
+  S.affectationDone=true;
+  S.affectationReady=true;
+}
+function adminExit(){
+  ADMIN_MODE=false;
+  document.body.classList.remove('cinematic-mode','initiated','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
+  boot();
+}
+function boot(){
+  ADMIN_MODE=false;
+  document.body.classList.remove('cinematic-mode','initiated','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
+  shell(`<div class="boot-screen"><div class="terminal cursor">RÉSEAU DES CINQ OMBRES
+
+INITIALISATION DU TERMINAL...
+CANAL SÉCURISÉ : ÉTABLI
+
+PROTOCOLE ACTIF : 000
+IDENTIFICATION REQUISE
+
+&gt; </div></div>`,'CONNEXION');
+  later(()=>identify(),1450);
+}
+function identify(){
+  const last=localStorage.getItem('ordre_terminal_last_profile')||'';
+  shell(`<h1 class="title">IDENTIFICATION</h1>
+  <div class="terminal">SAISISSEZ VOTRE MATRICULE.
+
+UN DOSSIER LOCAL EXISTANT SERA RESTAURÉ AUTOMATIQUEMENT.
+UN MATRICULE INCONNU INITIALISERA UN NOUVEAU DOSSIER CANDIDAT.</div>
+  <div class="id-login">
+    <label>MATRICULE</label>
+    <input id="matricule" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="C-000-000" value="${last}">
+    <button class="btn primary" id="identifyGo">[ S'IDENTIFIER ]</button>
+  </div>
+  <div id="identifyFeedback" class="system"></div>`,'IDENTIFICATION // DOSSIER LOCAL');
+  const input=$('#matricule');
+  const go=()=>{
+    const m=String(input.value||'').trim().toUpperCase();
+    if(!m){$('#identifyFeedback').textContent='MATRICULE REQUIS.';return}
+    if(m===ADMIN_MATRICULE){ADMIN_MODE=true;adminPanel();return}
+    const existed=profileSwitch(m);
+    $('#identifyFeedback').textContent=existed?'DOSSIER LOCAL DÉTECTÉ — RESTAURATION...':'NOUVEAU DOSSIER — INITIALISATION...';
+    setTimeout(()=>environment(),900);
+  };
+  $('#identifyGo').onclick=go;
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+  setTimeout(()=>input.focus(),50);
+}
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
 function environment(){if(standalone()){S.installed=true;save();shell(`<div class="terminal">POINT D'ACCÈS DÉTECTÉ.\n\nAPPAREIL ENREGISTRÉ.\nCANAL CANDIDAT ÉTABLI.\n\nPROTOCOLE 000 AUTORISÉ.</div>`,'POINT D’ACCÈS ACTIF');later(home,1100)}else{shell(`<h1 class="title">ENVIRONNEMENT NON PERSISTANT</h1><p class="sub">Installation d'un point d'accès local recommandée. Cette opération permet les connexions ultérieures depuis votre appareil.</p><div class="menu"><button class="btn primary" id="install">[ ÉTABLIR LE POINT D'ACCÈS ]</button><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`);$('#install').onclick=installHelp;$('#continue').onclick=home}}
 function installHelp(){shell(`<h1 class="title">AUTORISATION SYSTÈME REQUISE</h1><div class="terminal">LE TERMINAL NE DISPOSE PAS DES PRIVILÈGES NÉCESSAIRES POUR MODIFIER VOTRE APPAREIL.\n\nOUVREZ LES OPTIONS DE PARTAGE DE VOTRE NAVIGATEUR.\n\nSÉLECTIONNEZ :\n« SUR L'ÉCRAN D'ACCUEIL »\n\nCONSERVEZ LE NOM : TERMINAL\n\nPUIS OUVREZ LE POINT D'ACCÈS NOUVELLEMENT CRÉÉ.</div><div class="menu"><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`,'AUTORISATION EXTERNE');$('#continue').onclick=home}
+
+function adminPanel(){
+  ADMIN_MODE=true;
+  document.body.classList.remove('initiated','cinematic-mode','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
+  const divisions=['ŒIL FENDU','FLAMME INVERSÉE','MAIN CASSÉE','SPIRALE D’OS','SABLIER NOIR'];
+  shell(`<div class="admin-shell">
+    <div class="admin-warning">MODE ADMIN // SIMULATION LOCALE // PROTOTYPE</div>
+    <h1 class="title">PANNEAU DE CONTRÔLE</h1>
+    <div class="terminal">AUCUNE ACTION DE CET ÉCRAN NE DOIT ÊTRE UTILISÉE COMME DOSSIER JOUEUR RÉEL.
+
+SÉLECTIONNEZ UN POINT D'ENTRÉE DANS LA TRAME.</div>
+    <div class="admin-grid">
+      <button class="admin-jump" data-jump="start"><b>00</b><span>DÉBUT / IDENTIFICATION</span></button>
+      <button class="admin-jump" data-jump="e1"><b>I</b><span>ÉVALUATION I</span></button>
+      <button class="admin-jump" data-jump="e2"><b>II</b><span>ÉVALUATION II</span></button>
+      <button class="admin-jump" data-jump="e3"><b>III</b><span>ÉVALUATION III</span></button>
+      <button class="admin-jump" data-jump="e4"><b>IV</b><span>ÉVALUATION IV</span></button>
+      <button class="admin-jump" data-jump="e5"><b>V</b><span>ÉVALUATION V</span></button>
+      <button class="admin-jump" data-jump="assignment"><b>A</b><span>AFFECTATION</span></button>
+      <button class="admin-jump" data-jump="after"><b>AP</b><span>ENVELOPPE APRÈS</span></button>
+      <button class="admin-jump" data-jump="oath"><b>S</b><span>SERMENT</span></button>
+      <button class="admin-jump" data-jump="cine"><b>▶</b><span>CINÉMATIQUE POST-SERMENT</span></button>
+      <button class="admin-jump" data-jump="initiate"><b>OI</b><span>TERMINAL INITIÉ / OMBRE I</span></button>
+    </div>
+    <div class="admin-division">
+      <label>DIVISION SIMULÉE</label>
+      <select id="adminDivision">${divisions.map(x=>`<option${x==='SPIRALE D’OS'?' selected':''}>${x}</option>`).join('')}</select>
+    </div>
+    <div class="menu"><button class="btn" id="adminExit">[ QUITTER LE MODE ADMIN ]</button></div>
+  </div>`,'ADMINISTRATION // LOCAL');
+  document.querySelectorAll('.admin-jump').forEach(b=>b.onclick=()=>adminJump(b.dataset.jump,$('#adminDivision').value));
+  $('#adminExit').onclick=adminExit;
+}
+function adminJump(step,division){
+  adminPrepare(division);
+  const complete=n=>{
+    S.progression=n;
+    if(n>=1)S.eval1.complete=true;
+    if(n>=2)S.eval2.complete=true;
+    if(n>=3)S.eval3.complete=true;
+    if(n>=4)S.eval4.complete=true;
+    if(n>=5)S.eval5.complete=true;
+  };
+  if(step==='start'){ADMIN_MODE=false;boot();return}
+  if(step==='e1'){complete(0);eval1Start();return}
+  if(step==='e2'){complete(1);eval2Start();return}
+  if(step==='e3'){complete(2);eval3Start();return}
+  if(step==='e4'){complete(3);eval4Start();return}
+  if(step==='e5'){complete(4);eval5Start();return}
+  complete(5);
+  if(step==='assignment'){S.affectationDone=false;S.affectationReady=true;assignmentStart();return}
+  S.affectationDone=true;
+  if(step==='after'){assignmentAfter();return}
+  S.sermentDisponible=true;
+  if(step==='oath'){assignmentOathAuthorize();return}
+  if(step==='cine'){
+    S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';
+    initiateCinematic();return
+  }
+  if(step==='initiate'){
+    S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';
+    document.body.classList.add('initiated');
+    home();return
+  }
+}
 function home(){
   const now=new Date();
   const stamp=now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' // '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
@@ -36,7 +192,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.2.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.3.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>

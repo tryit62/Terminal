@@ -231,3 +231,28 @@ V1.2.2 — REPRISE DU SERMENT
 - L'état est persisté dans localStorage.
 - Après J'ACCEPTE, la tuile disparaît et le passage INITIÉ / OMBRE I se déroule normalement.
 - Cache PWA incrémenté.
+
+
+V1.2.3 — AJUSTEMENT CINÉMATIQUE
+- Modification du SITE, pas d'image conceptuelle.
+- Logo central de l'Ordre agrandi.
+- Cinq logos de Division nettement agrandis.
+- Cercles individuels autour des logos supprimés.
+- Cercles/guides matérialisant l'orbite entièrement masqués.
+- Mouvement de rotation conservé.
+- Cercle de focus final également supprimé.
+- Symbole final de la Division agrandi.
+- Sélection indiquée uniquement par la lumière/couleur du symbole.
+
+
+V1.3 — PROFILS LOCAUX + ADMINISTRATION PROTOTYPE
+- Identification par matricule demandée à chaque ouverture du Terminal.
+- Chaque matricule possède désormais son propre dossier local persistant.
+- Un matricule existant restaure sa progression.
+- Un matricule inconnu initialise un nouveau candidat.
+- Matricule administrateur PROTOTYPE : OCI-ADMIN-000
+- Panneau admin local avec accès direct : début, évaluations I–V, affectation, APRÈS, Serment, cinématique, Terminal Initié.
+- Division simulée sélectionnable parmi les cinq Divisions.
+- Les simulations admin ne sont pas sauvegardées dans les dossiers joueurs.
+- IMPORTANT : ce mécanisme admin est uniquement destiné au prototype GitHub Pages.
+  Avant diffusion réelle, remplacer par authentification et autorisations côté serveur.

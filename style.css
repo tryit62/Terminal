@@ -803,3 +803,106 @@ body.initiated .identity-logo{
 .oath-resume-card{border-color:rgba(220,225,220,.42)!important}
 .oath-resume-card .nav-title{letter-spacing:.12em}
 .oath-resume-card .nav-sub{color:#c3c7c3}
+
+
+/* V1.2.3 — Cinématique : logos agrandis, guides/cercle de rotation invisibles */
+.orbit-system{
+  width:min(84vw,860px);
+  height:min(84vw,860px);
+}
+/* Le mouvement orbital est conservé, mais aucun tracé ne matérialise l'orbite. */
+.orbit-ring,
+.orbit-ring-a,
+.orbit-ring-b,
+.orbit-ring-c{
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  opacity:0!important;
+}
+/* Logo central de l'Ordre plus imposant. */
+.orbit-order-logo{
+  width:28%;
+  height:28%;
+  left:36%;
+  top:36%;
+}
+/* Logos des cinq Divisions nettement plus grands, sans cercle autour. */
+.orbit-node{
+  width:18%;
+  height:18%;
+  left:41%;
+  top:41%;
+}
+.orbit-node img{
+  inset:2%;
+  width:96%;
+  height:96%;
+}
+.node-glow{
+  display:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+}
+/* La sélection reste lisible uniquement par lumière/couleur du symbole. */
+.orbit-node.select-node img{
+  filter:drop-shadow(0 0 22px rgba(var(--division-accent),.65));
+  transform:scale(1.13);
+}
+/* Pas de cercle visible non plus pendant le focus final. */
+.focus-rings,
+.focus-rings:before,
+.focus-rings:after{
+  border:0!important;
+  box-shadow:none!important;
+  opacity:0!important;
+}
+.focus-symbol{
+  width:min(40vw,370px);
+  height:min(40vw,370px);
+}
+@media(max-width:650px){
+  .orbit-system{width:96vw;height:96vw}
+  .orbit-order-logo{width:30%;height:30%;left:35%;top:35%}
+  .orbit-node{width:20%;height:20%;left:40%;top:40%}
+  .focus-symbol{width:56vw;height:56vw}
+}
+
+/* ============================================================
+   V1.3 — IDENTIFICATION LOCALE + PANNEAU ADMIN PROTOTYPE
+   ============================================================ */
+.id-login{max-width:720px;margin:28px 0;display:grid;grid-template-columns:1fr auto;gap:10px}
+.id-login label{grid-column:1/-1;font-size:10px;letter-spacing:.18em;color:var(--muted)}
+.id-login input{
+  min-height:62px;background:#070807;border:1px solid var(--line);color:var(--text);
+  font:inherit;font-size:18px;letter-spacing:.15em;padding:0 18px;border-radius:0;outline:none
+}
+.id-login input:focus{border-color:#d7dbd7}
+.id-login .btn{min-width:210px}
+.admin-shell{max-width:1080px;margin:0 auto}
+.admin-warning{
+  border:1px solid #777;padding:12px 14px;margin-bottom:25px;text-align:center;
+  font-size:10px;letter-spacing:.18em;background:#111
+}
+.admin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:28px 0}
+.admin-jump{
+  min-height:105px;background:#070807;border:1px solid var(--line);color:var(--text);
+  text-align:left;padding:17px;font:inherit;cursor:pointer;border-radius:0
+}
+.admin-jump:hover{background:#111}
+.admin-jump b{display:block;font-size:24px;margin-bottom:13px}
+.admin-jump span{font-size:10px;letter-spacing:.1em;color:#bfc4bf}
+.admin-division{display:grid;grid-template-columns:220px 1fr;align-items:center;gap:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;margin:20px 0}
+.admin-division label{font-size:10px;letter-spacing:.15em}
+.admin-division select{
+  min-height:52px;background:#080908;color:var(--text);border:1px solid var(--line);
+  border-radius:0;padding:0 12px;font:inherit
+}
+@media(max-width:700px){
+  .id-login{grid-template-columns:1fr}
+  .id-login .btn{min-width:0}
+  .admin-grid{grid-template-columns:repeat(2,1fr)}
+  .admin-division{grid-template-columns:1fr}
+}
+@media(max-width:430px){.admin-grid{grid-template-columns:1fr}}
