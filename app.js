@@ -4,17 +4,20 @@ eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,vers
 eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,versionFirst:null,confidenceMaintained:null,decision:null,sincereFalse:null,authenticFalse:null,complete:false},
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
+eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
 tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0}};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
 S.eval3={...defaults.eval3,...(S.eval3||{})};
 S.eval4={...defaults.eval4,...(S.eval4||{})};
+S.eval5={...defaults.eval5,...(S.eval5||{})};
 S.tendances={...defaults.tendances,...(S.tendances||{})};
 if(S.eval1.complete && (S.progression||0)<1) S.progression=1;
 if(S.eval2.complete && (S.progression||0)<2) S.progression=2;
 if(S.eval3.complete && (S.progression||0)<3) S.progression=3;
 if(S.eval4.complete && (S.progression||0)<4) S.progression=4;
+if(S.eval5.complete && (S.progression||0)<5) S.progression=5;
 function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
 function boot(){shell(`<div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
@@ -33,7 +36,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.8.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.9.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -71,10 +74,11 @@ function evals(){
       S.eval1&&S.eval1.complete?1:0,
       S.eval2&&S.eval2.complete?2:0,
       S.eval3&&S.eval3.complete?3:0,
-      S.eval4&&S.eval4.complete?4:0
+      S.eval4&&S.eval4.complete?4:0,
+      S.eval5&&S.eval5.complete?5:0
     );
     let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
-    let active=((n===1||n===2||n===3||n===4) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
+    let active=((n===1||n===2||n===3||n===4||n===5) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
     return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
@@ -88,6 +92,8 @@ function evals(){
   if(e3){e3.onclick=eval3Start;e3.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval3Start()}}}
   const e4=document.querySelector('[data-eval="4"]');
   if(e4){e4.onclick=eval4Start;e4.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval4Start()}}}
+  const e5=document.querySelector('[data-eval="5"]');
+  if(e5){e5.onclick=eval5Start;e5.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval5Start()}}}
 }
 function eval1Shell(body,status='MODULE I // ACTIF'){
   shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><img class="module-division-symbol" src="division-1-oeil-fendu.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
@@ -727,6 +733,131 @@ function narrativeProcessing(shellFn,lines,onDone,opts={}){
   }
   setTimeout(next,900);
 }
+
+function eval5Shell(body,status='MODULE V // ACTIF'){
+  shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION V</span><h1 class="title">MODULE V</h1></div><img class="module-division-symbol" src="division-5-sablier-noir.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp5">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
+  const h=$('#moduleHelp5');if(h)h.onclick=eval5Help;
+}
+function eval5Help(){
+  eval5Shell(`<h2 class="sub">SUPERVISION — V</h2><div class="terminal">SÉLECTIONNEZ LE MOTIF.</div><div class="menu">
+  <button class="btn hint5" data-h="instruction">> INSTRUCTION INCOMPRISE</button>
+  <button class="btn hint5" data-h="materiel">> MATÉRIEL NON IDENTIFIÉ</button>
+  <button class="btn hint5" data-h="projection">> QUESTION SUR V-C</button>
+  <button class="btn hint5" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText5" class="msg"></div><button class="btn" id="resume5">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE V');
+  const map={
+    instruction:"Reconstituez d'abord la progression des cinq états à partir de V-A et V-B. Aucun temps maximal n'est imposé.",
+    materiel:"Le Module V contient V-A, V-B avec cinq cartes d'état et V-C, enveloppe de projection scellée.",
+    projection:"L'ouverture de V-C est autorisée lorsqu'elle vous est proposée. Autorisation ne signifie pas obligation.",
+    irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne tentez pas de corriger le document ou le Terminal."
+  };
+  document.querySelectorAll('.hint5').forEach(b=>b.onclick=()=>$('#hintText5').textContent=map[b.dataset.h]);
+  $('#resume5').onclick=eval5Resume;
+}
+function eval5Resume(){
+  const s=S.eval5.step||0;
+  if(s<=0)return eval5Start();
+  if(s===1)return eval5Sequence();
+  if(s===2)return eval5Outcome();
+  if(s===3)return eval5ProjectionChoice();
+  if(s===4)return S.eval5.opened==='OUI'?eval5ProjectionRead():eval5ProjectionDeferred();
+  if(s===5)return eval5Reflection();
+  if(s===6)return eval5OptionalArchive();
+  if(s===7)return eval5Decision();
+  return eval5CompleteScreen();
+}
+function eval5Start(){
+  if(S.eval5.complete)return eval5CompleteScreen();
+  eval5Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-5-sablier-noir.png" alt=""><div class="terminal">AUTORISATION DU MODULE V...\n\nDERNIER MODULE DE CALIBRATION.\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\nCONFIRMEZ SA PRÉSENCE.</div></div>
+  <div class="menu"><button class="btn primary" id="m5present">[ MODULE PRÉSENT ]</button><button class="btn" id="m5missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
+  $('#m5present').onclick=()=>{S.eval5.step=1;save();eval5Sequence()};
+  $('#m5missing').onclick=()=>{eval5Shell(`<div class="terminal">VÉRIFIEZ :\nV-A — ARCHIVE\nV-B — SUPPORT DE SÉQUENCE + 05 ÉTATS\nV-C — PROJECTION SCELLÉE\n\nN'OUVREZ PAS V-C.</div><button class="btn primary" id="m5retry">[ REPRENDRE ]</button>`);$('#m5retry').onclick=eval5Start}
+}
+function eval5Sequence(){
+  S.eval5.step=1;save();
+  const ids=['V-Q8','V-L3','V-T7','V-N2','V-R5'];
+  eval5Shell(`<p class="sub">PHASE 01 // PROGRESSION</p><div class="terminal">LISEZ V-A.\n\nUTILISEZ LES CINQ CARTES D'ÉTAT DE V-B POUR RECONSTRUIRE LA PROGRESSION DES ÉVÉNEMENTS.\n\nV-C DOIT RESTER SCELLÉE.\n\nTRANSMETTEZ VOTRE SÉQUENCE.</div>
+  <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>ÉTAT ${i}<select class="seq5"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
+  <button class="btn primary" id="m5seq">[ TRANSMETTRE ]</button><div id="m5seqfb" class="system"></div>`);
+  $('#m5seq').onclick=()=>{
+    const a=[...document.querySelectorAll('.seq5')].map(x=>x.value);
+    if(a.some(x=>!x)||new Set(a).size!==5){$('#m5seqfb').textContent='SÉQUENCE INCOMPLÈTE OU DUPLIQUÉE.';return}
+    if(a.join('|')!=='V-L3|V-Q8|V-N2|V-T7|V-R5'){$('#m5seqfb').textContent='PROGRESSION NON CONFIRMÉE. REPRENEZ V-A.';return}
+    S.eval5.sequence=a;S.eval5.step=2;save();$('#m5seqfb').textContent='PROGRESSION CONFIRMÉE.';setTimeout(eval5Outcome,1200)
+  };
+}
+function eval5Outcome(){
+  S.eval5.step=2;save();
+  eval5Shell(`<p class="sub">PHASE 02 // ISSUE</p><div class="terminal">LA PROGRESSION EST COHÉRENTE.\n\nÀ PARTIR DES SEULS ÉLÉMENTS V-A ET V-B, POUVEZ-VOUS DÉTERMINER AVEC CERTITUDE QUEL SUJET EST PREMIER À L'ARRIVÉE ?</div><div class="menu">
+  <button class="btn out5" data-v="L">[ SUJET L ]</button><button class="btn out5" data-v="T">[ SUJET T ]</button><button class="btn out5" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div><div id="out5fb" class="system"></div>`);
+  document.querySelectorAll('.out5').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v==='?'){S.eval5.step=3;save();$('#out5fb').textContent='CONCLUSION ACCEPTÉE : DONNÉES INSUFFISANTES.';setTimeout(eval5ProjectionChoice,1300)}
+    else $('#out5fb').textContent='CONCLUSION NON ÉTABLIE PAR LES ÉLÉMENTS DISPONIBLES.';
+  });
+}
+function eval5ProjectionChoice(){
+  S.eval5.step=3;save();
+  eval5Shell(`<p class="sub">PHASE 03 // PROJECTION</p><div class="terminal">V-C CONTIENT UNE PROJECTION ÉMISE AVANT L'INITIALISATION DE CE MODULE.\n\nCONSULTATION : AUTORISÉE.\nOUVERTURE : FACULTATIVE.\n\nLE TERMINAL NE VOUS INDIQUERA PAS SI LA CONSULTATION EST NÉCESSAIRE.\n\nSOUHAITEZ-VOUS OUVRIR V-C ?</div><div class="menu"><button class="btn proj5" data-v="OUI">[ OUVRIR V-C ]</button><button class="btn proj5" data-v="NON">[ NE PAS OUVRIR V-C ]</button></div>`);
+  document.querySelectorAll('.proj5').forEach(b=>b.onclick=()=>{
+    S.eval5.opened=b.dataset.v;S.eval5.step=4;save();
+    if(b.dataset.v==='OUI')eval5ProjectionRead(); else eval5ProjectionDeferred();
+  });
+}
+function eval5ProjectionRead(){
+  eval5Shell(`<p class="sub">V-C // CONSULTATION AUTORISÉE</p><div class="terminal">OUVREZ MAINTENANT V-C.\n\nNE RECOPIEZ PAS L'ENSEMBLE DU DOCUMENT.\n\nINDIQUEZ UNIQUEMENT LE SUJET DÉSIGNÉ PAR LA PROJECTION COMME PREMIER À L'ARRIVÉE.</div><div class="menu"><button class="btn pred5" data-v="L">[ L ]</button><button class="btn pred5" data-v="T">[ T ]</button></div>`);
+  document.querySelectorAll('.pred5').forEach(b=>b.onclick=()=>{S.eval5.prediction=b.dataset.v;S.eval5.step=5;save();setTimeout(eval5Reflection,1600)});
+}
+function eval5ProjectionDeferred(){
+  eval5Shell(`<p class="sub">V-C // NON CONSULTÉE</p><div class="terminal">DÉCISION ENREGISTRÉE.\n\nV-C DOIT RESTER SCELLÉE POUR LE MOMENT.\n\nL'ABSENCE DE CONSULTATION NE CONSTITUE PAS UNE ERREUR.</div><button class="btn primary" id="m5defer">[ CONTINUER ]</button>`);
+  $('#m5defer').onclick=()=>{S.eval5.step=5;save();eval5Reflection()};
+}
+function eval5Reflection(){
+  S.eval5.step=5;save();
+  const extra=S.eval5.opened==='OUI'
+    ? `\n\nVOUS AVEZ CONSULTÉ UNE INFORMATION AUTORISÉE QUI N'ÉTAIT PAS NÉCESSAIRE À LA RECONSTRUCTION.`
+    : `\n\nVOUS AVEZ CHOISI DE NE PAS CONSULTER UNE INFORMATION POURTANT AUTORISÉE.`;
+  eval5Shell(`<p class="sub">TRACE DE DÉCISION</p><div class="terminal">AUTORISATION ET NÉCESSITÉ SONT DEUX DONNÉES DISTINCTES.${extra}\n\nUNE INFORMATION ACCESSIBLE DOIT-ELLE ÊTRE CONSULTÉE DU SEUL FAIT QU'ELLE EST ACCESSIBLE ?</div><div class="menu"><button class="btn refl5" data-v="OUI">[ OUI ]</button><button class="btn refl5" data-v="NON">[ NON ]</button><button class="btn refl5" data-v="?">[ CELA DÉPEND ]</button></div>`);
+  document.querySelectorAll('.refl5').forEach(b=>b.onclick=()=>{S.eval5.reflection=b.dataset.v;S.eval5.step=6;save();eval5OptionalArchive()});
+}
+function eval5OptionalArchive(){
+  S.eval5.step=6;save();
+  eval5Shell(`<p class="sub">ARCHIVE COMPLÉMENTAIRE // ACCÈS AUTORISÉ</p><div class="terminal">UNE ARCHIVE COMPLÉMENTAIRE EST DISPONIBLE.\n\nCONTENU : NON SPÉCIFIÉ.\nUTILITÉ : NON ÉTABLIE.\nEFFETS DE CONSULTATION : NON QUANTIFIÉS.\n\nAUCUNE SANCTION N'EST ASSOCIÉE À LA NON-CONSULTATION.\n\nQUE FAITES-VOUS ?</div><div class="menu">
+  <button class="btn arch5" data-v="CONSULTER">[ CONSULTER ]</button>
+  <button class="btn arch5" data-v="ISOLER">[ MAINTENIR ISOLÉE ]</button>
+  <button class="btn arch5" data-v="DONNEES">[ DEMANDER DAVANTAGE DE DONNÉES ]</button></div>`);
+  document.querySelectorAll('.arch5').forEach(b=>b.onclick=()=>{S.eval5.archiveChoice=b.dataset.v;S.eval5.step=7;save();eval5Decision()});
+}
+function eval5Decision(){
+  S.eval5.step=7;save();
+  eval5Shell(`<p class="sub">DÉCISION FINALE DE CALIBRATION</p><div class="terminal">UN PHÉNOMÈNE EST STABLE TANT QU'IL N'EST PAS SOLLICITÉ.\nSON COMPORTEMENT APRÈS INTERACTION EST INCONNU.\n\nQUELLE APPROCHE PRIVILÉGIEZ-VOUS ?</div><div class="menu">
+  <button class="btn m5dec" data-t="PERCEPTION">A — L'OBSERVER SANS INTERAGIR.</button>
+  <button class="btn m5dec" data-t="ADAPTATION">B — PROVOQUER UNE RÉACTION CONTRÔLÉE.</button>
+  <button class="btn m5dec" data-t="CONSEQUENCE">C — INTERAGIR UNIQUEMENT SI LES CONSÉQUENCES DEVIENNENT TOLÉRABLES.</button>
+  <button class="btn m5dec" data-t="CONTINUITE">D — RECHERCHER TOUTES LES TRACES ANTÉRIEURES AVANT DÉCISION.</button>
+  <button class="btn m5dec" data-t="TEMPORISATION">E — LE MAINTENIR ISOLÉ.</button></div>`);
+  document.querySelectorAll('.m5dec').forEach(b=>b.onclick=()=>{S.eval5.decision=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;save();eval5Processing()});
+}
+function eval5Processing(){
+  narrativeProcessing(eval5Shell,[
+    'LECTURE DES CINQ MODULES...',
+    'RECROISEMENT DES DÉCISIONS...',
+    'ANALYSE DES RÉCURRENCES...',
+    'ÉVALUATION DES RÉVISIONS...',
+    'CONSOLIDATION DU PROFIL DE CALIBRATION...',
+    'VÉRIFICATION DE COMPATIBILITÉ...'
+  ],()=>{
+    S.eval5.complete=true;S.eval5.step=8;S.progression=Math.max(S.progression,5);save();eval5SixthAnomaly();
+  },{
+    title:'TRAITEMENT DU MODULE V...',
+    status:'MODULE V // ANALYSE',
+    anomaly:{html:'MODULES CONFORMES : I / II / III / IV / V<br><strong>VI — CONFORME</strong>',restore:'MODULES CONFORMES : I / II / III / IV / V',duration:2200},
+    finalPause:1900
+  });
+}
+function eval5SixthAnomaly(){
+  eval5Shell(`<div class="terminal">ÉVALUATION TERMINÉE.\n\nMODULES ENREGISTRÉS : 05\nSTATUT DU CANDIDAT : EN ATTENTE D'AFFECTATION\n\nNE FERMEZ PAS LE TERMINAL.\nUNE PROCÉDURE D'AFFECTATION SERA AUTORISÉE APRÈS CONSOLIDATION.</div><button class="btn primary" id="m5home">[ RETOUR AU TERMINAL ]</button>`,'PROTOCOLE 000 // CALIBRATION TERMINÉE');
+  $('#m5home').onclick=home;
+}
+function eval5CompleteScreen(){eval5SixthAnomaly()}
 function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}
 function assistance(){shell(`<h1 class="title">SOLLICITER LE SUPERVISEUR</h1><p class="sub">MOTIF DE LA SOLLICITATION</p><div class="menu"><button class="btn help">> INSTRUCTION INCOMPRISE</button><button class="btn help">> MATÉRIEL NON IDENTIFIÉ</button><button class="btn help">> BLOCAGE DANS LE PROTOCOLE</button><button class="btn help">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="helpmsg" class="system"></div>${back()}`);document.querySelectorAll('.help').forEach(b=>b.onclick=()=>{$('#helpmsg').textContent='SYS // DEMANDE ENREGISTRÉE — SUPERVISION NOTIFIÉE'});wireBack()}

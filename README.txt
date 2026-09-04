@@ -130,3 +130,19 @@ V0.8.2 — CONSOLIDATION II / IV
 - Chronologie correcte à reconstruire : 04-B7 > 04-M2 > 04-K9 > 04-V4 > 04-R6.
 - Élément divergent du registre secondaire : 04-K9.
 - Cache et ressources incrémentés.
+
+
+V0.9 — ÉVALUATION V
+- Module V complet : accès à l'information / retenue / temporalité.
+- Symbole officiel du Sablier Noir sans révélation du nom.
+- Cinq cartes d'état à références non séquentielles.
+- L'issue finale est volontairement indéterminable à partir de V-A/V-B.
+- V-C : projection émise avant initialisation ; ouverture autorisée mais facultative.
+- Le Terminal ne révèle jamais le contenu physique de V-C.
+- Le choix d'ouvrir ou non est enregistré sans notion de bonne/mauvaise réponse.
+- Question sur la différence entre accès et nécessité.
+- Archive complémentaire optionnelle à effets non quantifiés.
+- Décision finale reliée au moteur caché d'affectation.
+- Traitement long et narratif.
+- Anomalie VI — CONFORME visible environ 2,2 secondes, puis effacée sans commentaire.
+- Affectation non encore intégrée : prochaine étape.
