@@ -116,3 +116,17 @@ V0.8.1 — TEMPORALITÉ NARRATIVE
 - III : inversion CONSÉQUENCE ↓ ACTION.
 - IV : ÉLÉMENTS DÉTECTÉS 4 au lieu de 3.
 - Les délais sont narratifs et non des chargements techniques réels.
+
+
+V0.8.2 — CONSOLIDATION II / IV
+- Module II : lors de la première comparaison après relecture de 09-B, le Terminal restitue désormais les 5 affirmations, les réponses initiales et les degrés de confiance.
+- Module IV : suppression des identifiants chronologiques 04-1 à 04-5.
+- Nouvelles références non séquentielles :
+  04-B7 = ÉPARGNE
+  04-M2 = PROMESSE
+  04-K9 = CAPTURE
+  04-V4 = INTERVENTION
+  04-R6 = LIBÉRATION
+- Chronologie correcte à reconstruire : 04-B7 > 04-M2 > 04-K9 > 04-V4 > 04-R6.
+- Élément divergent du registre secondaire : 04-K9.
+- Cache et ressources incrémentés.

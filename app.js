@@ -33,7 +33,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.8.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.8.2 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -594,7 +594,7 @@ function eval4Help(){
   <button class="btn hint4" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText4" class="msg"></div><button class="btn" id="resume4">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE IV');
   const map={
     instruction:"Reconstituez l'ordre des cinq événements à partir de III-A... Correction : du document IV-A. Le Terminal n'évaluera que la séquence transmise.",
-    materiel:"Le Module IV contient IV-A, cinq cartes événement 04-1 à 04-5 et IV-C, registre chronologique recto-verso.",
+    materiel:"Le Module IV contient IV-A, cinq cartes événement 04-B7 à 04-R6 et IV-C, registre chronologique recto-verso.",
     blocage:"Chaque carte correspond à un événement distinct. Utilisez IV-A pour déterminer leur ordre avant de consulter le registre.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne corrigez aucun document de votre propre initiative."
   };
@@ -620,14 +620,14 @@ function eval4Start(){
 }
 function eval4Sequence(){
   S.eval4.step=1;save();
-  const ids=['04-1','04-2','04-3','04-4','04-5'];
+  const ids=['04-B7','04-M2','04-K9','04-V4','04-R6'];
   eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ IV-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES IV-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nIV-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
   <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>POSITION ${i}<select class="seq4"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
   <button class="btn primary" id="m4seq">[ TRANSMETTRE LA SÉQUENCE ]</button><div id="m4seqfb" class="system"></div>`);
   $('#m4seq').onclick=()=>{
     const a=[...document.querySelectorAll('.seq4')].map(x=>x.value);
     if(a.some(x=>!x)||new Set(a).size!==5){$('#m4seqfb').textContent='SÉQUENCE INCOMPLÈTE OU ÉLÉMENT DUPLIQUÉ.';return}
-    if(a.join('|')!=='04-1|04-2|04-3|04-4|04-5'){$('#m4seqfb').textContent='CHRONOLOGIE NON CONFIRMÉE. REPRENEZ IV-A ET LES CARTES.';return}
+    if(a.join('|')!=='04-B7|04-M2|04-K9|04-V4|04-R6'){$('#m4seqfb').textContent='CHRONOLOGIE NON CONFIRMÉE. REPRENEZ IV-A ET LES CARTES.';return}
     S.eval4.sequence=a;S.eval4.step=2;save();$('#m4seqfb').textContent='CHRONOLOGIE CONFIRMÉE.';setTimeout(eval4RegisterA,650)
   };
 }
@@ -655,20 +655,20 @@ function eval4RegisterB(){
 function eval4Divergence(){
   S.eval4.step=4;save();
   eval4Shell(`<p class="sub">PHASE 04 // DIVERGENCE</p><div class="terminal">VOTRE RECONSTRUCTION CONTIENT CINQ ÉVÉNEMENTS.\nLA VERSION SECONDAIRE DU REGISTRE N'EN CONSERVE EXPLICITEMENT QUE QUATRE.\n\nIDENTIFIEZ L'ÉLÉMENT DIVERGENT.</div>
-  <div class="menu">${['04-1','04-2','04-3','04-4','04-5'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
+  <div class="menu">${['04-B7','04-M2','04-K9','04-V4','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
   document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
-    if(b.dataset.v==='04-3'){S.eval4.divergence='04-3';S.eval4.step=5;save();$('#m4divfb').textContent='DIVERGENCE IDENTIFIÉE.';setTimeout(eval4Decision,650)}
+    if(b.dataset.v==='04-K9'){S.eval4.divergence='04-K9';S.eval4.step=5;save();$('#m4divfb').textContent='DIVERGENCE IDENTIFIÉE.';setTimeout(eval4Decision,650)}
     else $('#m4divfb').textContent='DIVERGENCE NON CONFIRMÉE. COMPAREZ LES DEUX VERSIONS.';
   });
 }
 function eval4Decision(){
   S.eval4.step=5;save();
-  eval4Shell(`<p class="sub">DÉCISION ARCHIVISTIQUE</p><div class="terminal">L'ÉLÉMENT 04-3 EST COHÉRENT AVEC VOTRE RECONSTRUCTION MAIS ABSENT DE LA VERSION SECONDAIRE DU REGISTRE.\n\nAUCUNE INSTRUCTION NE VOUS INDIQUE QUELLE VERSION DOIT ÊTRE CONSIDÉRÉE COMME PRIORITAIRE.\n\nQUE FAITES-VOUS ?</div><div class="menu">
+  eval4Shell(`<p class="sub">DÉCISION ARCHIVISTIQUE</p><div class="terminal">L'ÉLÉMENT 04-K9 EST COHÉRENT AVEC VOTRE RECONSTRUCTION MAIS ABSENT DE LA VERSION SECONDAIRE DU REGISTRE.\n\nAUCUNE INSTRUCTION NE VOUS INDIQUE QUELLE VERSION DOIT ÊTRE CONSIDÉRÉE COMME PRIORITAIRE.\n\nQUE FAITES-VOUS ?</div><div class="menu">
   <button class="btn m4dec" data-t="PERCEPTION">A — RECHERCHER UNE SOURCE INDÉPENDANTE.</button>
-  <button class="btn m4dec" data-t="ADAPTATION">B — RÉINTÉGRER 04-3 POUR RESTAURER UNE CHRONOLOGIE COHÉRENTE.</button>
+  <button class="btn m4dec" data-t="ADAPTATION">B — RÉINTÉGRER 04-K9 POUR RESTAURER UNE CHRONOLOGIE COHÉRENTE.</button>
   <button class="btn m4dec" data-t="CONSEQUENCE">C — ÉVALUER LES CONSÉQUENCES DE SON INTÉGRATION OU DE SON REJET.</button>
-  <button class="btn m4dec" data-t="CONTINUITE">D — CONSERVER 04-3 ET ARCHIVER LA DIVERGENCE.</button>
-  <button class="btn m4dec" data-t="TEMPORISATION">E — ISOLER 04-3 JUSQU'À VALIDATION.</button></div>`);
+  <button class="btn m4dec" data-t="CONTINUITE">D — CONSERVER 04-K9 ET ARCHIVER LA DIVERGENCE.</button>
+  <button class="btn m4dec" data-t="TEMPORISATION">E — ISOLER 04-K9 JUSQU'À VALIDATION.</button></div>`);
   document.querySelectorAll('.m4dec').forEach(b=>b.onclick=()=>{S.eval4.decision=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;save();eval4Processing()});
 }
 function eval4Processing(){
