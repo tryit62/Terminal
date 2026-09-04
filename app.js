@@ -5,7 +5,7 @@ eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,vers
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
-tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null,sermentDisponible:false};
+tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null,sermentDisponible:false,initieAccueilVu:false};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
@@ -176,12 +176,124 @@ function adminJump(step,division){
     initiateCinematic();return
   }
   if(step==='initiate'){
-    S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';
+    S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';S.initieAccueilVu=true;
     document.body.classList.add('initiated');
     home();return
   }
 }
+
+function divisionMeta(name){
+ const m={
+  'ŒIL FENDU':{cls:'div-eye',verb:'OBSERVER',msg:`Votre affectation n'est pas une récompense.\n\nVous avez été placé parmi ceux dont la fonction est d'observer ce que les autres ne doivent pas nécessairement voir.\n\nNe confondez jamais observation et vérité.\n\nVous recevrez bientôt votre première affectation.`},
+  'FLAMME INVERSÉE':{cls:'div-flame',verb:'ADAPTER',msg:`Votre affectation n'est pas une récompense.\n\nUne réalité instable ne se préserve pas toujours en la laissant intacte.\n\nVous apprendrez à distinguer ce qui doit être conservé de ce qui doit être modifié.\n\nVous recevrez bientôt votre première affectation.`},
+  'MAIN CASSÉE':{cls:'div-hand',verb:'ANTICIPER',msg:`Votre affectation n'est pas une récompense.\n\nToute intervention produit une conséquence. Toute abstention également.\n\nVotre fonction sera de mesurer le prix d'une décision avant qu'il ne devienne irréversible.\n\nVous recevrez bientôt votre première affectation.`},
+  'SPIRALE D’OS':{cls:'div-spiral',verb:'PRÉSERVER',msg:`Votre affectation n'est pas une récompense.\n\nCe qui disparaît laisse une trace. Ce qui est oublié n'est pas nécessairement perdu.\n\nVotre fonction sera de préserver la continuité lorsque l'Histoire cesse de l'assurer.\n\nVous recevrez bientôt votre première affectation.`},
+  'SABLIER NOIR':{cls:'div-hourglass',verb:'CONTENIR',msg:`Votre affectation n'est pas une récompense.\n\nToutes les portes ne doivent pas être ouvertes. Toutes les informations ne doivent pas circuler.\n\nVotre fonction commence là où l'autorisation de comprendre s'arrête.\n\nVous recevrez bientôt votre première affectation.`}
+ };
+ return m[name]||m['SPIRALE D’OS'];
+}
+function applyInitiateTheme(){
+ document.body.classList.remove('div-eye','div-flame','div-hand','div-spiral','div-hourglass');
+ document.body.classList.add('initiated',divisionMeta(S.affectation).cls);
+}
+function initiateFirstEntry(){
+ applyInitiateTheme();
+ shell(`<div class="init-entry">
+ <div class="terminal init-sequence" id="initSeq">IDENTITÉ CONFIRMÉE.
+
+MATRICULE : ${S.matricule||'NON RENSEIGNÉ'}
+STATUT : INITIÉ
+ACCRÉDITATION : OMBRE I
+DIVISION : ${S.affectation||'NON RENSEIGNÉ'}
+
+CHARGEMENT DU DOSSIER PERSONNEL...</div>
+ <button class="btn primary hidden" id="enterInitiate">[ ENTRER ]</button>
+ </div>`,'TERMINAL // ACCÈS INITIÉ');
+ const box=$('#initSeq'), btn=$('#enterInitiate');
+ setTimeout(()=>box.textContent+=`\nOUVERTURE DES ARCHIVES AUTORISÉES...`,1300);
+ setTimeout(()=>box.textContent+=`\nÉTABLISSEMENT DU CANAL DE DIVISION...`,2600);
+ setTimeout(()=>box.textContent+=`\n\n3 NOUVEAUX MESSAGES.`,3900);
+ setTimeout(()=>{box.textContent+=`\n\nTERMINAL // ACCÈS INITIÉ`;btn.classList.remove('hidden')},5000);
+ btn.onclick=()=>{S.initieAccueilVu=true;save();initiateHome()};
+}
+function initiateHome(){
+ applyInitiateTheme();
+ const logo=divisionLogo(S.affectation);
+ shell(`<section class="init-dashboard">
+   <div class="init-id">
+    <div><div class="eyebrow">DOSSIER ACTIF</div><h1>${S.matricule||'INITIÉ'}</h1>
+    <div class="init-meta">STATUT // INITIÉ<br>ACCRÉDITATION // OMBRE I<br>DIVISION // ${S.affectation}</div></div>
+    <img class="init-division-logo" src="${logo}" alt="">
+   </div>
+   <div class="mission-status"><span>DOSSIER ACTIF</span><strong>AUCUNE AFFECTATION OPÉRATIONNELLE</strong><small>Votre intégration au réseau est en cours.</small></div>
+   <div class="init-grid">
+    <button onclick="initiateMissions()"><b>MISSIONS</b><span>Aucune affectation</span></button>
+    <button onclick="initiateMessages()"><b>MESSAGERIE</b><span class="unread">3 NOUVEAUX MESSAGES</span></button>
+    <button onclick="initiateArchives()"><b>ARCHIVES</b><span>ACCÈS OMBRE I</span></button>
+    <button onclick="initiateProfile()"><b>DOSSIER PERSONNEL</b><span>DOSSIER 000 // CLÔTURÉ</span></button>
+   </div>
+   <div class="init-foot">ACCÈS ARCHIVES : OMBRE I <span>ÉTAT DU RÉSEAU : STABLE</span></div>
+ </section>`,'TERMINAL // ACCÈS INITIÉ');
+}
+function initBack(){initiateHome()}
+function initiateMissions(){
+ shell(`<h1 class="title">MISSIONS</h1><div class="classified-block"><div class="eyebrow">AFFECTATIONS OPÉRATIONNELLES</div><h2>AUCUNE AFFECTATION</h2><p>Votre intégration au réseau est en cours.</p><p>Une première affectation vous sera transmise par votre Division.</p></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MISSIONS // OMBRE I');
+}
+function initiateMessages(){
+ const dm=divisionMeta(S.affectation);
+ shell(`<h1 class="title">MESSAGERIE</h1>
+ <div class="message-list">
+  <article><header><b>01 // ADMINISTRATION</b><span>NOUVEAU</span></header><h3>CHANGEMENT DE STATUT</h3><p>Votre dossier candidat a été clôturé. Votre statut est désormais <b>INITIÉ</b>.</p><p>Accréditation attribuée : <b>OMBRE I</b>. Les informations accessibles restent soumises au principe de compartimentation.</p></article>
+  <article><header><b>02 // ${S.affectation}</b><span>NOUVEAU</span></header><h3>AFFECTATION DE DIVISION</h3><p>${dm.msg.replace(/\n/g,'<br>')}</p></article>
+  <article><header><b>03 // ARCHIVES</b><span>NOUVEAU</span></header><h3>AUTORISATIONS DOCUMENTAIRES</h3><p>Votre accréditation autorise désormais la consultation du niveau OMBRE I.</p><div class="terminal">7 DOCUMENTS DISPONIBLES.\n23 RÉFÉRENCES RESTREINTES.</div></article>
+ </div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // 3 NON LUS');
+}
+const OMBRE1_ARCHIVES=[
+ ['OI-GEN-001',"L'ORDRE DES CINQ OMBRES",'Présentation institutionnelle et doctrine opérationnelle de niveau Initié.'],
+ ['OI-DIV-001','STRUCTURE DES CINQ DIVISIONS','Fonctions officielles, responsabilités et principe de compartimentation.'],
+ ['OI-PRO-004','PROTOCOLE FACE À UNE ANOMALIE','Principes de signalement, observation, isolement et non-intervention.'],
+ ['OI-LEX-001','LEXIQUE OPÉRATIONNEL','Terminologie autorisée au niveau OMBRE I.'],
+ ['OI-HIS-003','CHRONOLOGIE INSTITUTIONNELLE','Extraits de la chronologie officielle communiquée aux Initiés.'],
+ ['OI-INC-014','INCIDENT 1864 // PROJET LANTERNUM','Extrait autorisé. Huit Initiés disparus. Sept minutes demeurent non documentées.'],
+ ['OI-ANO-007','MANIFESTÉS // CLASSIFICATION PRÉLIMINAIRE','Consultation limitée. Informations sensibles partiellement occultées.']
+];
+function initiateArchives(){
+ shell(`<h1 class="title">ARCHIVES</h1><div class="archive-head">ACCRÉDITATION ACTIVE // OMBRE I<br>7 DOCUMENTS CONSULTABLES // 23 RÉFÉRENCES RESTREINTES</div>
+ <div class="archive-list">${OMBRE1_ARCHIVES.map((a,i)=>`<button onclick="openArchive(${i})"><code>${a[0]}</code><b>${a[1]}</b><span>CONSULTABLE</span></button>`).join('')}
+ <div class="locked-archive"><code>OII-███-███</code><b>RÉFÉRENCE RESTREINTE</b><span>ACCÈS OMBRE II REQUIS</span></div>
+ <div class="locked-archive"><code>OIII-HIS-00</code><b>INCIDENT FONDATEUR</b><span>ACCÈS OMBRE III REQUIS</span></div>
+ <div class="locked-archive"><code>█████████</code><b>████████████████</b><span>ACCÈS REFUSÉ</span></div>
+ </div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'ARCHIVES // OMBRE I');
+}
+function openArchive(i){
+ const a=OMBRE1_ARCHIVES[i];
+ const bodies=[
+ `L'Ordre des Cinq Ombres est une organisation transséculaire chargée de maintenir la continuité des réalités humaines face aux phénomènes susceptibles d'en compromettre la stabilité.\n\nPRINCIPE I — LA RÉALITÉ N'EST QU'UNE VERSION.\nPRINCIPE II — L'HISTOIRE EST UNE BARRIÈRE.\nPRINCIPE III — L'UNITÉ MÈNE À LA DISSOLUTION.\n\nToute interprétation excédant votre niveau d'accréditation doit être suspendue.`,
+ `Les cinq Divisions constituent les structures opérationnelles connues de l'Ordre.\n\nŒIL FENDU — observation et anticipation.\nFLAMME INVERSÉE — intervention et modification.\nMAIN CASSÉE — causalité et conséquences.\nSPIRALE D'OS — traces, archives et continuité historique.\nSABLIER NOIR — phénomènes profonds, confinement et sécurité interne.\n\nCertaines fonctions demeurent compartimentées.`,
+ `FACE À UNE ANOMALIE :\n01. Ne pas chercher immédiatement une explication.\n02. Établir ce qui est effectivement observable.\n03. Distinguer témoignage, souvenir et preuve.\n04. Limiter toute interaction non autorisée.\n05. Signaler les divergences au Terminal.\n\nUne anomalie observée n'autorise pas sa manipulation.`,
+ `ANOMALIE — divergence locale avec la continuité attendue.\nFRACTURE — instabilité affectant un ou plusieurs mécanismes de stabilité perceptive.\nARTEFACT — objet conservant une empreinte anormale stable.\nMANIFESTÉ — être vivant durablement altéré par une Fracture.\nANCRAGE — dispositif ou lieu employé pour stabiliser certains phénomènes.\n\nNEBULINE — [DÉFINITION PARTIELLE // OMBRE I]`,
+ `EXTRAIT AUTORISÉ.\n\n~1280 — Premières occurrences classées rétrospectivement comme Taches Noires.\n1347 — Corrélations anormales relevées dans plusieurs zones de mortalité massive.\n1350 — Premiers dossiers de Manifestés conservés.\n1478 — Grande Purge.\n1520 — Formalisation des cinq Divisions.\n1864 — Projet Lanternum.\n1947 — Pacte du Silence.\n2003 — Vol des Archives Fragmentées.\nDepuis 2021 — Saturation Nebulaire.\n\nPlusieurs entrées ont été retirées de cette édition.`,
+ `PROJET LANTERNUM — 1864.\n\nTentative interdite d'interaction contrôlée avec un phénomène de haute instabilité.\n\nPERSONNEL ENGAGÉ : 8 INITIÉS.\nPERSONNEL RÉCUPÉRÉ : 0.\nDURÉE NON DOCUMENTÉE : 7 MINUTES.\n\nLe projet a été interrompu. Toute reproduction du protocole est interdite.\n\n[ANNEXES : ACCÈS OMBRE III REQUIS]`,
+ `Les Manifestés sont des êtres vivants durablement altérés par l'exposition à une Fracture.\n\nIls ne doivent pas être assimilés systématiquement à une menace, une possession ou une entité étrangère.\n\nCertaines altérations demeurent compatibles avec une stabilité durable.\n\nCLASSIFICATIONS DISPONIBLES : DÉPHASÉS / MNÉMIQUES / CONTOURS / ÉCHOÏQUES.\n\n[CLASSIFICATION COMPLÈTE : ACCÈS RESTREINT]`
+ ];
+ shell(`<div class="archive-doc"><code>${a[0]}</code><h1>${a[1]}</h1><div class="doc-stamp">DIFFUSION AUTORISÉE // OMBRE I</div><pre>${bodies[i]}</pre></div><button class="btn" onclick="initiateArchives()">[ RETOUR AUX ARCHIVES ]</button>`,'ARCHIVES // CONSULTATION');
+}
+function initiateProfile(){
+ shell(`<h1 class="title">DOSSIER PERSONNEL</h1>
+ <div class="profile-sheet">
+ <div><span>STATUT</span><b>INITIÉ</b></div><div><span>ACCRÉDITATION</span><b>OMBRE I</b></div>
+ <div><span>DIVISION</span><b>${S.affectation}</b></div><div><span>MATRICULE</span><b>${S.matricule}</b></div>
+ <div><span>DATE D'INITIATION</span><b>${S.initiationDate||'ENREGISTRÉE'}</b></div>
+ </div>
+ <div class="classified-block"><div class="eyebrow">RECRUTEMENT</div><h2>DOSSIER 000 // CLÔTURÉ</h2>
+ <p>ÉVALUATION I — VALIDÉE<br>ÉVALUATION II — VALIDÉE<br>ÉVALUATION III — VALIDÉE<br>ÉVALUATION IV — VALIDÉE<br>ÉVALUATION V — VALIDÉE</p></div>
+ <div class="profile-restricted"><b>PROFIL D'APTITUDE</b><span>[ACCÈS RESTREINT]</span></div>
+ <div class="profile-restricted"><b>MOTIF D'AFFECTATION</b><span>[ACCÈS OMBRE II REQUIS]</span></div>
+ <button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'DOSSIER PERSONNEL // INITIÉ');
+}
 function home(){
+  if(S.serment||S.statut==='INITIÉ'){ if(!S.initieAccueilVu){initiateFirstEntry();return} initiateHome();return }
+
   const now=new Date();
   const stamp=now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' // '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   app.innerHTML=`<section class="shell home-shell">
@@ -192,7 +304,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.3.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.4.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>

@@ -906,3 +906,84 @@ body.initiated .identity-logo{
   .admin-division{grid-template-columns:1fr}
 }
 @media(max-width:430px){.admin-grid{grid-template-columns:1fr}}
+
+/* V1.4 — TERMINAL INITIÉ // OMBRE I */
+.init-entry{max-width:900px;margin:7vh auto 0}
+.init-sequence{min-height:330px;font-size:clamp(13px,1.5vw,18px);line-height:1.8}
+.hidden{display:none!important}
+.init-dashboard{max-width:1100px;margin:auto}
+.init-id{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:8px 0 26px}
+.init-id h1{font-size:clamp(28px,5vw,58px);margin:5px 0 12px}
+.init-meta{font-size:11px;letter-spacing:.13em;line-height:1.8}
+.init-division-logo{width:clamp(110px,18vw,210px);height:clamp(110px,18vw,210px);object-fit:contain;filter:drop-shadow(0 0 18px currentColor)}
+.mission-status{border-bottom:1px solid var(--line);padding:24px 0;display:grid;gap:8px}
+.mission-status span,.eyebrow{font-size:9px;letter-spacing:.2em;color:var(--muted)}
+.mission-status strong{font-size:clamp(17px,2.5vw,26px)}
+.mission-status small{color:var(--muted)}
+.init-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:25px 0}
+.init-grid button,.archive-list button,.locked-archive{
+ background:transparent;border:1px solid var(--line);border-radius:0;color:var(--text);font:inherit;text-align:left;padding:22px;min-height:115px
+}
+.init-grid button{cursor:pointer}
+.init-grid button:hover,.archive-list button:hover{background:rgba(255,255,255,.035)}
+.init-grid b{display:block;font-size:clamp(17px,2vw,23px);margin-bottom:13px}
+.init-grid span{font-size:10px;letter-spacing:.12em;color:var(--muted)}
+.init-grid .unread{color:var(--accent,var(--text))}
+.init-foot{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px;font-size:9px;letter-spacing:.15em}
+.message-list{display:grid;gap:12px;margin:25px 0}
+.message-list article{border:1px solid var(--line);padding:22px}
+.message-list header{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.13em}
+.message-list header span{color:var(--accent,var(--text))}
+.message-list h3{font-size:18px;margin:20px 0}
+.message-list p{line-height:1.7}
+.archive-head{border:1px solid var(--line);padding:18px;margin:20px 0;font-size:10px;letter-spacing:.12em;line-height:1.8}
+.archive-list{display:grid;gap:9px;margin:20px 0}
+.archive-list button,.locked-archive{display:grid;grid-template-columns:150px 1fr 190px;align-items:center;gap:15px;min-height:80px}
+.archive-list code,.locked-archive code{font:inherit;font-size:10px;color:var(--muted)}
+.archive-list span,.locked-archive span{font-size:9px;letter-spacing:.1em;text-align:right}
+.locked-archive{opacity:.45}
+.archive-doc{max-width:900px;border:1px solid var(--line);padding:clamp(22px,5vw,55px);margin:20px 0}
+.archive-doc code{font-size:10px;letter-spacing:.15em}
+.archive-doc h1{font-size:clamp(25px,4vw,44px);margin:18px 0}
+.doc-stamp{display:inline-block;border:1px solid var(--line);padding:7px 10px;font-size:9px;letter-spacing:.13em;margin-bottom:28px}
+.archive-doc pre{white-space:pre-wrap;font:inherit;line-height:1.75}
+.profile-sheet{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);margin:20px 0}
+.profile-sheet div{padding:18px;border-bottom:1px solid var(--line)}
+.profile-sheet div:nth-child(odd){border-right:1px solid var(--line)}
+.profile-sheet span{display:block;font-size:9px;letter-spacing:.15em;color:var(--muted);margin-bottom:8px}
+.classified-block{border:1px solid var(--line);padding:24px;margin:18px 0;line-height:1.7}
+.profile-restricted{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:18px 4px;font-size:11px;letter-spacing:.1em}
+.profile-restricted span{color:var(--muted)}
+body.initiated{--accent:currentColor}
+body.div-eye{color:#b9e8f2}
+body.div-flame{color:#d76578}
+body.div-hand{color:#93ad87}
+body.div-spiral{color:#718cae}
+/* Sablier Noir : ébène, sans violet dominant. */
+body.div-hourglass{color:#b8b8b3}
+@media(max-width:650px){
+ .init-grid{grid-template-columns:1fr}
+ .init-id{align-items:flex-start}
+ .init-division-logo{width:100px;height:100px}
+ .archive-list button,.locked-archive{grid-template-columns:1fr;gap:8px}
+ .archive-list span,.locked-archive span{text-align:left}
+ .profile-sheet{grid-template-columns:1fr}
+ .profile-sheet div:nth-child(odd){border-right:0}
+ .init-foot{display:grid;gap:8px}
+}
+
+
+/* V1.4.1 — Œil Fendu : interprétation numérique du Blanc spectral.
+   Le canon reste "Blanc spectral"; l'interface utilise un cyan glacé
+   pour rendre l'affectation immédiatement perceptible après le Serment. */
+body.div-eye{
+  --accent:#b9e8f2;
+  --division-accent:185,232,242;
+}
+body.div-eye .init-division-logo{
+  filter:drop-shadow(0 0 22px rgba(185,232,242,.42));
+}
+body.div-eye .init-grid button:hover,
+body.div-eye .archive-list button:hover{
+  border-color:rgba(185,232,242,.55);
+}

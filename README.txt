@@ -256,3 +256,26 @@ V1.3 — PROFILS LOCAUX + ADMINISTRATION PROTOTYPE
 - Les simulations admin ne sont pas sauvegardées dans les dossiers joueurs.
 - IMPORTANT : ce mécanisme admin est uniquement destiné au prototype GitHub Pages.
   Avant diffusion réelle, remplacer par authentification et autorisations côté serveur.
+
+
+V1.4 — TERMINAL INITIÉ // OMBRE I
+- Rupture complète entre interface Candidat et interface Initié.
+- Première entrée post-serment avec séquence d'initialisation et 3 nouveaux messages.
+- DOSSIER 000 retiré du tableau de bord actif et conservé comme dossier clôturé.
+- ÉVALUATIONS remplacé par DOSSIER PERSONNEL.
+- Nouveau module MISSIONS.
+- MESSAGERIE Initié avec 3 messages, dont un message spécifique à la Division.
+- ARCHIVES OMBRE I ouvertes : 7 documents consultables + références restreintes OMBRE II/III.
+- Aucun accès joueur à l'Atlas d'auteur.
+- Projet Lanternum présenté uniquement comme incident de 1864.
+- TERMINAL // ACCÈS CANDIDAT devient TERMINAL // ACCÈS INITIÉ.
+- Identité visuelle de Division persistante après le Serment.
+- Sablier Noir corrigé vers une identité ébène/gris charbon plutôt que violette.
+- Mode administrateur V1.3 conservé.
+
+
+V1.4.1 — ŒIL FENDU / BLANC SPECTRAL
+- Canon inchangé : couleur officielle = Blanc spectral.
+- Traduction numérique post-Serment : cyan spectral / bleu glacé #B9E8F2.
+- Accent renforcé sur le logo de Division et les interactions du Terminal Initié.
+- Aucun changement de couleur avant le Serment.
