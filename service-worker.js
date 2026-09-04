@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v170-archives-ombre1-complete';
+const CACHE='ordre-terminal-v180-cartographie';
 const ASSETS=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',
   './division-1-oeil-fendu.png',
   './division-2-flamme-inversee.png',

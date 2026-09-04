@@ -1,3 +1,20 @@
+OCI-TERM V1.8.0 — CARTOGRAPHIE OPÉRATIONNELLE
+
+NOUVEAU
+- Module CARTOGRAPHIE accessible depuis ARCHIVES OMBRE I
+- 17 références OMBRE I
+- 6 Bastions
+- 4 Ancrages surveillés
+- 4 Ancrages à forte stabilité
+- 3 Couloirs Nebuliniques représentés comme zones diffuses
+- Filtres
+- Sélection et fiche de lieu
+- Zoom boutons + molette
+- Déplacement de la carte
+- Gestes tactiles/pincement
+- Responsive ordinateur / iPad / iPhone
+- Aucun service cartographique externe : carte intégrée au Terminal et utilisable hors ligne
+
 OCI-TERM V1.7.0 — ARCHIVES OMBRE I COMPLÈTES
 
 15 documents OMBRE I intégrés. OI-RAP-021 retiré et remplacé par OI-RAP-001. Cartographie interactive prévue pour la prochaine étape.
