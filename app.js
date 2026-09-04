@@ -7,6 +7,8 @@ let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
 S.tendances={...defaults.tendances,...(S.tendances||{})};
+if(S.eval1.complete && (S.progression||0)<1) S.progression=1;
+if(S.eval2.complete && (S.progression||0)<2) S.progression=2;
 function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S))} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
 function later(fn,ms=650){setTimeout(fn,ms)}
 function boot(){shell(`<div class="terminal cursor">RÉSEAU DES CINQ OMBRES\n\nINITIALISATION DU TERMINAL...\nCANAL SÉCURISÉ : ÉTABLI\n\nPROTOCOLE ACTIF : 000\nIDENTIFICATION REQUISE\n\n&gt; </div>`,'CONNEXION');later(()=>S.matricule?environment():identify(),1500)}
@@ -25,7 +27,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.6.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V0.6.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -56,7 +58,10 @@ function dossier(){if(S.inventaire===null){shell(`<h1 class="title">DOSSIER 000<
 function inventory(){shell(`<h1 class="title">CONTRÔLE DU MATÉRIEL</h1><div class="terminal">ÉLÉMENTS ATTENDUS : 09\n\nRetirez tous les éléments du colis avant de poursuivre.\n\nVotre inventaire est-il conforme ?</div><div class="menu"><button class="btn ans">[ CONFORME ]</button><button class="btn ans">[ NON CONFORME ]</button><button class="btn ans">[ INCERTAIN ]</button></div>`);document.querySelectorAll('.ans').forEach(b=>b.onclick=()=>{S.inventaire=b.textContent.replace(/[\[\]]/g,'').trim();save();shell(`<div class="terminal">RÉPONSE ENREGISTRÉE.\n\nPROCÉDEZ AU MODULE I.</div>`,'INVENTAIRE CONSIGNÉ');later(home,1100)})}
 function evals(){
   let rows=[1,2,3,4,5].map(n=>{
-    let st=n<=S.progression?'ENREGISTRÉ':n===S.progression+1&&S.inventaire?'DISPONIBLE':'VERROUILLÉ';
+    // Le module suivant dépend de la progression réelle, pas de l'état de l'inventaire.
+    // Compatibilité avec les sauvegardes créées dans les versions précédentes.
+    const effectiveProgress=Math.max(S.progression||0,S.eval1&&S.eval1.complete?1:0,S.eval2&&S.eval2.complete?2:0);
+    let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
     let active=((n===1||n===2) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
     return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span>${st}${active?' &nbsp; ›':''}</span></div>`

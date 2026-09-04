@@ -44,3 +44,10 @@ V0.6 — ÉVALUATION II + portrait
 - Moteur d'affectation caché alimenté.
 - Mise en page portrait renforcée : symbole plus lisible, bloc d'instruction cadré, boutons verticaux plus confortables.
 - Tous les fichiers restent à la racine pour GitHub.
+
+
+V0.6.1 — CORRECTIF
+- Correction du verrouillage de l'Évaluation II.
+- Le déverrouillage dépend désormais de la progression du candidat et non de l'état du contrôle d'inventaire.
+- Migration automatique des sauvegardes V0.4/V0.5/V0.6 : si l'Évaluation I est déjà terminée, le Module II devient disponible.
+- Aucun reset de progression requis.
