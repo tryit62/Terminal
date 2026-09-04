@@ -301,3 +301,12 @@ V1.4.4 — CORRECTIF TERMINAL INITIÉ
 - Cela provoquait une ReferenceError au clic sur [ ENTRER ], donc l'écran semblait ne rien faire.
 - Ajout du mapping officiel des cinq logos de Division.
 - Cache Service Worker et query params renouvelés.
+
+
+V1.5 — MESSAGERIE + RESPONSIVE INITIÉ
+- Tableau de bord Initié agrandi pour exploiter l’écran iPad/tablette.
+- Titres, identité, logo, dossier actif et quatre modules agrandis.
+- Messagerie transformée en vraie boîte de réception : expéditeur, objet, aperçu, date, non-lu.
+- Un clic ouvre le message complet dans un écran de lecture dédié.
+- Message de Division toujours dynamique selon l’affectation.
+- Responsive iPad portrait/paysage et iPhone conservé.

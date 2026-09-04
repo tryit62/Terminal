@@ -263,14 +263,20 @@ function initBack(){initiateHome()}
 function initiateMissions(){
  shell(`<h1 class="title">MISSIONS</h1><div class="classified-block"><div class="eyebrow">AFFECTATIONS OPÉRATIONNELLES</div><h2>AUCUNE AFFECTATION</h2><p>Votre intégration au réseau est en cours.</p><p>Une première affectation vous sera transmise par votre Division.</p></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MISSIONS // OMBRE I');
 }
+const INITIATE_MESSAGES=[
+ {from:'ADMINISTRATION',subject:'CHANGEMENT DE STATUT',date:'AUJOURD’HUI',body:()=>`Votre dossier candidat a été clôturé.\n\nVotre statut est désormais INITIÉ.\nAccréditation attribuée : OMBRE I.\n\nLes informations accessibles restent soumises au principe de compartimentation. Toute consultation excédant votre niveau d’autorisation doit être interrompue et signalée.`},
+ {from:()=>S.affectation,subject:'AFFECTATION DE DIVISION',date:'AUJOURD’HUI',body:()=>divisionMeta(S.affectation).msg},
+ {from:'ARCHIVES',subject:'AUTORISATIONS DOCUMENTAIRES',date:'AUJOURD’HUI',body:()=>`Votre accréditation autorise désormais la consultation du niveau OMBRE I.\n\n7 DOCUMENTS DISPONIBLES.\n23 RÉFÉRENCES RESTREINTES.\n\nLes références d’un niveau supérieur peuvent apparaître dans l’index sans que leur contenu vous soit accessible.`}
+];
 function initiateMessages(){
- const dm=divisionMeta(S.affectation);
  shell(`<h1 class="title">MESSAGERIE</h1>
- <div class="message-list">
-  <article><header><b>01 // ADMINISTRATION</b><span>NOUVEAU</span></header><h3>CHANGEMENT DE STATUT</h3><p>Votre dossier candidat a été clôturé. Votre statut est désormais <b>INITIÉ</b>.</p><p>Accréditation attribuée : <b>OMBRE I</b>. Les informations accessibles restent soumises au principe de compartimentation.</p></article>
-  <article><header><b>02 // ${S.affectation}</b><span>NOUVEAU</span></header><h3>AFFECTATION DE DIVISION</h3><p>${dm.msg.replace(/\n/g,'<br>')}</p></article>
-  <article><header><b>03 // ARCHIVES</b><span>NOUVEAU</span></header><h3>AUTORISATIONS DOCUMENTAIRES</h3><p>Votre accréditation autorise désormais la consultation du niveau OMBRE I.</p><div class="terminal">7 DOCUMENTS DISPONIBLES.\n23 RÉFÉRENCES RESTREINTES.</div></article>
- </div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // 3 NON LUS');
+ <div class="mail-toolbar"><span>BOÎTE DE RÉCEPTION</span><b>3 NON LUS</b></div>
+ <div class="mail-inbox">${INITIATE_MESSAGES.map((m,i)=>{const from=typeof m.from==='function'?m.from():m.from;return `<button class="mail-row unread-mail" onclick="openInitiateMessage(${i})"><span class="mail-status">●</span><span class="mail-from">${from}</span><span class="mail-subject"><b>${m.subject}</b><small>${i===0?'Confirmation de votre nouveau niveau d’accès.':i===1?'Communication réservée à votre affectation.':'Mise à jour de vos droits de consultation.'}</small></span><span class="mail-date">${m.date}</span></button>`}).join('')}</div>
+ <button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // BOÎTE DE RÉCEPTION');
+}
+function openInitiateMessage(i){
+ const m=INITIATE_MESSAGES[i]; const from=typeof m.from==='function'?m.from():m.from; const body=m.body();
+ shell(`<div class="mail-reader"><div class="mail-reader-head"><button class="mail-back" onclick="initiateMessages()">← BOÎTE DE RÉCEPTION</button><div class="mail-ref">MESSAGE 0${i+1} // OMBRE I</div></div><h1>${m.subject}</h1><div class="mail-meta"><div><span>EXPÉDITEUR</span><b>${from}</b></div><div><span>DESTINATAIRE</span><b>${S.matricule}</b></div><div><span>STATUT</span><b>TRANSMISSION AUTORISÉE</b></div></div><div class="mail-body">${body.split('\n').map(x=>x?`<p>${x}</p>`:'<br>').join('')}</div><div class="mail-sign">FIN DE TRANSMISSION // ${from}</div></div>`,'MESSAGERIE // LECTURE');
 }
 const OMBRE1_ARCHIVES=[
  ['OI-GEN-001',"L'ORDRE DES CINQ OMBRES",'Présentation institutionnelle et doctrine opérationnelle de niveau Initié.'],
@@ -328,7 +334,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.4.4 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.5.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
