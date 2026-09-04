@@ -51,3 +51,25 @@ V0.6.1 — CORRECTIF
 - Le déverrouillage dépend désormais de la progression du candidat et non de l'état du contrôle d'inventaire.
 - Migration automatique des sauvegardes V0.4/V0.5/V0.6 : si l'Évaluation I est déjà terminée, le Module II devient disponible.
 - Aucun reset de progression requis.
+
+
+V0.6.2 — Révision mnésique
+- L'écran de révision affiche maintenant chaque affirmation originale.
+- Il rappelle pour chacune la réponse donnée ET le degré de confiance initial.
+- La question de maintien de confiance reste ensuite affichée.
+- Présentation adaptée tablette, PC et iPhone.
+- Aucun changement du moteur, de la progression ou de l'esthétique générale.
+
+
+V0.7 — ÉVALUATION III
+- Module III complet : causalité.
+- Symbole officiel de la Main Cassée sans révéler le nom de la Division.
+- Allocation interactive des six unités R entre C et F.
+- Révélation progressive des conséquences A, B puis C.
+- Objectif volontairement impossible après B : décision obligatoire sous contrainte.
+- Verrouillage d'une répartition avant révélation de C.
+- Révision rétroactive enregistrée sans pénalité.
+- Décision comportementale reliée au moteur d'affectation caché.
+- Question finale de responsabilité causale.
+- Micro-anomalie ACTION ↓ CONSÉQUENCE devenant brièvement ACTION ↑ CONSÉQUENCE.
+- Déverrouillage du Module IV.

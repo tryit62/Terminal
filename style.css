@@ -207,3 +207,48 @@ button,input{font:inherit}
   .module-identify + .menu{grid-template-columns:1fr}
   .module-identify + .menu .btn{min-height:58px}
 }
+
+/* V0.6.2 — Révision mnésique : rappel complet des affirmations */
+.memory-review{border:1px solid var(--line);margin:18px 0 22px;background:rgba(4,7,6,.38)}
+.memory-review-head,.memory-review-row{display:grid;grid-template-columns:42px minmax(0,1fr) 110px 130px;align-items:stretch}
+.memory-review-head{font-size:8px;color:var(--muted);letter-spacing:.13em;border-bottom:1px solid var(--line2)}
+.memory-review-head span{padding:10px 12px;border-right:1px solid var(--line)}
+.memory-review-head span:last-child{border-right:0}
+.memory-review-row{border-bottom:1px solid var(--line);font-size:11px;line-height:1.5}
+.memory-review-row:last-child{border-bottom:0}
+.memory-review-row>div{padding:13px 12px;border-right:1px solid var(--line);display:flex;align-items:center}
+.memory-review-row>div:last-child{border-right:0}
+.memory-review-index{justify-content:center;color:var(--muted)}
+.memory-review-statement{color:var(--fg)}
+.memory-review-answer,.memory-review-confidence{font-size:10px;letter-spacing:.05em}
+.review-question{margin-top:8px}
+.maintain-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+.maintain-menu .btn:last-child{grid-column:1/-1}
+@media(max-width:720px){
+  .memory-review-head{display:none}
+  .memory-review-row{grid-template-columns:34px 1fr;position:relative;padding-bottom:40px}
+  .memory-review-row>div{border-right:0}
+  .memory-review-index{grid-row:1/3;border-right:1px solid var(--line)!important}
+  .memory-review-statement{padding-bottom:8px!important}
+  .memory-review-answer,.memory-review-confidence{position:absolute;bottom:9px;padding:0!important;font-size:8px;color:var(--muted)}
+  .memory-review-answer{left:48px}
+  .memory-review-answer:before{content:"RÉPONSE : ";color:#626763}
+  .memory-review-confidence{right:12px}
+  .memory-review-confidence:before{content:"CONFIANCE : ";color:#626763}
+}
+@media(min-width:600px) and (orientation:portrait){
+  .memory-review-row{font-size:12px}
+  .memory-review-head,.memory-review-row{grid-template-columns:46px minmax(0,1fr) 100px 120px}
+}
+
+/* V0.7 — Dispositif causal du Module III */
+.causal-allocation{display:grid;grid-template-columns:150px minmax(180px,1fr) 150px;gap:20px;align-items:center;border:1px solid var(--line);padding:24px;margin:18px 0}
+.causal-allocation>div{text-align:center}
+.causal-allocation span{display:block;font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:8px}
+.causal-allocation strong{font-size:34px;font-weight:normal}
+.causal-allocation input[type=range]{width:100%;accent-color:#b8bcb8}
+@media(max-width:599px){
+  .causal-allocation{grid-template-columns:70px 1fr 70px;gap:8px;padding:16px 10px}
+  .causal-allocation strong{font-size:25px}
+  .causal-allocation span{font-size:7px}
+}
