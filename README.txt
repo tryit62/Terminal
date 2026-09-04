@@ -158,3 +158,15 @@ V1.0 — AFFECTATION
 - Statut reste CANDIDAT : l'affectation précède le Serment.
 - Ouverture physique de l'enveloppe APRÈS autorisée et inventaire A–E.
 - Le Serment et la transformation en INITIÉ seront intégrés à l'étape suivante.
+
+
+V1.0.1 — UI AFFECTATION + SUPERVISION APRÈS
+- Site uniquement : aucun changement d'image/concept art.
+- En-tête ORDRE DES CINQ OMBRES et logo agrandis sur tablette/desktop/mobile.
+- Cinq Divisions et leurs logos fortement agrandis pendant la révélation et la consolidation.
+- Occupation verticale accrue pour réduire le grand vide observé sur iPad.
+- Pré-serment strictement monochrome : aucun style Initié appliqué.
+- CONTENU INCOMPLET ouvre désormais une vraie procédure de supervision matérielle.
+- Sélection des éléments A–E manquants/non conformes.
+- Transmission avec traitement narratif.
+- Protocole suspendu avec deux sorties utiles : vérifier à nouveau ou retourner au Terminal.

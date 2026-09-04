@@ -36,7 +36,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.0.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.0.1 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
@@ -946,7 +946,37 @@ function assignmentFinal(result){
 function assignmentAfter(){
   shell(`<h1 class="title">PROTOCOLE 000 // APRÈS</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « APRÈS » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // APRÈS');
   $('#afterOk').onclick=()=>shell(`<div class="terminal">CONTENU ENREGISTRÉ.\n\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nLE SERMENT N'EST PAS ENCORE ACTIF.\n\nPROTOCOLE 000 EN ATTENTE DE VALIDATION FINALE.</div><button class="btn primary" id="toHome">[ RETOUR AU TERMINAL ]</button>`,'PROTOCOLE 000 // SERMENT EN ATTENTE'),setTimeout(()=>{const b=$('#toHome');if(b)b.onclick=home},0);
-  $('#afterBad').onclick=()=>{const x=document.createElement('div');x.className='system';x.textContent='SYS // ANOMALIE MATÉRIELLE CONSIGNÉE — SUPERVISION REQUISE';document.querySelector('.menu').after(x)};
+  $('#afterBad').onclick=assignmentMaterialIssue;
+}
+
+function assignmentMaterialIssue(){
+  shell(`<h1 class="title">SUPERVISION MATÉRIELLE</h1>
+  <div class="terminal">CONTENU INCOMPLET SIGNALÉ.\n\nIDENTIFIEZ CHAQUE ÉLÉMENT ABSENT OU NON CONFORME.</div>
+  <div class="material-checks">
+    <label class="material-check"><input type="checkbox" value="A"><div><strong>A — CARTE D'INITIÉ</strong><span>ABSENTE / NON CONFORME</span></div></label>
+    <label class="material-check"><input type="checkbox" value="B"><div><strong>B — CINQ SCEAUX</strong><span>ABSENTS / NOMBRE INCORRECT / NON CONFORMES</span></div></label>
+    <label class="material-check"><input type="checkbox" value="C"><div><strong>C — CARTE DES CINQ DIVISIONS</strong><span>ABSENTE / NON CONFORME</span></div></label>
+    <label class="material-check"><input type="checkbox" value="D"><div><strong>D — CARTE D'ACCÈS OMBRE I</strong><span>ABSENTE / NON CONFORME</span></div></label>
+    <label class="material-check"><input type="checkbox" value="E"><div><strong>E — FEUILLET SERMENT</strong><span>ABSENT / NON CONFORME</span></div></label>
+  </div>
+  <div class="menu"><button class="btn primary" id="materialSend">[ TRANSMETTRE L'ANOMALIE ]</button><button class="btn" id="materialRetry">[ VÉRIFIER À NOUVEAU ]</button></div>
+  <div id="materialFeedback" class="system"></div>`,'SUPERVISION // INVENTAIRE');
+  $('#materialRetry').onclick=assignmentAfter;
+  $('#materialSend').onclick=()=>{
+    const missing=[...document.querySelectorAll('.material-check input:checked')].map(x=>x.value);
+    if(!missing.length){$('#materialFeedback').textContent='SÉLECTION REQUISE : INDIQUEZ AU MOINS UN ÉLÉMENT.';return}
+    narrativeProcessing(shell,[
+      'RÉCEPTION DU SIGNALEMENT...',
+      'VÉRIFICATION DE L’INVENTAIRE...',
+      'OUVERTURE D’UNE ANOMALIE MATÉRIELLE...'
+    ],()=>assignmentMaterialSuspended(missing),{title:'SUPERVISION MATÉRIELLE',status:'SUPERVISION // TRAITEMENT',min:650,max:950,finalPause:900});
+  };
+}
+function assignmentMaterialSuspended(missing){
+  shell(`<h1 class="title">PROTOCOLE SUSPENDU</h1>
+  <div class="terminal">ANOMALIE MATÉRIELLE ENREGISTRÉE.\nRÉFÉRENCES : ${missing.join(' / ')}\n\nPROTOCOLE 000 : SUSPENDU.\nNE PRÊTEZ PAS SERMENT.\n\nRÉTABLISSEZ LE CONTENU DU MODULE AVANT DE POURSUIVRE.\nAUCUNE PROGRESSION N'A ÉTÉ PERDUE.</div>
+  <div class="menu"><button class="btn primary" id="materialAgain">[ VÉRIFIER À NOUVEAU LE CONTENU ]</button><button class="btn" id="materialHome">[ RETOUR AU TERMINAL ]</button></div>`,'SUPERVISION // ANOMALIE MATÉRIELLE');
+  $('#materialAgain').onclick=assignmentAfter;$('#materialHome').onclick=home;
 }
 function assignmentConfirmed(){
   const d=Object.values(DIVISIONS).find(x=>x.name===S.affectation)||DIVISIONS.PERCEPTION;

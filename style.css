@@ -313,3 +313,41 @@ button,input{font:inherit}
 .assignment-line{font-size:14px;line-height:1.7;max-width:520px;margin:24px auto}
 .assignment-card{border-color:rgba(220,225,220,.38)!important}
 @media(max-width:650px){.assignment-symbol{width:105px;height:105px}.assignment-name{font-size:20px}.division-reveal-row img{width:38px;height:38px}}
+
+/* V1.0.1 — calibration visuelle pré-serment.
+   Toujours monochrome : aucune métamorphose Initié avant le Serment. */
+.brand{gap:14px}
+.brand img{width:48px;height:48px}
+.brand-title{font-size:13px;letter-spacing:.28em}
+@media(min-width:760px){
+  .brand img{width:62px;height:62px}
+  .brand-title{font-size:17px}
+}
+@media(min-width:1100px){
+  .brand img{width:72px;height:72px}
+  .brand-title{font-size:19px}
+}
+.division-reveal{gap:11px;margin:20px 0 22px}
+.division-reveal-row{min-height:78px;padding:14px 18px;gap:22px}
+.division-reveal-row img{width:62px;height:62px}
+.division-reveal-row b{font-size:15px}
+.division-reveal-row span{font-size:9px;margin-top:6px}
+.assignment-card{min-height:78px}
+@media(min-width:900px){
+  .division-reveal-row{min-height:92px;padding:16px 22px}
+  .division-reveal-row img{width:76px;height:76px}
+  .division-reveal-row b{font-size:18px}
+  .division-reveal-row span{font-size:10px}
+}
+@media(max-width:650px){
+  .brand img{width:44px;height:44px}
+  .brand-title{font-size:12px}
+  .division-reveal-row{min-height:70px;padding:11px 13px;gap:15px}
+  .division-reveal-row img{width:54px;height:54px}
+  .division-reveal-row b{font-size:13px}
+}
+.material-checks{display:grid;gap:8px;margin:18px 0}
+.material-check{display:flex;align-items:flex-start;gap:12px;border:1px solid rgba(190,195,190,.22);padding:12px;cursor:pointer}
+.material-check input{margin-top:2px}
+.material-check strong,.material-check span{display:block}
+.material-check span{font-size:9px;color:var(--muted);margin-top:4px}
