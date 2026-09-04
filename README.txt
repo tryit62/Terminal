@@ -146,3 +146,15 @@ V0.9 — ÉVALUATION V
 - Traitement long et narratif.
 - Anomalie VI — CONFORME visible environ 2,2 secondes, puis effacée sans commentaire.
 - Affectation non encore intégrée : prochaine étape.
+
+
+V1.0 — AFFECTATION
+- Procédure disponible après les cinq évaluations.
+- Révélation, pour la première fois, des noms et fonctions des cinq Divisions.
+- Moteur caché : scores pondérés existants + récurrence doctrinale ; départage par présence récurrente puis décision V.
+- Aucun score ni justification détaillée n'est montré au joueur.
+- Élimination visuelle progressive de quatre matrices.
+- Première révélation de la Division affectée et de sa phrase doctrinale.
+- Statut reste CANDIDAT : l'affectation précède le Serment.
+- Ouverture physique de l'enveloppe APRÈS autorisée et inventaire A–E.
+- Le Serment et la transformation en INITIÉ seront intégrés à l'étape suivante.

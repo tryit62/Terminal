@@ -5,7 +5,7 @@ eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,vers
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
-tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0}};
+tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
@@ -36,22 +36,23 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V0.9.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.0.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>
         <div class="home-kv">
           <div class="datum"><div class="datum-label">CANDIDAT</div><div class="datum-value">${S.matricule}</div></div>
-          <div class="datum"><div class="datum-label">STATUT</div><div class="datum-value">EN ÉVALUATION</div></div>
+          <div class="datum"><div class="datum-label">STATUT</div><div class="datum-value">${S.affectationDone?'AFFECTÉ':'EN ÉVALUATION'}</div></div>
           <div class="datum"><div class="datum-label">ACCRÉDITATION</div><div class="datum-value">0</div></div>
-          <div class="datum"><div class="datum-label">AFFECTATION</div><div class="datum-value">—</div></div>
+          <div class="datum"><div class="datum-label">AFFECTATION</div><div class="datum-value">${S.affectationDone?S.affectation:'—'}</div></div>
         </div>
         <div class="home-menu">
           <button class="nav-card" data-go="dossier"><span class="nav-mark">▱</span><span class="nav-title">DOSSIER 000</span><span class="nav-sub">RECRUTEMENT</span><span class="nav-arrow">›</span><span class="nav-index">01</span></button>
           <button class="nav-card" data-go="evals"><span class="nav-mark">◉</span><span class="nav-title">ÉVALUATIONS</span><span class="nav-sub">${S.progression} / 5</span><span class="nav-arrow">›</span><span class="nav-index">02</span></button>
           <button class="nav-card" data-go="messages"><span class="nav-mark">□</span><span class="nav-title">MESSAGERIE</span><span class="nav-sub">${S.messages?S.messages+' NOUVEAU MESSAGE':'AUCUN NOUVEAU MESSAGE'}</span><span class="nav-arrow">›</span><span class="nav-index">03</span></button>
           <button class="nav-card" data-go="archives"><span class="nav-mark">≡</span><span class="nav-title">ARCHIVES</span><span class="nav-sub">ACCÈS REFUSÉ</span><span class="nav-arrow">›</span><span class="nav-index">04</span></button>
-          <button class="nav-card" data-go="profile"><span class="nav-mark">○</span><span class="nav-title">PROFIL</span><span class="nav-sub">${S.matricule}</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>
+          ${S.eval5.complete&&!S.affectationDone?`<button class="nav-card assignment-card" id="assignment"><span class="nav-mark">◇</span><span class="nav-title">AFFECTATION</span><span class="nav-sub">PROCÉDURE DISPONIBLE</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>`:''}
+          <button class="nav-card" data-go="profile"><span class="nav-mark">○</span><span class="nav-title">PROFIL</span><span class="nav-sub">${S.matricule}</span><span class="nav-arrow">›</span><span class="nav-index">${S.eval5.complete&&!S.affectationDone?'06':'05'}</span></button>
           <button class="nav-card" id="assist"><span class="nav-mark">⌁</span><span class="nav-title">ASSISTANCE</span><span class="nav-sub">SOLLICITER LE SUPERVISEUR</span><span class="nav-arrow">›</span><span class="nav-index">06</span></button>
         </div>
         <footer class="home-footer"><div><strong>ÉTAT DU RÉSEAU : STABLE</strong><br>DERNIÈRE SYNCHRONISATION : ${stamp}</div><div>VOIR CE QUI N’EXISTE PAS ENCORE.<br>—</div></footer>
@@ -61,6 +62,7 @@ function home(){
   </section>`;
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>views[b.dataset.go]());
   document.querySelector('#assist').onclick=assistance;
+  const assignment=$('#assignment'); if(assignment)assignment.onclick=assignmentStart;
 }
 const back=()=>`<button class="btn back" id="back">[ RETOUR ]</button>`;function wireBack(){let b=$('#back');if(b)b.onclick=home}
 function dossier(){if(S.inventaire===null){shell(`<h1 class="title">DOSSIER 000</h1><div class="kv"><b>DÉSIGNATION</b><span>RECRUTEMENT</span><b>STATUT</b><span>ACTIF</span><b>OBJECTIF</b><span>ÉVALUATION DU CANDIDAT</span><b>MODULES</b><span>5</span></div><div class="rule"></div><p class="sub">INSTRUCTION ACTIVE</p><div class="terminal">PROCÉDER À L'INVENTAIRE DU MATÉRIEL REÇU.</div><div class="menu"><button class="btn primary" id="start">[ COMMENCER ]</button></div>${back()}`);$('#start').onclick=inventory;wireBack()}else{shell(`<h1 class="title">DOSSIER 000</h1><div class="terminal">INVENTAIRE : ENREGISTRÉ\nÉVALUATIONS : ${S.progression} / 5\n\nINSTRUCTION ACTIVE : ${S.progression? 'POURSUIVRE LE PROTOCOLE.' : 'PROCÉDER AU MODULE I.'}</div>${back()}`);wireBack()}}
@@ -854,13 +856,106 @@ function eval5Processing(){
   });
 }
 function eval5SixthAnomaly(){
-  eval5Shell(`<div class="terminal">ÉVALUATION TERMINÉE.\n\nMODULES ENREGISTRÉS : 05\nSTATUT DU CANDIDAT : EN ATTENTE D'AFFECTATION\n\nNE FERMEZ PAS LE TERMINAL.\nUNE PROCÉDURE D'AFFECTATION SERA AUTORISÉE APRÈS CONSOLIDATION.</div><button class="btn primary" id="m5home">[ RETOUR AU TERMINAL ]</button>`,'PROTOCOLE 000 // CALIBRATION TERMINÉE');
-  $('#m5home').onclick=home;
+  S.affectationReady=true;save();
+  eval5Shell(`<div class="terminal">ÉVALUATION TERMINÉE.\n\nMODULES ENREGISTRÉS : 05\nSTATUT DU CANDIDAT : EN ATTENTE D'AFFECTATION\n\nPROCÉDURE D'AFFECTATION : AUTORISÉE.</div><div class="menu"><button class="btn primary" id="m5assign">[ PROCÉDER À L'AFFECTATION ]</button><button class="btn" id="m5home">[ RETOUR AU TERMINAL ]</button></div>`,'PROTOCOLE 000 // CALIBRATION TERMINÉE');
+  $('#m5assign').onclick=assignmentStart;$('#m5home').onclick=home;
 }
 function eval5CompleteScreen(){eval5SixthAnomaly()}
+
+const DIVISIONS={
+  PERCEPTION:{name:'ŒIL FENDU',verb:'OBSERVER',img:'division-1-oeil-fendu.png',line:'Voir ne suffit pas. Votre fonction sera de déterminer ce qui mérite d’être cru.'},
+  ADAPTATION:{name:'FLAMME INVERSÉE',verb:'ADAPTER',img:'division-2-flamme-inversee.png',line:'Toute vérité n’est pas stable. Votre fonction sera de déterminer ce qui doit être préservé.'},
+  CONSEQUENCE:{name:'MAIN CASSÉE',verb:'ANTICIPER',img:'division-3-main-cassee.png',line:'Toute action crée une dette. Votre fonction sera d’en mesurer le prix.'},
+  CONTINUITE:{name:'SPIRALE D’OS',verb:'PRÉSERVER',img:'division-4-spirale-os.png',line:'Ce qui disparaît laisse une trace. Votre fonction sera de la retrouver.'},
+  TEMPORISATION:{name:'SABLIER NOIR',verb:'CONTENIR',img:'division-5-sablier-noir.png',line:'Toutes les portes ne doivent pas être ouvertes. Votre fonction sera de savoir lesquelles.'}
+};
+function assignmentResult(){
+  const keys=Object.keys(DIVISIONS);
+  const doctrinal=[S.eval1.decision,S.eval2.decision,S.eval3.decision,S.eval4.decision,S.eval5.decision].filter(Boolean);
+  const appearances=Object.fromEntries(keys.map(k=>[k,doctrinal.filter(x=>x===k).length]));
+  // Scores already contain weighted micro/major choices. Add validated recurrence bonus.
+  const score=Object.fromEntries(keys.map(k=>[k,(S.tendances[k]||0)+(appearances[k]>=5?3:appearances[k]===4?2:appearances[k]===3?1:0)]));
+  let candidates=[...keys].sort((a,b)=>score[b]-score[a]);
+  const best=score[candidates[0]];
+  candidates=candidates.filter(k=>score[k]===best);
+  if(candidates.length>1){
+    const maxApp=Math.max(...candidates.map(k=>appearances[k]));
+    candidates=candidates.filter(k=>appearances[k]===maxApp);
+  }
+  if(candidates.length>1 && S.eval5.decision && candidates.includes(S.eval5.decision)) return S.eval5.decision;
+  // Rare unresolved equality: deterministic dossier arbitration, invisible to player.
+  if(candidates.length>1){
+    const seed=[...String(S.matricule)].reduce((a,c)=>a+c.charCodeAt(0),0);
+    return candidates[seed%candidates.length];
+  }
+  return candidates[0];
+}
+function assignmentStart(){
+  if(!S.eval5.complete)return home();
+  if(S.affectationDone)return assignmentConfirmed();
+  narrativeProcessing(shell,[
+    'OUVERTURE DU DOSSIER CANDIDAT...',
+    'LECTURE DES MODULES I À V...',
+    'RECROISEMENT DES DÉCISIONS...',
+    'MESURE DES RÉCURRENCES...',
+    'ANALYSE DES RÉVISIONS...',
+    'COMPARAISON AUX CINQ MATRICES...',
+    'CONSOLIDATION...'
+  ],assignmentReveal,{title:'PROCÉDURE D’AFFECTATION',status:'AFFECTATION // ANALYSE',min:900,max:1500,finalPause:1800});
+}
+function assignmentReveal(){
+  shell(`<p class="sub">MATRICES D'AFFECTATION // IDENTIFICATION AUTORISÉE</p>
+  <div class="terminal">LES MARQUAGES RENCONTRÉS AU COURS DU PROTOCOLE 000 PEUVENT DÉSORMAIS ÊTRE IDENTIFIÉS.</div>
+  <div class="division-reveal">
+    ${Object.entries(DIVISIONS).map(([k,d])=>`<div class="division-reveal-row" data-div="${k}"><img src="${d.img}" alt=""><div><b>${d.name}</b><span>${d.verb}</span></div></div>`).join('')}
+  </div><button class="btn primary" id="resolveAssignment">[ LANCER LA CONSOLIDATION FINALE ]</button>`,'AFFECTATION // MATRICES IDENTIFIÉES');
+  $('#resolveAssignment').onclick=assignmentResolve;
+}
+function assignmentResolve(){
+  const result=assignmentResult(), d=DIVISIONS[result];
+  shell(`<p class="sub">CONSOLIDATION FINALE</p><div class="division-reveal" id="divisionCandidates">
+    ${Object.entries(DIVISIONS).map(([k,x])=>`<div class="division-reveal-row resolving" data-div="${k}"><img src="${x.img}" alt=""><div><b>${x.name}</b><span>${x.verb}</span></div></div>`).join('')}
+  </div><div id="assignState" class="terminal">COMPARAISON EN COURS...</div>`,'AFFECTATION // CONSOLIDATION');
+  const losers=Object.keys(DIVISIONS).filter(k=>k!==result);
+  let i=0;
+  function eliminate(){
+    if(i<losers.length){
+      const row=document.querySelector(`[data-div="${losers[i++]}"]`);
+      if(row)row.classList.add('division-eliminated');
+      $('#assignState').textContent=['ÉCART DE MATRICE DÉTECTÉ...','RÉCURRENCE INSUFFISANTE...','INCOMPATIBILITÉ DOCTRINALE...','MATRICE SECONDAIRE ÉCARTÉE...'][i-1];
+      setTimeout(eliminate,1200);
+    }else{
+      setTimeout(()=>assignmentFinal(result),1800);
+    }
+  }
+  setTimeout(eliminate,1500);
+}
+function assignmentFinal(result){
+  const d=DIVISIONS[result];
+  S.affectation=d.name;S.affectationDone=true;S.affectationReady=false;save();
+  shell(`<div class="assignment-final">
+    <div class="terminal">AFFECTATION PROVISOIRE CONFIRMÉE.</div>
+    <img class="assignment-symbol" src="${d.img}" alt="">
+    <div class="assignment-name">${d.name}</div><div class="assignment-verb">${d.verb}</div>
+    <div class="rule"></div><p class="assignment-line">${d.line}</p>
+    <div class="terminal">STATUT : CANDIDAT\nACCÈS AU SERMENT : AUTORISÉ\n\nN'OUVREZ L'ENVELOPPE « APRÈS » QUE SUR INSTRUCTION.</div>
+    <button class="btn primary" id="afterAccess">[ AUTORISER L'OUVERTURE DE « APRÈS » ]</button>
+  </div>`,'AFFECTATION // CONFIRMÉE');
+  $('#afterAccess').onclick=assignmentAfter;
+}
+function assignmentAfter(){
+  shell(`<h1 class="title">PROTOCOLE 000 // APRÈS</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « APRÈS » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // APRÈS');
+  $('#afterOk').onclick=()=>shell(`<div class="terminal">CONTENU ENREGISTRÉ.\n\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nLE SERMENT N'EST PAS ENCORE ACTIF.\n\nPROTOCOLE 000 EN ATTENTE DE VALIDATION FINALE.</div><button class="btn primary" id="toHome">[ RETOUR AU TERMINAL ]</button>`,'PROTOCOLE 000 // SERMENT EN ATTENTE'),setTimeout(()=>{const b=$('#toHome');if(b)b.onclick=home},0);
+  $('#afterBad').onclick=()=>{const x=document.createElement('div');x.className='system';x.textContent='SYS // ANOMALIE MATÉRIELLE CONSIGNÉE — SUPERVISION REQUISE';document.querySelector('.menu').after(x)};
+}
+function assignmentConfirmed(){
+  const d=Object.values(DIVISIONS).find(x=>x.name===S.affectation)||DIVISIONS.PERCEPTION;
+  shell(`<div class="assignment-final"><div class="terminal">AFFECTATION PROVISOIRE CONFIRMÉE.</div><img class="assignment-symbol" src="${d.img}" alt=""><div class="assignment-name">${d.name}</div><div class="assignment-verb">${d.verb}</div><p class="assignment-line">${d.line}</p><button class="btn primary" id="afterAccess">[ ACCÉDER À « APRÈS » ]</button></div>`,'AFFECTATION // CONFIRMÉE');
+  $('#afterAccess').onclick=assignmentAfter;
+}
 function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}
 function assistance(){shell(`<h1 class="title">SOLLICITER LE SUPERVISEUR</h1><p class="sub">MOTIF DE LA SOLLICITATION</p><div class="menu"><button class="btn help">> INSTRUCTION INCOMPRISE</button><button class="btn help">> MATÉRIEL NON IDENTIFIÉ</button><button class="btn help">> BLOCAGE DANS LE PROTOCOLE</button><button class="btn help">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="helpmsg" class="system"></div>${back()}`);document.querySelectorAll('.help').forEach(b=>b.onclick=()=>{$('#helpmsg').textContent='SYS // DEMANDE ENREGISTRÉE — SUPERVISION NOTIFIÉE'});wireBack()}
-function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>CANDIDAT</span><b>ACCRÉDITATION</b><span>0</span><b>DIVISION</b><span>—</span><b>DOSSIERS TERMINÉS</b><span>0</span></div><div class="rule"></div><div class="terminal">AFFECTATION EN ATTENTE</div>${back()}`);wireBack()}
+function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>CANDIDAT</span><b>ACCRÉDITATION</b><span>0</span><b>DIVISION</b><span>${S.affectationDone?S.affectation:'—'}</span><b>DOSSIERS TERMINÉS</b><span>0</span></div><div class="rule"></div><div class="terminal">${S.affectationDone?'AFFECTATION PROVISOIRE CONFIRMÉE — SERMENT EN ATTENTE':'AFFECTATION EN ATTENTE'}</div>${back()}`);wireBack()}
 const views={dossier,evals,messages,archives,profile};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});boot();

@@ -298,3 +298,18 @@ button,input{font:inherit}
 .glitch-symbol{display:inline-block;transform:rotate(12deg);font-size:18px}
 @keyframes terminalLineIn{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:none}}
 @keyframes thinkingFade{0%,20%{opacity:.25}50%{opacity:1}80%,100%{opacity:.45}}
+
+/* V1.0 — Affectation */
+.division-reveal{display:grid;gap:8px;margin:18px 0 24px}
+.division-reveal-row{display:flex;align-items:center;gap:16px;border:1px solid rgba(190,195,190,.22);padding:12px;transition:opacity .8s,filter .8s,transform .8s}
+.division-reveal-row img{width:44px;height:44px;object-fit:contain;filter:grayscale(1)}
+.division-reveal-row b,.division-reveal-row span{display:block;letter-spacing:.12em}
+.division-reveal-row span{font-size:8px;color:var(--muted);margin-top:4px}
+.division-eliminated{opacity:.08;filter:blur(1px);transform:translateX(-8px)}
+.assignment-final{text-align:center;max-width:620px;margin:0 auto}
+.assignment-symbol{width:130px;height:130px;object-fit:contain;margin:24px auto 12px;display:block}
+.assignment-name{font-size:25px;letter-spacing:.16em;margin-top:8px}
+.assignment-verb{font-size:9px;letter-spacing:.3em;color:var(--muted);margin:8px 0 22px}
+.assignment-line{font-size:14px;line-height:1.7;max-width:520px;margin:24px auto}
+.assignment-card{border-color:rgba(220,225,220,.38)!important}
+@media(max-width:650px){.assignment-symbol{width:105px;height:105px}.assignment-name{font-size:20px}.division-reveal-row img{width:38px;height:38px}}
