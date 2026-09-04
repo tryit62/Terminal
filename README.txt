@@ -286,3 +286,11 @@ V1.4.2 — CORRECTIF ENTRÉE TERMINAL INITIÉ
 - Le bouton appelle désormais explicitement initiateHome() après sauvegarde de l'état.
 - Liaison de l'événement renforcée pour Safari iOS / PWA.
 - Nouveau cache Service Worker et query params afin d'éviter le chargement de l'ancien app.js.
+
+
+V1.4.3 — CORRECTIF ROUTAGE INITIÉ
+- Cause réelle identifiée : une ancienne fonction initiateHome(){home()} en fin de app.js écrasait la nouvelle interface OMBRE I.
+- Suppression de cette déclaration héritée.
+- [ ENTRER ] ouvre désormais réellement le tableau de bord Initié.
+- Après cinématique : première initialisation affichée une seule fois, puis accès direct au tableau de bord lors des connexions suivantes.
+- Nouveau cache Service Worker et query params.
