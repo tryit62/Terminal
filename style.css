@@ -1023,3 +1023,15 @@ body.initiated .init-foot{font-size:clamp(9px,1vw,12px);padding-top:20px}
  body.initiated .init-grid button{min-height:115px;padding:20px}
  .mail-row{grid-template-columns:20px 1fr 70px;gap:8px;padding:16px 4px}.mail-from{grid-column:2}.mail-subject{grid-column:2}.mail-date{grid-column:3;grid-row:1}.mail-status{grid-row:1/3}.mail-meta{grid-template-columns:1fr}.mail-reader-head{align-items:flex-start;gap:15px}.mail-ref{text-align:right}
 }
+
+/* V1.6 — correction débordement iPad / safe area */
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body.initiated .init-dashboard,
+body.initiated .admin-shell{width:auto!important;max-width:1280px!important;margin-left:max(24px,env(safe-area-inset-left))!important;margin-right:max(24px,env(safe-area-inset-right))!important}
+body.initiated .init-grid{width:100%;min-width:0}
+body.initiated .init-grid button{min-width:0;overflow:hidden}
+body.initiated .init-id>*{min-width:0}
+.read-mail{opacity:.62}.read-mail .mail-subject b{font-weight:400}.read-mail .mail-status{color:var(--muted)}
+@media(min-width:768px) and (orientation:portrait){body.initiated .init-dashboard{width:auto!important;margin-left:max(36px,env(safe-area-inset-left))!important;margin-right:max(36px,env(safe-area-inset-right))!important}}
+@media(max-width:650px){body.initiated .init-dashboard{width:auto!important;margin-left:max(16px,env(safe-area-inset-left))!important;margin-right:max(16px,env(safe-area-inset-right))!important}}

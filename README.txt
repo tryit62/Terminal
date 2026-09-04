@@ -310,3 +310,14 @@ V1.5 — MESSAGERIE + RESPONSIVE INITIÉ
 - Un clic ouvre le message complet dans un écran de lecture dédié.
 - Message de Division toujours dynamique selon l’affectation.
 - Responsive iPad portrait/paysage et iPhone conservé.
+
+
+V1.6 — ARCHIVES / LECTURE / RESPONSIVE
+- Archives OMBRE I réécrites selon la pyramide des vérités : procédures et vocabulaire sans révéler les mécanismes profonds.
+- Lanternum 1864 rendu beaucoup plus opaque; aucune mention de Lanternum Primum.
+- Manifestés : définition institutionnelle non ontologique.
+- Ajout d’un vrai rapport d’intervention 2003 afin que les Archives ne soient pas un simple wiki de lore.
+- Chronologie volontairement lacunaire.
+- Sablier Noir : fonctions OMBRE I limitées aux attributions officiellement communicables.
+- Messages lus persistants par dossier local; compteur non-lus dynamique.
+- Correction du débordement droit sur iPad avec marges sûres et box-sizing global.

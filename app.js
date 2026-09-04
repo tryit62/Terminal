@@ -5,7 +5,7 @@ eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,vers
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
 eval5:{step:0,sequence:[],opened:null,prediction:null,reflection:null,archiveChoice:null,decision:null,complete:false},
-tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null,sermentDisponible:false,initieAccueilVu:false};
+tendances:{PERCEPTION:0,ADAPTATION:0,CONSEQUENCE:0,CONTINUITE:0,TEMPORISATION:0},affectationReady:false,affectationDone:false,serment:false,initiationDate:null,sermentDisponible:false,initieAccueilVu:false,initieMessagesLus:[]};
 let S={...defaults,...JSON.parse(localStorage.getItem('ordre_terminal')||'{}')};
 S.eval1={...defaults.eval1,...(S.eval1||{})};
 S.eval2={...defaults.eval2,...(S.eval2||{})};
@@ -252,7 +252,7 @@ function initiateHome(){
    <div class="mission-status"><span>DOSSIER ACTIF</span><strong>AUCUNE AFFECTATION OPÉRATIONNELLE</strong><small>Votre intégration au réseau est en cours.</small></div>
    <div class="init-grid">
     <button onclick="initiateMissions()"><b>MISSIONS</b><span>Aucune affectation</span></button>
-    <button onclick="initiateMessages()"><b>MESSAGERIE</b><span class="unread">3 NOUVEAUX MESSAGES</span></button>
+    <button onclick="initiateMessages()"><b>MESSAGERIE</b><span class="unread">${unreadMailCount()} NOUVEAU${unreadMailCount()>1?'X':''} MESSAGE${unreadMailCount()>1?'S':''}</span></button>
     <button onclick="initiateArchives()"><b>ARCHIVES</b><span>ACCÈS OMBRE I</span></button>
     <button onclick="initiateProfile()"><b>DOSSIER PERSONNEL</b><span>DOSSIER 000 // CLÔTURÉ</span></button>
    </div>
@@ -264,47 +264,46 @@ function initiateMissions(){
  shell(`<h1 class="title">MISSIONS</h1><div class="classified-block"><div class="eyebrow">AFFECTATIONS OPÉRATIONNELLES</div><h2>AUCUNE AFFECTATION</h2><p>Votre intégration au réseau est en cours.</p><p>Une première affectation vous sera transmise par votre Division.</p></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MISSIONS // OMBRE I');
 }
 const INITIATE_MESSAGES=[
- {from:'ADMINISTRATION',subject:'CHANGEMENT DE STATUT',date:'AUJOURD’HUI',body:()=>`Votre dossier candidat a été clôturé.\n\nVotre statut est désormais INITIÉ.\nAccréditation attribuée : OMBRE I.\n\nLes informations accessibles restent soumises au principe de compartimentation. Toute consultation excédant votre niveau d’autorisation doit être interrompue et signalée.`},
- {from:()=>S.affectation,subject:'AFFECTATION DE DIVISION',date:'AUJOURD’HUI',body:()=>divisionMeta(S.affectation).msg},
- {from:'ARCHIVES',subject:'AUTORISATIONS DOCUMENTAIRES',date:'AUJOURD’HUI',body:()=>`Votre accréditation autorise désormais la consultation du niveau OMBRE I.\n\n7 DOCUMENTS DISPONIBLES.\n23 RÉFÉRENCES RESTREINTES.\n\nLes références d’un niveau supérieur peuvent apparaître dans l’index sans que leur contenu vous soit accessible.`}
+ {from:'ADMINISTRATION',subject:'CHANGEMENT DE STATUT',date:'AUJOURD’HUI',preview:'Confirmation de votre nouveau niveau d’accès.',body:()=>`Votre dossier candidat a été clôturé.\n\nVotre statut est désormais INITIÉ.\nAccréditation attribuée : OMBRE I.\n\nLes informations accessibles restent soumises au principe de compartimentation. Toute consultation excédant votre niveau d’autorisation doit être interrompue et signalée.`},
+ {from:()=>S.affectation,subject:'AFFECTATION DE DIVISION',date:'AUJOURD’HUI',preview:'Communication réservée à votre affectation.',body:()=>divisionMeta(S.affectation).msg},
+ {from:'ARCHIVES',subject:'AUTORISATIONS DOCUMENTAIRES',date:'AUJOURD’HUI',preview:'Mise à jour de vos droits de consultation.',body:()=>`Votre accréditation autorise désormais la consultation du niveau OMBRE I.\n\n7 DOCUMENTS DISPONIBLES.\n23 RÉFÉRENCES RESTREINTES.\n\nLes références d’un niveau supérieur peuvent apparaître dans l’index sans que leur contenu vous soit accessible.`}
 ];
+function readMailSet(){if(!Array.isArray(S.initieMessagesLus))S.initieMessagesLus=[];return new Set(S.initieMessagesLus)}
+function unreadMailCount(){const r=readMailSet();return INITIATE_MESSAGES.filter((_,i)=>!r.has(i)).length}
 function initiateMessages(){
- shell(`<h1 class="title">MESSAGERIE</h1>
- <div class="mail-toolbar"><span>BOÎTE DE RÉCEPTION</span><b>3 NON LUS</b></div>
- <div class="mail-inbox">${INITIATE_MESSAGES.map((m,i)=>{const from=typeof m.from==='function'?m.from():m.from;return `<button class="mail-row unread-mail" onclick="openInitiateMessage(${i})"><span class="mail-status">●</span><span class="mail-from">${from}</span><span class="mail-subject"><b>${m.subject}</b><small>${i===0?'Confirmation de votre nouveau niveau d’accès.':i===1?'Communication réservée à votre affectation.':'Mise à jour de vos droits de consultation.'}</small></span><span class="mail-date">${m.date}</span></button>`}).join('')}</div>
- <button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // BOÎTE DE RÉCEPTION');
+ const read=readMailSet(), unread=unreadMailCount();
+ shell(`<h1 class="title">MESSAGERIE</h1><div class="mail-toolbar"><span>BOÎTE DE RÉCEPTION</span><b>${unread} NON LU${unread>1?'S':''}</b></div><div class="mail-inbox">${INITIATE_MESSAGES.map((m,i)=>{const from=typeof m.from==='function'?m.from():m.from;const isUnread=!read.has(i);return `<button class="mail-row ${isUnread?'unread-mail':'read-mail'}" onclick="openInitiateMessage(${i})"><span class="mail-status">${isUnread?'●':'○'}</span><span class="mail-from">${from}</span><span class="mail-subject"><b>${m.subject}</b><small>${m.preview}</small></span><span class="mail-date">${m.date}</span></button>`}).join('')}</div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // BOÎTE DE RÉCEPTION');
 }
 function openInitiateMessage(i){
- const m=INITIATE_MESSAGES[i]; const from=typeof m.from==='function'?m.from():m.from; const body=m.body();
+ if(!Array.isArray(S.initieMessagesLus))S.initieMessagesLus=[];
+ if(!S.initieMessagesLus.includes(i)){S.initieMessagesLus.push(i);save()}
+ const m=INITIATE_MESSAGES[i],from=typeof m.from==='function'?m.from():m.from,body=m.body();
  shell(`<div class="mail-reader"><div class="mail-reader-head"><button class="mail-back" onclick="initiateMessages()">← BOÎTE DE RÉCEPTION</button><div class="mail-ref">MESSAGE 0${i+1} // OMBRE I</div></div><h1>${m.subject}</h1><div class="mail-meta"><div><span>EXPÉDITEUR</span><b>${from}</b></div><div><span>DESTINATAIRE</span><b>${S.matricule}</b></div><div><span>STATUT</span><b>TRANSMISSION AUTORISÉE</b></div></div><div class="mail-body">${body.split('\n').map(x=>x?`<p>${x}</p>`:'<br>').join('')}</div><div class="mail-sign">FIN DE TRANSMISSION // ${from}</div></div>`,'MESSAGERIE // LECTURE');
 }
 const OMBRE1_ARCHIVES=[
- ['OI-GEN-001',"L'ORDRE DES CINQ OMBRES",'Présentation institutionnelle et doctrine opérationnelle de niveau Initié.'],
- ['OI-DIV-001','STRUCTURE DES CINQ DIVISIONS','Fonctions officielles, responsabilités et principe de compartimentation.'],
- ['OI-PRO-004','PROTOCOLE FACE À UNE ANOMALIE','Principes de signalement, observation, isolement et non-intervention.'],
- ['OI-LEX-001','LEXIQUE OPÉRATIONNEL','Terminologie autorisée au niveau OMBRE I.'],
- ['OI-HIS-003','CHRONOLOGIE INSTITUTIONNELLE','Extraits de la chronologie officielle communiquée aux Initiés.'],
- ['OI-INC-014','INCIDENT 1864 // PROJET LANTERNUM','Extrait autorisé. Huit Initiés disparus. Sept minutes demeurent non documentées.'],
- ['OI-ANO-007','MANIFESTÉS // CLASSIFICATION PRÉLIMINAIRE','Consultation limitée. Informations sensibles partiellement occultées.']
+ ['OI-GEN-001',"L'ORDRE DES CINQ OMBRES",'Doctrine institutionnelle de niveau Initié.'],
+ ['OI-DIV-001','STRUCTURE DES CINQ DIVISIONS','Attributions officielles et principe de compartimentation.'],
+ ['OI-PRO-004','PROTOCOLE FACE À UNE ANOMALIE','Procédure élémentaire d’observation et de signalement.'],
+ ['OI-LEX-001','LEXIQUE OPÉRATIONNEL','Définitions administratives autorisées au niveau OMBRE I.'],
+ ['OI-HIS-003','CHRONOLOGIE INSTITUTIONNELLE','Extraits volontairement incomplets de l’histoire officielle.'],
+ ['OI-INC-014','INCIDENT LANTERNUM // 1864','Notice d’incident. Annexes non accessibles.'],
+ ['OI-ANO-007','SUJETS DÉSIGNÉS « MANIFESTÉS »','Consignes élémentaires. Origine et classification restreintes.'],
+ ['OI-RAP-021','RAPPORT D’INTERVENTION // 17.06.2003','Extrait opérationnel présentant une divergence non résolue.']
 ];
 function initiateArchives(){
- shell(`<h1 class="title">ARCHIVES</h1><div class="archive-head">ACCRÉDITATION ACTIVE // OMBRE I<br>7 DOCUMENTS CONSULTABLES // 23 RÉFÉRENCES RESTREINTES</div>
- <div class="archive-list">${OMBRE1_ARCHIVES.map((a,i)=>`<button onclick="openArchive(${i})"><code>${a[0]}</code><b>${a[1]}</b><span>CONSULTABLE</span></button>`).join('')}
- <div class="locked-archive"><code>OII-███-███</code><b>RÉFÉRENCE RESTREINTE</b><span>ACCÈS OMBRE II REQUIS</span></div>
- <div class="locked-archive"><code>OIII-HIS-00</code><b>INCIDENT FONDATEUR</b><span>ACCÈS OMBRE III REQUIS</span></div>
- <div class="locked-archive"><code>█████████</code><b>████████████████</b><span>ACCÈS REFUSÉ</span></div>
- </div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'ARCHIVES // OMBRE I');
+ shell(`<h1 class="title">ARCHIVES</h1><div class="archive-head">ACCRÉDITATION ACTIVE // OMBRE I<br>8 DOCUMENTS CONSULTABLES // 23 RÉFÉRENCES RESTREINTES</div><div class="archive-list">${OMBRE1_ARCHIVES.map((a,i)=>`<button onclick="openArchive(${i})"><code>${a[0]}</code><b>${a[1]}</b><span>CONSULTABLE</span></button>`).join('')}<div class="locked-archive"><code>OII-███-███</code><b>RÉFÉRENCE RESTREINTE</b><span>ACCÈS OMBRE II REQUIS</span></div><div class="locked-archive"><code>OIII-HIS-00</code><b>INCIDENT FONDATEUR</b><span>ACCÈS OMBRE III REQUIS</span></div><div class="locked-archive"><code>█████████</code><b>████████████████</b><span>ACCÈS REFUSÉ</span></div></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'ARCHIVES // OMBRE I');
 }
 function openArchive(i){
  const a=OMBRE1_ARCHIVES[i];
  const bodies=[
- `L'Ordre des Cinq Ombres est une organisation transséculaire chargée de maintenir la continuité des réalités humaines face aux phénomènes susceptibles d'en compromettre la stabilité.\n\nPRINCIPE I — LA RÉALITÉ N'EST QU'UNE VERSION.\nPRINCIPE II — L'HISTOIRE EST UNE BARRIÈRE.\nPRINCIPE III — L'UNITÉ MÈNE À LA DISSOLUTION.\n\nToute interprétation excédant votre niveau d'accréditation doit être suspendue.`,
- `Les cinq Divisions constituent les structures opérationnelles connues de l'Ordre.\n\nŒIL FENDU — observation et anticipation.\nFLAMME INVERSÉE — intervention et modification.\nMAIN CASSÉE — causalité et conséquences.\nSPIRALE D'OS — traces, archives et continuité historique.\nSABLIER NOIR — phénomènes profonds, confinement et sécurité interne.\n\nCertaines fonctions demeurent compartimentées.`,
+ `L'Ordre des Cinq Ombres est une organisation transséculaire chargée d'identifier, contenir et corriger les phénomènes susceptibles de compromettre la continuité de la réalité humaine observable.\n\nPRINCIPE I — LA RÉALITÉ N'EST QU'UNE VERSION.\nPRINCIPE II — L'HISTOIRE EST UNE BARRIÈRE.\nPRINCIPE III — L'UNITÉ MÈNE À LA DISSOLUTION.\n\nToute interprétation excédant votre niveau d'accréditation doit être suspendue.`,
+ `Les cinq Divisions constituent les structures opérationnelles connues de l'Ordre.\n\nŒIL FENDU — observation et anticipation.\nFLAMME INVERSÉE — intervention et modification.\nMAIN CASSÉE — causalité et conséquences.\nSPIRALE D'OS — traces, archives et continuité historique.\nSABLIER NOIR — confinement, sécurité interne et traitement des informations à accès restreint.\n\nCertaines attributions de Division ne sont pas accessibles au niveau OMBRE I.`,
  `FACE À UNE ANOMALIE :\n01. Ne pas chercher immédiatement une explication.\n02. Établir ce qui est effectivement observable.\n03. Distinguer témoignage, souvenir et preuve.\n04. Limiter toute interaction non autorisée.\n05. Signaler les divergences au Terminal.\n\nUne anomalie observée n'autorise pas sa manipulation.`,
- `ANOMALIE — divergence locale avec la continuité attendue.\nFRACTURE — instabilité affectant un ou plusieurs mécanismes de stabilité perceptive.\nARTEFACT — objet conservant une empreinte anormale stable.\nMANIFESTÉ — être vivant durablement altéré par une Fracture.\nANCRAGE — dispositif ou lieu employé pour stabiliser certains phénomènes.\n\nNEBULINE — [DÉFINITION PARTIELLE // OMBRE I]`,
- `EXTRAIT AUTORISÉ.\n\n~1280 — Premières occurrences classées rétrospectivement comme Taches Noires.\n1347 — Corrélations anormales relevées dans plusieurs zones de mortalité massive.\n1350 — Premiers dossiers de Manifestés conservés.\n1478 — Grande Purge.\n1520 — Formalisation des cinq Divisions.\n1864 — Projet Lanternum.\n1947 — Pacte du Silence.\n2003 — Vol des Archives Fragmentées.\nDepuis 2021 — Saturation Nebulaire.\n\nPlusieurs entrées ont été retirées de cette édition.`,
- `PROJET LANTERNUM — 1864.\n\nTentative interdite d'interaction contrôlée avec un phénomène de haute instabilité.\n\nPERSONNEL ENGAGÉ : 8 INITIÉS.\nPERSONNEL RÉCUPÉRÉ : 0.\nDURÉE NON DOCUMENTÉE : 7 MINUTES.\n\nLe projet a été interrompu. Toute reproduction du protocole est interdite.\n\n[ANNEXES : ACCÈS OMBRE III REQUIS]`,
- `Les Manifestés sont des êtres vivants durablement altérés par l'exposition à une Fracture.\n\nIls ne doivent pas être assimilés systématiquement à une menace, une possession ou une entité étrangère.\n\nCertaines altérations demeurent compatibles avec une stabilité durable.\n\nCLASSIFICATIONS DISPONIBLES : DÉPHASÉS / MNÉMIQUES / CONTOURS / ÉCHOÏQUES.\n\n[CLASSIFICATION COMPLÈTE : ACCÈS RESTREINT]`
+ `ANOMALIE — Événement présentant une divergence vérifiable avec les conditions normalement attendues.\n\nFRACTURE — Classification appliquée à certaines anomalies persistantes ou évolutives.\n[MÉCANISME : ACCÈS OMBRE II REQUIS]\n\nARTEFACT — Objet présentant ou conservant des propriétés anormales documentées.\n\nMANIFESTÉ — Désignation administrative applicable à certains sujets biologiques associés à une Fracture.\n\nANCRAGE — Moyen de stabilisation autorisé.\n[PRINCIPES DE FONCTIONNEMENT : ACCÈS RESTREINT]`,
+ `EXTRAIT AUTORISÉ.\n\n~1280 — [CLASSIFICATION RÉTROACTIVE]\n1347 — [DONNÉES PARTIELLEMENT ACCESSIBLES]\n1350 — Première occurrence conservée de █████████\n1478 — Grande Purge.\n1520 — Formalisation des cinq Divisions.\n1864 — Incident Lanternum.\n1947 — Pacte du Silence.\n2003 — Incident des Archives Fragmentées.\n\nPlusieurs entrées ont été retirées de cette édition.`,
+ `INCIDENT LANTERNUM — 1864.\n\nSTATUT : CLÔTURÉ\nCLASSIFICATION : ███████\nSITE : █████████████\nPERSONNEL ENGAGÉ : 8\nPERSONNEL RÉCUPÉRÉ : 0\n\nDURÉE DE L'INCIDENT : 00:07:00\n\nCAUSE : [ACCÈS OMBRE III REQUIS]\nRÉSULTAT : [ACCÈS OMBRE III REQUIS]\n\nRECOMMANDATION : Toute tentative de reproduction des conditions de l'incident est formellement interdite.\n\nANNEXES : 11\nACCESSIBLES : 0`,
+ `SUJETS DÉSIGNÉS « MANIFESTÉS »\n\nCLASSIFICATION : BIOLOGIQUE / ANOMALIE ASSOCIÉE\nNIVEAU DE MENACE : VARIABLE\n\nPROTOCOLE :\n— Ne pas établir de contact sans autorisation.\n— Ne pas présumer d'une altération cognitive.\n— Ne pas présumer d'une intention hostile.\n— Ne pas employer de protocole de confinement non adapté au sujet.\n\nNOTE : Un Manifesté doit être considéré comme un sujet avant d'être considéré comme un phénomène.\n\n[ORIGINE : ACCÈS OMBRE II REQUIS]\n[CLASSIFICATION : ACCÈS OMBRE II REQUIS]\n[PROTOCOLES SPÉCIFIQUES : ACCÈS DE DIVISION REQUIS]`,
+ `ÉQUIPE : FI-03\nSITE : ████████\nOBJET : RÉCUPÉRATION DOCUMENTAIRE\n\n17:42 — Entrée sur site.\n17:51 — Première divergence.\n17:56 — Perte du contact avec FI-03-B.\n17:56 — FI-03-B confirme être seul.\n17:58 — Deux voix enregistrées sur son canal.\n18:04 — Objet récupéré.\n\nPERSONNEL PRÉSENT : 1\nVOIX IDENTIFIÉES : 2\n\nDOSSIER CLÔTURÉ.`
  ];
  shell(`<div class="archive-doc"><code>${a[0]}</code><h1>${a[1]}</h1><div class="doc-stamp">DIFFUSION AUTORISÉE // OMBRE I</div><pre>${bodies[i]}</pre></div><button class="btn" onclick="initiateArchives()">[ RETOUR AUX ARCHIVES ]</button>`,'ARCHIVES // CONSULTATION');
 }
@@ -334,7 +333,7 @@ function home(){
         <div class="identity-name">ORDRE DES CINQ OMBRES</div>
         <div class="identity-sub">TERMINAL<br>ACCÈS CANDIDAT</div>
         <div class="identity-motto">DISCIPLINE<br>DISCRÉTION<br>PERSÉVÉRANCE<br><br>—<br><br>CERTAINES PORTES<br>NE S’OUVRENT QU’UNE SEULE FOIS.</div>
-        <div class="identity-version">OCI-TERM V1.5.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
+        <div class="identity-version">OCI-TERM V1.6.0 &nbsp;&nbsp;|&nbsp;&nbsp; PROTOCOLE 000</div>
       </aside>
       <section class="main-console">
         <header class="home-head"><div><h1>TERMINAL // ACCÈS CANDIDAT</h1><div class="tiny">RÉSEAU SÉCURISÉ // NIVEAU 0</div></div><div class="head-meta">${stamp}<br>CONNEXION SÉCURISÉE</div></header>

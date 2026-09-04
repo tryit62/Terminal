@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v150-mail-responsive';
+const CACHE='ordre-terminal-v160-archives-read-responsive';
 const ASSETS=['./','./index.html','./style.css','./app.js','./manifest.webmanifest','./order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',
   './division-1-oeil-fendu.png',
   './division-2-flamme-inversee.png',
