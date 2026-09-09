@@ -1,0 +1,36 @@
+TERMINAL V1.9 — CÉRÉMONIE D000 V1.4.0 INTÉGRÉE
+
+BASE
+- Terminal complet V1.8.1 actuel.
+- Cérémonie V1.4.0 conservée comme cinématique canonique.
+
+FLUX
+1. Le candidat accepte le Serment.
+2. Le Terminal clôt le protocole 000.
+3. La cérémonie V1.4.0 s'ouvre plein écran.
+4. Elle récupère automatiquement le matricule et la vraie Division du profil.
+5. La conclusion affiche INITIÉ / OMBRE I / Division.
+6. Un bouton CONTINUER apparaît.
+7. CONTINUER ferme la cérémonie et ouvre directement le Terminal Initié.
+
+PERSISTANCE
+- La cérémonie n'est pas rejouée lors des connexions suivantes.
+- Le profil reste INITIÉ / OMBRE I.
+- Une entrée "ARCHIVE PERSONNELLE // REVOIR LA CÉRÉMONIE D’INITIATION"
+  est disponible dans Archives.
+- La relecture ne modifie ni Division, ni statut, ni progression.
+- À la fin d'une relecture : RETOURNER AUX ARCHIVES.
+
+AUDIO / iOS
+- Le lecteur de cérémonie est préchargé dans un iframe local.
+- Le clic J'ACCEPTE déverrouille l'audio immédiatement.
+- La cérémonie est lancée après la clôture du Serment.
+- Un secours explicite n'apparaît que si Safari refuse malgré tout la reprise audio.
+
+CACHE
+- Cache PWA passé à ordre-terminal-v190-ceremonie-integree.
+- index/style/app passent en ?v=190.
+
+GITHUB
+Remplacer/téléverser TOUS les fichiers de ce dossier à la racine, car cette version
+ajoute ceremony.html, ceremonie.mp3 et les six emblèmes utilisés par la cinématique.

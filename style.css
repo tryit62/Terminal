@@ -1089,3 +1089,8 @@ body.initiated .init-id>*{min-width:0}
 @media(max-width:600px){
  .carto-stage{aspect-ratio:1.35/1;min-height:350px !important}
 }
+
+/* V1.9 — archive personnelle de la cérémonie */
+.archive-personal{border:1px solid var(--line);padding:12px;margin:14px 0 18px;background:rgba(4,6,5,.52)}
+.archive-personal .btn{margin:0}
+.archive-personal small{display:block;color:var(--muted);font-size:8px;letter-spacing:.08em;line-height:1.6;margin-top:8px}
