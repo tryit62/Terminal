@@ -1381,6 +1381,7 @@ function ceremonyUnlock(){
 function ceremonyOpen(mode="first"){
  const host=document.getElementById("ceremonyNative"); if(!host)return;
  host.classList.add("active");
+ document.body.classList.add("ceremony-running");
  document.body.style.overflow="hidden";
  try{
    window.startTerminalCeremony({
@@ -1396,6 +1397,7 @@ function ceremonyOpen(mode="first"){
 function ceremonyClose(){
  const host=document.getElementById("ceremonyNative");
  if(host)host.classList.remove("active");
+ document.body.classList.remove("ceremony-running");
  document.body.style.overflow="";
  terminalStarted=false;
  try{reset();}catch(e){}
