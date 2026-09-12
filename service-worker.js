@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v206-gate-fix';
+const CACHE='ordre-terminal-v207-bienvenue-sync';
 const ASSETS=[
 './','./index.html','./style.css','./app.js','./manifest.webmanifest','./service-worker.js',
 './order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',

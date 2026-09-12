@@ -1326,6 +1326,7 @@ function showFinal(){
    $("divisionFinalImg").src=d.img;
    $("divisionFinal").classList.add("show");
  });
+ // Synchronisé avec le master V0.8.2 : VOIX "Bienvenue" à ~219.9 s absolues.
  later(9000,()=>cap("BIENVENUE PARMI LES CINQ OMBRES… INITIÉ.",6500));
  later(11800,()=>{const b=$("ociContinue");b.classList.add("show");b.onclick=()=>{try{sessionStorage.setItem("OCI_CEREMONY_RESULT",(__ociPayload.mode==="replay"?"replay":"complete"))}catch(e){} location.href="index.html?v=203";};});
  
