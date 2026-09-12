@@ -1405,6 +1405,7 @@ function testAudio(){
  }).catch(e=>alert("Erreur audio : "+e.message));
 }
 
+try{parent.postMessage({type:"ceremony-ready"},"*")}catch(e){}
 </script>
 </body></html>
 <!-- V1.3.4: no asset changes -->

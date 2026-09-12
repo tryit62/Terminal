@@ -1368,43 +1368,34 @@ function assignmentMaterialSuspended(missing){
 }
 
 
-/* V1.9 — CÉRÉMONIE D000 INTÉGRÉE AU TERMINAL */
+/* V1.9.3 — CÉRÉMONIE : CHARGEMENT FIABLE */
+let ceremonyPending=null;
 function ceremonyFrame(){return document.getElementById("ceremonyFrame")}
-function ceremonyUnlock(){
- const f=ceremonyFrame();
- try{f?.contentWindow?.unlockCeremonyAudio?.()}catch(e){}
-}
+function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
  const f=ceremonyFrame(); if(!f)return;
- f.style.display="block";
- document.body.style.overflow="hidden";
- const payload={type:"start-ceremony",mode,matricule:S.matricule,division:S.affectation};
- const send=()=>{try{f.contentWindow.postMessage(payload,"*")}catch(e){}};
- send(); setTimeout(send,180);
+ ceremonyPending={type:"start-ceremony",mode,matricule:S.matricule,division:S.affectation};
+ f.style.display="block"; document.body.style.overflow="hidden";
+ f.src="ceremony.html?v=193&t="+Date.now();
 }
 function ceremonyClose(){
- const f=ceremonyFrame(); if(f)f.style.display="none";
- document.body.style.overflow="";
+ const f=ceremonyFrame(); if(f){f.style.display="none";f.src="about:blank";}
+ ceremonyPending=null; document.body.style.overflow="";
 }
 window.addEventListener("message",e=>{
  if(!e.data||!e.data.type)return;
+ if(e.data.type==="ceremony-ready"){
+   if(ceremonyPending) try{ceremonyFrame().contentWindow.postMessage(ceremonyPending,"*")}catch(err){}
+   return;
+ }
  if(e.data.type==="ceremony-complete"){
-   ceremonyClose();
-   S.ceremonieInitiationVue=true;
-   S.initieAccueilVu=true;
-   save();
-   applyInitiateTheme();
-   initiateHome();
+   ceremonyClose(); S.ceremonieInitiationVue=true; S.initieAccueilVu=true; save(); applyInitiateTheme(); initiateHome();
  }
  if(e.data.type==="ceremony-return-archives"){
-   ceremonyClose();
-   applyInitiateTheme();
-   initiateArchives();
+   ceremonyClose(); applyInitiateTheme(); initiateArchives();
  }
 });
-function replayInitiationCeremony(){
- ceremonyOpen("replay");
-}
+function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[
   "Je reconnais que ce que je perçois n'est pas nécessairement tout ce qui existe.",
   "Je reconnais que toute vérité ne peut être transmise sans conséquence.",
