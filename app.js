@@ -1368,16 +1368,11 @@ function assignmentMaterialSuspended(missing){
 }
 
 
-/* V2.0.2 — CÉRÉMONIE PAR NAVIGATION PLEINE PAGE */
+/* V2.0.3 — pont vers le module V1.4.0 EXACT */
 function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
- const payload={
-   mode,
-   matricule:S.matricule,
-   division:S.affectation
- };
- try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify(payload));}catch(e){}
- window.location.href="ceremony.html?v=202";
+ try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify({mode,matricule:S.matricule,division:S.affectation}));}catch(e){}
+ location.href="ceremony.html?v=203";
 }
 function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[
@@ -1462,13 +1457,10 @@ function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTI
 const views={dossier,evals,messages,archives,profile};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});boot();
 
-
-/* V2.0.2 — retour de la cérémonie pleine page */
 window.addEventListener("load",()=>{
- let r=null;try{r=sessionStorage.getItem("OCI_CEREMONY_RESULT");}catch(e){}
+ let r=null;try{r=sessionStorage.getItem("OCI_CEREMONY_RESULT")}catch(e){}
  if(!r)return;
- try{sessionStorage.removeItem("OCI_CEREMONY_RESULT");}catch(e){}
- if(r==="complete"){
-   S.ceremonieInitiationVue=true;S.initieAccueilVu=true;save();applyInitiateTheme();initiateHome();
- }else if(r==="replay"){applyInitiateTheme();initiateArchives();}
+ try{sessionStorage.removeItem("OCI_CEREMONY_RESULT")}catch(e){}
+ if(r==="complete"){S.ceremonieInitiationVue=true;S.initieAccueilVu=true;save();applyInitiateTheme();initiateHome();}
+ else if(r==="replay"){applyInitiateTheme();initiateArchives();}
 });

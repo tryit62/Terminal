@@ -957,20 +957,7 @@ html body #order.ceremony-ended{
   #sealrings .ring{animation:none!important}
 }
 
-
-/* INTÉGRATION TERMINAL V1.9 */
-#testbar{display:none!important}
-
-
-
-#terminalContinue{
- position:fixed;left:50%;bottom:max(34px,env(safe-area-inset-bottom));
- transform:translateX(-50%);z-index:9999;opacity:0;pointer-events:none;
- border:1px solid rgba(235,235,228,.68);background:rgba(3,4,4,.82);
- color:#f0f0e9;font-family:"Courier New",monospace;letter-spacing:.18em;
- padding:15px 28px;min-width:220px;transition:opacity 1.2s ease;
-}
-#terminalContinue.show{opacity:1;pointer-events:auto}
+#ociContinue{position:fixed;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;opacity:0;pointer-events:none;padding:14px 28px;border:1px solid rgba(235,235,228,.7);background:rgba(0,0,0,.82);color:#eee;font:700 13px "Courier New",monospace;letter-spacing:.16em;transition:opacity 1s ease}#ociContinue.show{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -1027,7 +1014,7 @@ html body #order.ceremony-ended{
   </div>
  </div>
 </div>
-<button id="terminalContinue">CONTINUER</button>
+<div id="testbar"><button onclick="restart()">REJOUER</button><button onclick="skipToFinal()">AFFECTATION</button></div>
 
 <script>
 const divisions={
@@ -1038,52 +1025,6 @@ const divisions={
  sablier:{name:"SABLIER NOIR",color:"#8e74bb",img:"sablier.png"}
 };
 let timers=[], selected="oeil", audioTestTimer=null;
-let terminalMode="first", terminalMatricule="OCI-26-XXXXX", terminalStarted=false;
-
-function divisionToKey(name){
- const n=String(name||"").toUpperCase();
- if(n.includes("ŒIL")||n.includes("OEIL")) return "oeil";
- if(n.includes("FLAMME")) return "flamme";
- if(n.includes("MAIN")) return "main";
- if(n.includes("SPIRALE")) return "spirale";
- if(n.includes("SABLIER")) return "sablier";
- return "oeil";
-}
-window.unlockCeremonyAudio=function(){
- const a=document.getElementById("theme");
- if(!a)return;
- try{
-   a.muted=true;a.volume=0;
-   const p=a.play();
-   if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;a.volume=1}).catch(()=>{});
- }catch(e){}
-};
-window.startTerminalCeremony=function(payload={}){
- if(terminalStarted)return;
- terminalStarted=true;
- document.body.classList.add("terminal-integrated","playing");
- const scene=document.getElementById("scene"); if(scene)scene.style.display="block";
- terminalMode=payload.mode||"first";
- terminalMatricule=payload.matricule||"OCI-26-XXXXX";
- selected=divisionToKey(payload.division);
- const mat=document.getElementById("mat"); if(mat)mat.textContent=terminalMatricule;
- const btn=document.getElementById("terminalContinue");
- if(btn)btn.textContent=terminalMode==="replay"?"RETOURNER AUX ARCHIVES":"CONTINUER";
- document.getElementById("intro").style.display="none";
- const a=document.getElementById("theme");
- a.pause();a.currentTime=0;a.muted=false;a.volume=1;
- a.play().then(()=>ceremony()).catch(()=>{
-   /* secours iOS : un seul bouton explicite si l'autorisation audio a été perdue */
-   if(btn){btn.textContent="LANCER LA CÉRÉMONIE";btn.classList.add("show");btn.onclick=()=>{
-     btn.classList.remove("show");btn.onclick=null;
-     a.play().then(()=>ceremony());
-   }}
- });
-};
-window.addEventListener("message",e=>{
- if(e.data&&e.data.type==="start-ceremony")window.startTerminalCeremony(e.data);
-});
-
 const $=id=>document.getElementById(id);
 function later(ms,fn){timers.push(setTimeout(fn,ms))}
 function clearTimers(){timers.forEach(clearTimeout);timers=[]}
@@ -1260,12 +1201,7 @@ function showSymbol(i,text){
  later(5600,()=>el.classList.add("orbit"));
 }
 function ceremony(){
- reset();
- document.body.classList.add("terminal-integrated","playing");
- $("stage").style.display="block";
- $("intro").style.display="none";
- $("testbar").style.display="none";
- try{ if(typeof resizeEnergy==="function") resizeEnergy(); }catch(e){}
+ reset(); $("intro").style.display="none"; $("testbar").style.display="flex";
 
  // V0.5 — synchronisation sur The Five-Note Seal (3:29.7)
  // Partie I : montée / révélation du monde
@@ -1362,7 +1298,6 @@ $("order").classList.add("show","reveal");$("geo").style.opacity=.14;
  later(210900,()=>showFinal());
 }
 function showFinal(){
- $("mat").textContent=terminalMatricule;
  const d=divisions[selected];
  document.documentElement.style.setProperty("--accent",d.color);
  $("status").classList.add("show");
@@ -1376,17 +1311,7 @@ function showFinal(){
    $("divisionFinal").classList.add("show");
  });
  later(9000,()=>cap("BIENVENUE PARMI LES CINQ OMBRES… INITIÉ.",6500));
- later(11800,()=>{
-   const b=$("terminalContinue");
-   b.classList.add("show");
-   b.onclick=()=>{
-     b.classList.remove("show");
-     try{
- sessionStorage.setItem("OCI_CEREMONY_RESULT",terminalMode==="replay"?"replay":"complete");
-}catch(e){}
-window.location.href="index.html?v=202";
-   };
- });
+ later(11800,()=>{const b=$("ociContinue");b.classList.add("show");b.onclick=()=>{try{sessionStorage.setItem("OCI_CEREMONY_RESULT",(__ociPayload.mode==="replay"?"replay":"complete"))}catch(e){} location.href="index.html?v=203";};});
  
 }
 function restart(){reset();$("intro").style.display="flex";$("testbar").style.display="none"}
@@ -1413,18 +1338,22 @@ function testAudio(){
  }).catch(e=>alert("Erreur audio : "+e.message));
 }
 
-try{parent.postMessage({type:"ceremony-ready"},"*")}catch(e){}
 
+/* TERMINAL BRIDGE V2.0.3 — données seulement, moteur V1.4.0 inchangé */
+let __ociPayload={};
+try{__ociPayload=JSON.parse(sessionStorage.getItem("OCI_CEREMONY_PAYLOAD")||"{}")}catch(e){}
+function __ociDivisionKey(name){
+ const n=(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase();
+ if(n.includes("OEIL"))return"oeil"; if(n.includes("FLAMME"))return"flamme";
+ if(n.includes("MAIN"))return"main"; if(n.includes("SPIRALE"))return"spirale";
+ if(n.includes("SABLIER"))return"sablier"; return"oeil";
+}
 try{
- const __p=JSON.parse(sessionStorage.getItem("OCI_CEREMONY_PAYLOAD")||"{}");
- terminalMode=__p.mode||"first";
- terminalMatricule=__p.matricule||"OCI-26-XXXXX";
- selected=divisionToKey(__p.division);
- const __m=document.getElementById("mat");if(__m)__m.textContent=terminalMatricule;
- const __c=document.getElementById("choice");if(__c)__c.value=selected;
- document.body.classList.remove("terminal-integrated","playing");
- const __i=document.getElementById("intro");if(__i)__i.style.display="flex";
+ selected=__ociDivisionKey(__ociPayload.division);
+ $("choice").value=selected;
+ $("mat").textContent=__ociPayload.matricule||"OCI-26-XXXXX";
 }catch(e){}
 </script>
+<button id="ociContinue">CONTINUER</button>
 </body></html>
 <!-- V1.3.4: no asset changes -->
