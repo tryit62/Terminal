@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v201-startup-fix';
+const CACHE='ordre-terminal-v202-fullpage-ceremony';
 const ASSETS=[
 './','./index.html','./style.css','./app.js','./manifest.webmanifest','./service-worker.js',
 './order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',

@@ -960,9 +960,9 @@ html body #order.ceremony-ended{
 
 /* INTÉGRATION TERMINAL V1.9 */
 #testbar{display:none!important}
-body.terminal-integrated #intro{display:none!important}
-body.terminal-integrated.playing #scene{display:block!important}
-body.terminal-integrated.playing #final{display:flex!important}
+
+
+
 #terminalContinue{
  position:fixed;left:50%;bottom:max(34px,env(safe-area-inset-bottom));
  transform:translateX(-50%);z-index:9999;opacity:0;pointer-events:none;
@@ -1039,7 +1039,7 @@ const divisions={
 };
 let timers=[], selected="oeil", audioTestTimer=null;
 let terminalMode="first", terminalMatricule="OCI-26-XXXXX", terminalStarted=false;
-document.body.classList.add("terminal-integrated");
+
 function divisionToKey(name){
  const n=String(name||"").toUpperCase();
  if(n.includes("ŒIL")||n.includes("OEIL")) return "oeil";
@@ -1260,7 +1260,12 @@ function showSymbol(i,text){
  later(5600,()=>el.classList.add("orbit"));
 }
 function ceremony(){
- reset(); $("intro").style.display="none"; $("testbar").style.display="flex";
+ reset();
+ document.body.classList.add("terminal-integrated","playing");
+ $("stage").style.display="block";
+ $("intro").style.display="none";
+ $("testbar").style.display="none";
+ try{ if(typeof resizeEnergy==="function") resizeEnergy(); }catch(e){}
 
  // V0.5 — synchronisation sur The Five-Note Seal (3:29.7)
  // Partie I : montée / révélation du monde
@@ -1376,7 +1381,10 @@ function showFinal(){
    b.classList.add("show");
    b.onclick=()=>{
      b.classList.remove("show");
-     parent.postMessage({type:terminalMode==="replay"?"ceremony-return-archives":"ceremony-complete"},"*");
+     try{
+ sessionStorage.setItem("OCI_CEREMONY_RESULT",terminalMode==="replay"?"replay":"complete");
+}catch(e){}
+window.location.href="index.html?v=202";
    };
  });
  
@@ -1406,6 +1414,17 @@ function testAudio(){
 }
 
 try{parent.postMessage({type:"ceremony-ready"},"*")}catch(e){}
+
+try{
+ const __p=JSON.parse(sessionStorage.getItem("OCI_CEREMONY_PAYLOAD")||"{}");
+ terminalMode=__p.mode||"first";
+ terminalMatricule=__p.matricule||"OCI-26-XXXXX";
+ selected=divisionToKey(__p.division);
+ const __m=document.getElementById("mat");if(__m)__m.textContent=terminalMatricule;
+ const __c=document.getElementById("choice");if(__c)__c.value=selected;
+ document.body.classList.remove("terminal-integrated","playing");
+ const __i=document.getElementById("intro");if(__i)__i.style.display="flex";
+}catch(e){}
 </script>
 </body></html>
 <!-- V1.3.4: no asset changes -->

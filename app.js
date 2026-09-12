@@ -1368,49 +1368,17 @@ function assignmentMaterialSuspended(missing){
 }
 
 
-/* V2.0 — CÉRÉMONIE D000 NATIVE, SANS IFRAME */
-function ceremonyUnlock(){
- const a=document.getElementById("theme");
- if(!a)return;
- try{
-   a.muted=true;a.volume=0;
-   const p=a.play();
-   if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;a.volume=1}).catch(()=>{});
- }catch(e){}
-}
+/* V2.0.2 — CÉRÉMONIE PAR NAVIGATION PLEINE PAGE */
+function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
- const host=document.getElementById("ceremonyNative"); if(!host)return;
- host.classList.add("active");
- document.body.classList.add("ceremony-running");
- document.body.style.overflow="hidden";
- try{
-   window.startTerminalCeremony({
-     mode,
-     matricule:S.matricule,
-     division:S.affectation
-   });
- }catch(err){
-   const d=document.getElementById("ceremonyDiag");
-   if(d){d.style.display="block";d.textContent="ERREUR CINÉMATIQUE\n\n"+(err.message||String(err));}
- }
+ const payload={
+   mode,
+   matricule:S.matricule,
+   division:S.affectation
+ };
+ try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify(payload));}catch(e){}
+ window.location.href="ceremony.html?v=202";
 }
-function ceremonyClose(){
- const host=document.getElementById("ceremonyNative");
- if(host)host.classList.remove("active");
- document.body.classList.remove("ceremony-running");
- document.body.style.overflow="";
- terminalStarted=false;
- try{reset();}catch(e){}
-}
-window.finishNativeCeremony=function(mode){
- ceremonyClose();
- if(mode==="replay"){applyInitiateTheme();initiateArchives();return;}
- S.ceremonieInitiationVue=true;
- S.initieAccueilVu=true;
- save();
- applyInitiateTheme();
- initiateHome();
-};
 function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[
   "Je reconnais que ce que je perçois n'est pas nécessairement tout ce qui existe.",
@@ -1493,3 +1461,14 @@ function assistance(){shell(`<h1 class="title">SOLLICITER LE SUPERVISEUR</h1><p 
 function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>${S.serment?'INITIÉ':'CANDIDAT'}</span><b>ACCRÉDITATION</b><span>${S.serment?'OMBRE I':'0'}</span><b>DIVISION</b><span>${S.affectationDone?S.affectation:'—'}</span><b>DOSSIERS TERMINÉS</b><span>${S.serment?'1':'0'}</span></div><div class="rule"></div><div class="terminal">${S.serment?'PROTOCOLE 000 CLÔTURÉ — ACCÈS OMBRE I ACTIF':(S.affectationDone?'AFFECTATION PROVISOIRE CONFIRMÉE — SERMENT EN ATTENTE':'AFFECTATION EN ATTENTE')}</div>${back()}`);wireBack()}
 const views={dossier,evals,messages,archives,profile};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});boot();
+
+
+/* V2.0.2 — retour de la cérémonie pleine page */
+window.addEventListener("load",()=>{
+ let r=null;try{r=sessionStorage.getItem("OCI_CEREMONY_RESULT");}catch(e){}
+ if(!r)return;
+ try{sessionStorage.removeItem("OCI_CEREMONY_RESULT");}catch(e){}
+ if(r==="complete"){
+   S.ceremonieInitiationVue=true;S.initieAccueilVu=true;save();applyInitiateTheme();initiateHome();
+ }else if(r==="replay"){applyInitiateTheme();initiateArchives();}
+});
