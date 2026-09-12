@@ -1372,7 +1372,7 @@ function assignmentMaterialSuspended(missing){
 function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
  try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify({mode,matricule:S.matricule,division:S.affectation}));}catch(e){}
- location.href="ceremony.html?v=203";
+ location.href="ceremony.html?v=205";
 }
 function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[

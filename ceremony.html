@@ -958,6 +958,22 @@ html body #order.ceremony-ended{
 }
 
 #ociContinue{position:fixed;left:50%;bottom:max(28px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;opacity:0;pointer-events:none;padding:14px 28px;border:1px solid rgba(235,235,228,.7);background:rgba(0,0,0,.82);color:#eee;font:700 13px "Courier New",monospace;letter-spacing:.16em;transition:opacity 1s ease}#ociContinue.show{opacity:1;pointer-events:auto}
+
+body.oci-terminal-flow #intro,
+body.oci-terminal-flow #testbar,
+body.oci-terminal-flow #choice,
+body.oci-terminal-flow #launch,
+body.oci-terminal-flow #audioTest,
+body.oci-terminal-flow #restart,
+body.oci-terminal-flow #skip,
+body.oci-terminal-flow [onclick*="restart"],
+body.oci-terminal-flow [onclick*="skipToFinal"]{display:none!important}
+
+#ociGate{display:none;position:fixed;inset:0;z-index:999999;background:#000;align-items:center;justify-content:center}
+#ociGate button{padding:15px 28px;border:1px solid rgba(232,229,220,.55);background:#050505;color:#e8e5dc;font:700 12px "Courier New",monospace;letter-spacing:.18em}
+body.oci-terminal-flow #ociGate{display:flex}
+body.oci-terminal-flow.oci-started #ociGate{display:none}
+
 </style>
 </head>
 <body>
@@ -978,13 +994,13 @@ html body #order.ceremony-ended{
  <div class="field-core"></div>
 </div>
  <div id="symbols">
-  <div class="symbol" id="s1"><img src="oeil.png"></div>
-  <div class="symbol" id="s2"><img src="flamme.png"></div>
-  <div class="symbol" id="s3"><img src="main.png"></div>
-  <div class="symbol" id="s4"><img src="spirale.png"></div>
-  <div class="symbol" id="s5"><img src="sablier.png"></div>
+  <div class="symbol" id="s1"><img src="division-1-oeil-fendu.png?v=204"></div>
+  <div class="symbol" id="s2"><img src="division-2-flamme-inversee.png?v=204"></div>
+  <div class="symbol" id="s3"><img src="division-3-main-cassee.png?v=204"></div>
+  <div class="symbol" id="s4"><img src="division-4-spirale-os.png?v=204"></div>
+  <div class="symbol" id="s5"><img src="division-5-sablier-noir.png?v=204"></div>
  </div>
- <div class="order" id="order"><img src="ordre.png"></div>
+ <div class="order" id="order"><img src="order-logo.png?v=204"></div>
 </div>
  <div id="caption"></div>
  <div id="finalLogo"></div>
@@ -1018,11 +1034,11 @@ html body #order.ceremony-ended{
 
 <script>
 const divisions={
- oeil:{name:"ŒIL FENDU",color:"#d9e8ff",img:"oeil.png"},
- flamme:{name:"FLAMME INVERSÉE",color:"#d44b45",img:"flamme.png"},
- main:{name:"MAIN CASSÉE",color:"#d5ad62",img:"main.png"},
- spirale:{name:"SPIRALE D'OS",color:"#8eaa92",img:"spirale.png"},
- sablier:{name:"SABLIER NOIR",color:"#8e74bb",img:"sablier.png"}
+ oeil:{name:"ŒIL FENDU",color:"#d9e8ff",img:"division-1-oeil-fendu.png?v=204"},
+ flamme:{name:"FLAMME INVERSÉE",color:"#d44b45",img:"division-2-flamme-inversee.png?v=204"},
+ main:{name:"MAIN CASSÉE",color:"#d5ad62",img:"division-3-main-cassee.png?v=204"},
+ spirale:{name:"SPIRALE D'OS",color:"#8eaa92",img:"division-4-spirale-os.png?v=204"},
+ sablier:{name:"SABLIER NOIR",color:"#8e74bb",img:"division-5-sablier-noir.png?v=204"}
 };
 let timers=[], selected="oeil", audioTestTimer=null;
 const $=id=>document.getElementById(id);
@@ -1349,11 +1365,30 @@ function __ociDivisionKey(name){
  if(n.includes("SABLIER"))return"sablier"; return"oeil";
 }
 try{
+ if(__ociPayload && __ociPayload.matricule) document.body.classList.add("oci-terminal-flow");
  selected=__ociDivisionKey(__ociPayload.division);
  $("choice").value=selected;
  $("mat").textContent=__ociPayload.matricule||"OCI-26-XXXXX";
 }catch(e){}
+
+try{
+ const __enter=$("ociEnter");
+ if(__enter && document.body.classList.contains("oci-terminal-flow")){
+   __enter.onclick=()=>{
+     selected=__ociDivisionKey(__ociPayload.division);
+     const a=$("theme");
+     if(audioTestTimer){clearTimeout(audioTestTimer);audioTestTimer=null;}
+     a.pause();a.currentTime=0;a.muted=false;a.volume=1;
+     // Visual timeline begins on the exact same user gesture as audio.
+     document.body.classList.add("oci-started");
+     const p=a.play();
+     ceremony();
+     if(p && p.catch) p.catch(e=>console.warn("Audio ceremony:",e));
+   };
+ }
+}catch(e){}
 </script>
 <button id="ociContinue">CONTINUER</button>
+<div id="ociGate"><button id="ociEnter">ENTRER</button></div>
 </body></html>
 <!-- V1.3.4: no asset changes -->
