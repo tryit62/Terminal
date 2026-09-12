@@ -959,7 +959,10 @@ html body #order.ceremony-ended{
 
 
 /* INTÉGRATION TERMINAL V1.9 */
-#intro,#testbar{display:none!important}
+#testbar{display:none!important}
+body.terminal-integrated #intro{display:none!important}
+body.terminal-integrated.playing #scene{display:block!important}
+body.terminal-integrated.playing #final{display:flex!important}
 #terminalContinue{
  position:fixed;left:50%;bottom:max(34px,env(safe-area-inset-bottom));
  transform:translateX(-50%);z-index:9999;opacity:0;pointer-events:none;
@@ -1036,6 +1039,7 @@ const divisions={
 };
 let timers=[], selected="oeil", audioTestTimer=null;
 let terminalMode="first", terminalMatricule="OCI-26-XXXXX", terminalStarted=false;
+document.body.classList.add("terminal-integrated");
 function divisionToKey(name){
  const n=String(name||"").toUpperCase();
  if(n.includes("ŒIL")||n.includes("OEIL")) return "oeil";
@@ -1057,6 +1061,8 @@ window.unlockCeremonyAudio=function(){
 window.startTerminalCeremony=function(payload={}){
  if(terminalStarted)return;
  terminalStarted=true;
+ document.body.classList.add("terminal-integrated","playing");
+ const scene=document.getElementById("scene"); if(scene)scene.style.display="block";
  terminalMode=payload.mode||"first";
  terminalMatricule=payload.matricule||"OCI-26-XXXXX";
  selected=divisionToKey(payload.division);
