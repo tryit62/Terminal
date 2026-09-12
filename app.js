@@ -1376,7 +1376,7 @@ function ceremonyOpen(mode="first"){
  const f=ceremonyFrame(); if(!f)return;
  ceremonyPending={type:"start-ceremony",mode,matricule:S.matricule,division:S.affectation};
  f.style.display="block"; document.body.style.overflow="hidden";
- f.src="ceremony.html?v=193&t="+Date.now();
+ f.src="ceremony.html?v=194&t="+Date.now();
 }
 function ceremonyClose(){
  const f=ceremonyFrame(); if(f){f.style.display="none";f.src="about:blank";}

@@ -1,4 +1,4 @@
-const CACHE='ordre-terminal-v193-ceremonie-handshake';
+const CACHE='ordre-terminal-v194-ceremonie-reset-fix';
 const ASSETS=[
 './','./index.html','./style.css','./app.js','./manifest.webmanifest','./service-worker.js',
 './order-logo.png','./apple-touch-icon.png','./icon-192.png','./icon-512.png',
