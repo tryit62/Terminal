@@ -1368,33 +1368,47 @@ function assignmentMaterialSuspended(missing){
 }
 
 
-/* V1.9.3 — CÉRÉMONIE : CHARGEMENT FIABLE */
-let ceremonyPending=null;
-function ceremonyFrame(){return document.getElementById("ceremonyFrame")}
-function ceremonyUnlock(){}
+/* V2.0 — CÉRÉMONIE D000 NATIVE, SANS IFRAME */
+function ceremonyUnlock(){
+ const a=document.getElementById("theme");
+ if(!a)return;
+ try{
+   a.muted=true;a.volume=0;
+   const p=a.play();
+   if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;a.muted=false;a.volume=1}).catch(()=>{});
+ }catch(e){}
+}
 function ceremonyOpen(mode="first"){
- const f=ceremonyFrame(); if(!f)return;
- ceremonyPending={type:"start-ceremony",mode,matricule:S.matricule,division:S.affectation};
- f.style.display="block"; document.body.style.overflow="hidden";
- f.src="ceremony.html?v=194&t="+Date.now();
+ const host=document.getElementById("ceremonyNative"); if(!host)return;
+ host.classList.add("active");
+ document.body.style.overflow="hidden";
+ try{
+   window.startTerminalCeremony({
+     mode,
+     matricule:S.matricule,
+     division:S.affectation
+   });
+ }catch(err){
+   const d=document.getElementById("ceremonyDiag");
+   if(d){d.style.display="block";d.textContent="ERREUR CINÉMATIQUE\n\n"+(err.message||String(err));}
+ }
 }
 function ceremonyClose(){
- const f=ceremonyFrame(); if(f){f.style.display="none";f.src="about:blank";}
- ceremonyPending=null; document.body.style.overflow="";
+ const host=document.getElementById("ceremonyNative");
+ if(host)host.classList.remove("active");
+ document.body.style.overflow="";
+ terminalStarted=false;
+ try{reset();}catch(e){}
 }
-window.addEventListener("message",e=>{
- if(!e.data||!e.data.type)return;
- if(e.data.type==="ceremony-ready"){
-   if(ceremonyPending) try{ceremonyFrame().contentWindow.postMessage(ceremonyPending,"*")}catch(err){}
-   return;
- }
- if(e.data.type==="ceremony-complete"){
-   ceremonyClose(); S.ceremonieInitiationVue=true; S.initieAccueilVu=true; save(); applyInitiateTheme(); initiateHome();
- }
- if(e.data.type==="ceremony-return-archives"){
-   ceremonyClose(); applyInitiateTheme(); initiateArchives();
- }
-});
+window.finishNativeCeremony=function(mode){
+ ceremonyClose();
+ if(mode==="replay"){applyInitiateTheme();initiateArchives();return;}
+ S.ceremonieInitiationVue=true;
+ S.initieAccueilVu=true;
+ save();
+ applyInitiateTheme();
+ initiateHome();
+};
 function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[
   "Je reconnais que ce que je perçois n'est pas nécessairement tout ce qui existe.",
