@@ -1390,5 +1390,23 @@ try{
 </script>
 <button id="ociContinue">CONTINUER</button>
 <div id="ociGate"><button id="ociEnter">ENTRER</button></div>
+
+<script>
+window.addEventListener("load", function(){
+ var b=document.getElementById("ociEnter");
+ if(!b || !document.body.classList.contains("oci-terminal-flow")) return;
+ b.onclick=function(){
+   if(document.body.classList.contains("oci-started")) return;
+   selected=__ociDivisionKey(__ociPayload.division);
+   document.body.classList.add("oci-started");
+   var a=document.getElementById("theme");
+   if(audioTestTimer){clearTimeout(audioTestTimer);audioTestTimer=null;}
+   a.pause();a.currentTime=0;a.muted=false;a.volume=1;
+   var pp=a.play();
+   ceremony();
+   if(pp && pp.catch) pp.catch(function(e){console.warn("Audio ceremony:",e);});
+ };
+});
+</script>
 </body></html>
 <!-- V1.3.4: no asset changes -->
