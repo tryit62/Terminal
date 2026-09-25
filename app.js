@@ -513,7 +513,7 @@ function eval1Start(){
 }
 function eval1Phase1(){
   S.eval1.step=1;save();
-  eval1Shell(`<p class="sub">PHASE 01 // OBSERVATION</p><div class="terminal">CONSULTEZ LE SUPPORT D'OBSERVATION.\n\nEXAMINEZ LE DOCUMENT DANS SON INTÉGRALITÉ.\n\nDÉTERMINEZ CE QUI PEUT ÊTRE CONSIDÉRÉ COMME ÉTABLI.\n\nAUCUNE ANNOTATION N'EST AUTORISÉE.\n\nLorsque votre observation est terminée, poursuivez.</div>
+  eval1Shell(`<p class="sub">PHASE 01 // OBSERVATION</p><div class="terminal">CONSULTEZ LE SUPPORT D'OBSERVATION.\n\nEXAMINEZ LE DOCUMENT DANS SON INTÉGRALITÉ.\n\nAUCUNE ANNOTATION N'EST AUTORISÉE.\n\nLorsque votre observation est terminée, poursuivez.</div>
   <div class="menu"><button class="btn primary" id="observed">[ OBSERVATION TERMINÉE ]</button></div>`);
   $('#observed').onclick=()=>{S.eval1.step=2;save();eval1CardsIntro()};
 }
