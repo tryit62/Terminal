@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s); const app=$('#app');
 const defaults={matricule:'',statut:'CANDIDAT',accreditation:'0',affectation:'—',inventaire:null,progression:0,messages:1,installed:false,
-eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,versions:null,memoryCount:null,complete:false},
+eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,versions:null,memoryCount:null,cardAnswers:[],sourceObservation:null,complete:false},
 eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,versionFirst:null,confidenceMaintained:null,decision:null,sincereFalse:null,authenticFalse:null,complete:false},
 eval3:{step:0,initialC:null,afterA_C:null,lockedC:null,retroactive:null,decision:null,responsibility:null,complete:false},
 eval4:{step:0,sequence:[],registerCode:null,divergence:null,decision:null,complete:false},
@@ -479,8 +479,8 @@ function moduleHelp(module){
   document.querySelectorAll('.hint').forEach(b=>b.onclick=()=>{
     const map={
       instruction:"Relisez uniquement l'instruction active. N'anticipez pas les phases suivantes.",
-      materiel:"Le Module I doit contenir trois références : I-A, I-B et I-C.",
-      blocage:"Distinguez ce que le document établit directement de ce que vous en déduisez. Si cinq caractères sont visibles, une autre observation reste possible.",
+      materiel:"Le Module I doit contenir un support d'observation et un lot de six cartes. N'utilisez que l'élément demandé par le Terminal.",
+      blocage:"Ne cherchez pas à deviner ce que le Terminal attend. Consignez ce que vous considérez comme établi, non établi ou incertain, puis poursuivez la procédure.",
       irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne modifiez aucun élément matériel. Poursuivez si le protocole reste exécutable."
     };
     $('#hintText').textContent=map[b.dataset.h];
@@ -491,146 +491,121 @@ function eval1Resume(){
   const s=S.eval1.step||0;
   if(s<=0) return eval1Start();
   if(s===1) return eval1Phase1();
-  if(s===2) return eval1FactQuestion();
-  if(s===3) return eval1Phase2();
-  if(s===4) return eval1Epistemic();
-  if(s===5) return eval1Control();
-  if(s===6) return eval1Decision();
-  if(s===7) return eval1Versions();
-  if(s===8) return eval1MemoryBridge();
+  if(s===2) return eval1CardsIntro();
+  if(s>=3&&s<=8) return eval1CardQuestion(s-3);
+  if(s===9) return eval1Confrontation();
+  if(s===10) return eval1Restore();
+  if(s===11) return eval1Control();
+  if(s===12) return eval1Source();
+  if(s===13) return eval1Processing();
   return eval1CompleteScreen();
 }
 function eval1Start(){
   if(S.eval1.complete) return eval1CompleteScreen();
-  S.eval1.step=0;save();
+  S.eval1.step=0;
+  S.eval1.cardAnswers=[];
+  S.eval1.sourceObservation=null;
+  save();
   eval1Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-1-oeil-fendu.png" alt=""><div class="terminal">AUTORISATION DU MODULE I...\n\nRÉFÉRENCE : ÉVALUATION I\nSTATUT : DISPONIBLE\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="present">[ MODULE PRÉSENT ]</button><button class="btn" id="missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#present').onclick=()=>{S.eval1.step=1;save();eval1Phase1()};
-  $('#missing').onclick=()=>{eval1Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE DES RÉFÉRENCES :\nI-A\nI-B\nI-C\n\nAUCUNE PÉNALITÉ N'EST ASSOCIÉE À CETTE VÉRIFICATION.</div><button class="btn primary" id="retry">[ REPRENDRE ]</button>`,'MODULE I // VÉRIFICATION');$('#retry').onclick=eval1Start}
+  $('#missing').onclick=()=>{eval1Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE :\n— DU SUPPORT D'OBSERVATION ;\n— DU LOT DE SIX CARTES.\n\nAUCUNE PÉNALITÉ N'EST ASSOCIÉE À CETTE VÉRIFICATION.</div><button class="btn primary" id="retry">[ REPRENDRE ]</button>`,'MODULE I // VÉRIFICATION');$('#retry').onclick=eval1Start}
 }
 function eval1Phase1(){
   S.eval1.step=1;save();
-  eval1Shell(`<p class="sub">PHASE 01 // OBSERVATION INITIALE</p><div class="terminal">OUVREZ LE MODULE I.\n\nRETIREZ LES TROIS ÉLÉMENTS.\n\nPRENEZ UNIQUEMENT LA RÉFÉRENCE I-A.\nN'UTILISEZ PAS I-C À CE STADE.\n\nLISEZ I-A EN ENTIER.\n\nLorsque votre observation est terminée, poursuivez.</div>
+  eval1Shell(`<p class="sub">PHASE 01 // OBSERVATION</p><div class="terminal">CONSULTEZ LE SUPPORT D'OBSERVATION.\n\nEXAMINEZ LE DOCUMENT DANS SON INTÉGRALITÉ.\n\nDÉTERMINEZ CE QUI PEUT ÊTRE CONSIDÉRÉ COMME ÉTABLI.\n\nAUCUNE ANNOTATION N'EST AUTORISÉE.\n\nLorsque votre observation est terminée, poursuivez.</div>
   <div class="menu"><button class="btn primary" id="observed">[ OBSERVATION TERMINÉE ]</button></div>`);
-  $('#observed').onclick=()=>{S.eval1.step=2;save();eval1FactQuestion()};
+  $('#observed').onclick=()=>{S.eval1.step=2;save();eval1CardsIntro()};
 }
-function eval1FactQuestion(){
+function eval1CardsIntro(){
   S.eval1.step=2;save();
-  eval1Shell(`<p class="sub">PHASE 01 // CONTRÔLE</p><div class="terminal">PARMI LES PROPOSITIONS SUIVANTES, LAQUELLE RELÈVE D'UNE INTERPRÉTATION ET NON D'UN FAIT DIRECTEMENT ÉTABLI PAR I-A ?</div>
-  <div class="menu fact-options">
-    <button class="btn fact" data-v="A">A — L'AGNEAU BOIT DANS LE COURANT.</button>
-    <button class="btn fact" data-v="B">B — LE LOUP ACCUSE L'AGNEAU DE TROUBLER SON BREUVAGE.</button>
-    <button class="btn fact" data-v="C">C — L'AGNEAU CONTESTE L'ACCUSATION.</button>
-    <button class="btn fact" data-v="D">D — LE LOUP SAVAIT AVANT L'ÉCHANGE QU'IL TUERAIT L'AGNEAU.</button>
-  </div><div id="factFeedback" class="system"></div>`);
-  document.querySelectorAll('.fact').forEach(b=>b.onclick=()=>{
-    if(b.dataset.v==='D'){
-      $('#factFeedback').textContent='RÉPONSE CONFIRMÉE.  OBSERVATION ≠ INTERPRÉTATION.';
-      S.eval1.step=3;save();setTimeout(eval1Phase2,1000);
-    }else{
-      S.eval1.factAttempts++;save();
-      $('#factFeedback').textContent=S.eval1.factAttempts>1?'RÉPONSE NON CONFIRMÉE. INDICE : UNE INTENTION SUPPOSÉE N’EST PAS UN FAIT OBSERVABLE.':'RÉPONSE NON CONFIRMÉE. REPRENEZ I-A.';
-    }
-  });
+  eval1Shell(`<p class="sub">PHASE 02 // CONSIGNATION</p><div class="terminal">RETOURNEZ LE SUPPORT D'OBSERVATION.\n\nNE LE CONSULTEZ PLUS JUSQU'À AUTORISATION.\n\nPRENEZ LE LOT DE SIX CARTES.\n\nPOUR CHAQUE CARTE, INDIQUEZ LE STATUT QUE VOUS ACCORDEZ À L'AFFIRMATION PRÉSENTÉE.\n\nÉTABLI — vous considérez l'affirmation suffisamment fondée.\nNON ÉTABLI — vous considérez qu'elle dépasse ce que vous avez observé.\nINCERTAIN — vous ne disposez pas d'éléments suffisants pour conclure.\n\nVOS DÉCISIONS SERONT CONSERVÉES.</div>
+  <div class="menu"><button class="btn primary" id="cardsReady">[ COMMENCER ]</button></div>`);
+  $('#cardsReady').onclick=()=>{S.eval1.step=3;save();eval1CardQuestion(0)};
 }
-function eval1Phase2(){
-  S.eval1.step=3;save();
-  eval1Shell(`<p class="sub">PHASE 02 // INSTRUMENTATION</p><div class="terminal">PRENEZ LA RÉFÉRENCE I-C.\n\nUTILISEZ LA FACE A DE L'INSTRUMENT D'OBSERVATION.\nALIGNEZ-LE SUR I-A SELON LES REPÈRES FOURNIS.\n\nCINQ ZONES DOIVENT ÊTRE OBSERVÉES.\n\nNe cherchez pas encore une réponse finale : identifiez d'abord la nature de ce qui est isolé.</div>
-  <div class="menu"><button class="btn primary" id="zones">[ CINQ ZONES OBSERVÉES ]</button></div>`);
-  $('#zones').onclick=()=>{S.eval1.step=4;save();eval1Epistemic()};
-}
-function eval1Epistemic(){
-  S.eval1.step=4;save();
-  eval1Shell(`<p class="sub">PHASE 02 // APPRÉCIATION</p><div class="terminal">LES ZONES ISOLÉES N'ONT PAS TOUTES LE MÊME STATUT.\n\nLORSQUE PLUSIEURS LECTURES D'UN MÊME DOCUMENT SONT POSSIBLES, QUELLE ATTITUDE VOUS PARAÎT LA PLUS FIABLE ?</div>
+function eval1CardQuestion(i){
+  if(i>=6){S.eval1.step=9;save();return eval1Confrontation()}
+  S.eval1.step=3+i;save();
+  const previous=(S.eval1.cardAnswers||[])[i]||null;
+  eval1Shell(`<p class="sub">PHASE 02 // CARTE ${String(i+1).padStart(2,'0')} / 06</p>
+  <div class="terminal">CONSULTEZ LA CARTE ${String(i+1).padStart(2,'0')}.\n\nQUEL STATUT ACCORDEZ-VOUS À L'AFFIRMATION ?\n\nLE SUPPORT D'OBSERVATION DOIT RESTER RETOURNÉ.</div>
   <div class="menu">
-    <button class="btn epi" data-t="PERCEPTION">A — SÉPARER STRICTEMENT CE QUI EST OBSERVÉ DE CE QUI EST DÉDUIT.</button>
-    <button class="btn epi" data-t="ADAPTATION">B — RETENIR LA LECTURE LA PLUS COHÉRENTE AVEC L'ENSEMBLE.</button>
-    <button class="btn epi" data-t="CONSEQUENCE">C — PRIVILÉGIER LA LECTURE DONT LES CONSÉQUENCES SONT LES PLUS MAÎTRISABLES.</button>
-    <button class="btn epi" data-t="CONTINUITE">D — COMPARER AVEC D'AUTRES TRACES OU VERSIONS AVANT DE CONCLURE.</button>
-    <button class="btn epi" data-t="TEMPORISATION">E — SUSPENDRE LE JUGEMENT TANT QU'UNE VÉRIFICATION RESTE POSSIBLE.</button>
-  </div>`);
-  document.querySelectorAll('.epi').forEach(b=>b.onclick=()=>{
-    S.eval1.epistemic=b.dataset.t; S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+1; S.eval1.step=5;save();
-    eval1Shell(`<div class="terminal">RÉPONSE ENREGISTRÉE.\n\nAUCUNE CONCLUSION N'EST DEMANDÉE À CE STADE.</div>`,'MODULE I // RÉPONSE CONSIGNÉE');
-    setTimeout(eval1Control,850);
+    <button class="btn card-judgement" data-v="ETABLI">[ ÉTABLI ]</button>
+    <button class="btn card-judgement" data-v="NON_ETABLI">[ NON ÉTABLI ]</button>
+    <button class="btn card-judgement" data-v="INCERTAIN">[ INCERTAIN ]</button>
+  </div>${previous?`<div class="system">DÉCISION PRÉCÉDEMMENT CONSIGNÉE : ${previous.replace('_',' ')}</div>`:''}`);
+  document.querySelectorAll('.card-judgement').forEach(b=>b.onclick=()=>{
+    if(!Array.isArray(S.eval1.cardAnswers))S.eval1.cardAnswers=[];
+    S.eval1.cardAnswers[i]=b.dataset.v;
+    S.eval1.step=4+i;save();
+    eval1CardQuestion(i+1);
   });
+}
+function eval1Confrontation(){
+  S.eval1.step=9;save();
+  const labels={ETABLI:'ÉTABLI',NON_ETABLI:'NON ÉTABLI',INCERTAIN:'INCERTAIN'};
+  const rows=(S.eval1.cardAnswers||[]).map((v,i)=>`CARTE ${String(i+1).padStart(2,'0')} // ${labels[v]||'NON RENSEIGNÉ'}`).join('\n');
+  eval1Shell(`<p class="sub">PHASE 03 // CONFRONTATION</p><div class="terminal">6 DÉCISIONS ENREGISTRÉES.\n\n${rows}\n\nVOS DÉCISIONS SONT MAINTENANT VERROUILLÉES.\n\nLA CONSULTATION DU SUPPORT D'OBSERVATION EST DE NOUVEAU AUTORISÉE.\n\nNE MODIFIEZ PAS VOTRE CLASSEMENT.\n\nCOMPAREZ VOS CERTITUDES AU DOCUMENT.</div>
+  <div class="menu"><button class="btn primary" id="verified">[ VÉRIFICATION EFFECTUÉE ]</button></div>`);
+  $('#verified').onclick=()=>{S.eval1.step=10;save();eval1Restore()};
+}
+function eval1Restore(){
+  S.eval1.step=10;save();
+  eval1Shell(`<p class="sub">PHASE 04 // RESTAURATION</p><div class="terminal">LES SIX CARTES CONTIENNENT CHACUNE UNE DIVERGENCE DE TRANSCRIPTION.\n\nCOMPAREZ CHAQUE TRANSCRIPTION AU SUPPORT ORIGINAL.\n\nPOUR CHAQUE CARTE, IDENTIFIEZ LE CARACTÈRE NÉCESSAIRE À LA RESTAURATION DE LA TRANSCRIPTION.\n\nCONSERVEZ LES SIX CARACTÈRES DANS L'ORDRE DES CARTES.\n\nAUCUNE AUTRE MODIFICATION DU SUPPORT N'EST AUTORISÉE.</div>
+  <div class="menu"><button class="btn primary" id="restored">[ DONNÉE RESTAURÉE ]</button></div>`);
+  $('#restored').onclick=()=>{S.eval1.step=11;save();eval1Control()};
 }
 function eval1Control(){
-  S.eval1.step=5;save();
-  eval1Shell(`<p class="sub">PHASE 03 // DONNÉE DE CONTRÔLE</p><div class="terminal">UNE DONNÉE DE CONTRÔLE À SIX CARACTÈRES EST PRÉSENTE DANS LE MATÉRIEL DU MODULE.\n\nSAISISSEZ-LA CI-DESSOUS.</div>
+  S.eval1.step=11;save();
+  eval1Shell(`<p class="sub">PHASE 04 // TRANSMISSION</p><div class="terminal">SAISISSEZ LA DONNÉE RESTAURÉE À PARTIR DES SIX CARTES.</div>
   <input id="control" class="input" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="______">
   <div class="menu"><button class="btn primary" id="controlOk">[ TRANSMETTRE ]</button></div><div id="controlFeedback" class="system"></div>`);
   $('#controlOk').onclick=()=>{
     const v=$('#control').value.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-    S.eval1.controlAttempts++;save();
+    S.eval1.controlAttempts=(S.eval1.controlAttempts||0)+1;save();
     if(v==='TEMOIN'){
-      $('#controlFeedback').textContent='DONNÉE CONFIRMÉE : TÉMOIN';
-      S.eval1.step=6;save();setTimeout(eval1Decision,950);
-    }else if(v==='TEMOI'){
-      $('#controlFeedback').textContent='DONNÉE INCOMPLÈTE — 5/6. UNE OBSERVATION SUPPLÉMENTAIRE RESTE POSSIBLE AVEC LE MATÉRIEL FOURNI.';
-    }else if(v.length===6){
-      $('#controlFeedback').textContent='RÉPONSE PLAUSIBLE. PREUVE INSUFFISANTE. LE SIXIÈME CARACTÈRE DOIT ÊTRE OBSERVÉ, NON DÉDUIT.';
+      $('#controlFeedback').textContent='DONNÉE ACCEPTÉE : TÉMOIN';
+      S.eval1.step=12;save();setTimeout(eval1Source,950);
     }else{
-      $('#controlFeedback').textContent='DONNÉE NON CONFIRMÉE. UTILISEZ I-C. UNE AUTRE FACE DE L’INSTRUMENT PEUT ÊTRE OBSERVÉE.';
+      $('#controlFeedback').textContent='DONNÉE NON CONFIRMÉE. COMPAREZ DE NOUVEAU LES SIX TRANSCRIPTIONS AU SUPPORT ORIGINAL.';
     }
   };
 }
-function eval1Decision(){
-  S.eval1.step=6;save();
-  eval1Shell(`<p class="sub">DÉCISION COMPORTEMENTALE</p><div class="terminal">UN AGENT DOIT RECEVOIR I-A, MAIS NE DISPOSERA PAS DE I-C.\n\nQUE TRANSMETTEZ-VOUS EN PRIORITÉ ?</div>
+function eval1Source(){
+  S.eval1.step=12;save();
+  eval1Shell(`<p class="sub">PHASE 05 // SOURCE</p><div class="terminal">DONNÉE : TÉMOIN\n\nIDENTIFIEZ LA SOURCE DE L'OBSERVATION.\n\nAUCUNE RÉPONSE N'ENTRAÎNE D'ÉCHEC.</div>
   <div class="menu">
-    <button class="btn doctrinal" data-t="PERCEPTION">A — LE DOCUMENT COMPLET, EN SIGNALANT EXPLICITEMENT LA DIVERGENCE ENTRE OBSERVATION ET INTERPRÉTATION.</button>
-    <button class="btn doctrinal" data-t="ADAPTATION">B — LA LECTURE LA PLUS UTILE À L'AGENT POUR POURSUIVRE SA MISSION.</button>
-    <button class="btn doctrinal" data-t="CONSEQUENCE">C — JE DEMANDE D'ABORD LA NATURE DE SA MISSION ET LES CONSÉQUENCES D'UNE MAUVAISE LECTURE.</button>
-    <button class="btn doctrinal" data-t="CONTINUITE">D — JE RECHERCHE UNE VERSION ANTÉRIEURE DE I-A AVANT TRANSMISSION.</button>
-    <button class="btn doctrinal" data-t="TEMPORISATION">E — JE SUSPENDS LA TRANSMISSION JUSQU'À VÉRIFICATION.</button>
+    <button class="btn source-observation" data-v="SUPPORT" data-t="CONTINUITE">A — LE SUPPORT</button>
+    <button class="btn source-observation" data-v="TERMINAL" data-t="ADAPTATION">B — LE TERMINAL</button>
+    <button class="btn source-observation" data-v="CANDIDAT" data-t="PERCEPTION">C — LE CANDIDAT</button>
+    <button class="btn source-observation" data-v="INDETERMINE" data-t="TEMPORISATION">D — INDÉTERMINÉ</button>
   </div>`);
-  document.querySelectorAll('.doctrinal').forEach(b=>b.onclick=()=>{
-    S.eval1.decision=b.dataset.t; S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3; S.eval1.step=7;save();
-    eval1Versions();
-  });
-}
-function eval1Versions(){
-  S.eval1.step=7;save();
-  eval1Shell(`<p class="sub">CONTRÔLE DE PERCEPTION</p><div class="terminal">COMBIEN DE VERSIONS DE I-A AVEZ-VOUS OBSERVÉES AU COURS DU MODULE ?\n\nAUCUNE RÉPONSE N'ENTRAÎNE D'ÉCHEC.</div>
-  <div class="menu">
-    <button class="btn ver" data-v="1">[ 1 ]</button>
-    <button class="btn ver" data-v="2">[ 2 ]</button>
-    <button class="btn ver" data-v="3+">[ 3 OU PLUS ]</button>
-    <button class="btn ver" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button>
-  </div>`);
-  document.querySelectorAll('.ver').forEach(b=>b.onclick=()=>{
-    S.eval1.versions=b.dataset.v; S.eval1.step=8;save();
-    eval1Shell(`<div class="terminal">RÉPONSE ENREGISTRÉE.\n\nREFERMEZ LE MODULE I.\nREPLACEZ I-A, I-B ET I-C DANS LEUR CONDITIONNEMENT.\n\nN'OUVREZ PLUS LE MODULE.</div><button class="btn primary" id="closed">[ MODULE REFERMÉ ]</button>`);
-    $('#closed').onclick=eval1MemoryBridge;
-  });
-}
-function eval1MemoryBridge(){
-  S.eval1.step=8;save();
-  eval1Shell(`<p class="sub">CONTRÔLE DE CLÔTURE</p><div class="terminal">SANS ROUVRIR LE MODULE :\n\nCOMBIEN D'ÉLÉMENTS PHYSIQUES CONTENAIT-IL ?</div>
-  <div class="menu"><button class="btn mem" data-v="2">[ 2 ]</button><button class="btn mem" data-v="3">[ 3 ]</button><button class="btn mem" data-v="4">[ 4 ]</button><button class="btn mem" data-v="?">[ INCERTAIN ]</button></div>`);
-  document.querySelectorAll('.mem').forEach(b=>b.onclick=()=>{
-    S.eval1.memoryCount=b.dataset.v;save();
-    eval1Processing();
+  document.querySelectorAll('.source-observation').forEach(b=>b.onclick=()=>{
+    S.eval1.sourceObservation=b.dataset.v;
+    S.eval1.decision=b.dataset.t;
+    S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;
+    S.eval1.step=13;save();
+    eval1Shell(`<div class="terminal">RÉPONSE ENREGISTRÉE.\n\nTÉMOIN IDENTIFIÉ.\n\nTÉMOIN : CANDIDAT\nFIABILITÉ : NON ÉTABLIE.</div>`,'MODULE I // OBSERVATION CONSIGNÉE');
+    setTimeout(eval1Processing,1500);
   });
 }
 function eval1Processing(){
+  S.eval1.step=13;save();
   narrativeProcessing(eval1Shell,[
-    'LECTURE DES RÉPONSES...',
+    'LECTURE DES DÉCISIONS...',
     'COMPARAISON DES OBSERVATIONS...',
-    'VÉRIFICATION DE COHÉRENCE...',
-    'INDEXATION DU MODULE I...'
+    'INDEXATION DES DIVERGENCES...',
+    'CONSIGNATION DU TÉMOIN...'
   ],()=>{
     S.eval1.complete=true;S.progression=Math.max(S.progression,1);save();eval1CompleteScreen();
   },{
     title:'TRAITEMENT DU MODULE I...',
     status:'MODULE I // ANALYSE',
-    anomaly:{html:'MARQUAGE : <span class="glitch-symbol">◈</span>',restore:'MARQUAGE : CONFORME',duration:1700},
     finalPause:1300
   });
 }
 function eval1CompleteScreen(){
-  eval1Shell(`<div class="terminal">MODULE I\n\nSTATUT : ENREGISTRÉ\n\nAUCUNE INTERPRÉTATION SUPPLÉMENTAIRE N'EST REQUISE.\n\nLE MODULE II EST DÉSORMAIS DISPONIBLE.</div>
+  eval1Shell(`<div class="terminal">MODULE I\n\nSTATUT : ENREGISTRÉ\n\nTÉMOIN : CANDIDAT\nFIABILITÉ : NON ÉTABLIE\n\nAUCUNE INTERPRÉTATION SUPPLÉMENTAIRE N'EST REQUISE.\n\nLE MODULE II EST DÉSORMAIS DISPONIBLE.</div>
   <div class="menu"><button class="btn primary" id="returnHome">[ RETOUR AU TERMINAL ]</button></div>`,'MODULE I // ENREGISTRÉ');
   $('#returnHome').onclick=home;
 }
@@ -1372,7 +1347,7 @@ function assignmentMaterialSuspended(missing){
 function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
  try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify({mode,matricule:S.matricule,division:S.affectation}));}catch(e){}
- location.href="ceremony.html?v=207";
+ location.href="ceremony.html?v=206";
 }
 function replayInitiationCeremony(){ceremonyOpen("replay");}
 const OATH_LINES=[
