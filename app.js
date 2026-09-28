@@ -1004,18 +1004,18 @@ function eval4Sequence(){
 }
 function eval4RegisterA(){
   S.eval4.step=2;save();
-  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LA FACE A DU REGISTRE R04-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE LA FACE A.</div>
+  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LE REGISTRE R04-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE R04-C.</div>
   <input id="m4codeA" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
   <button class="btn primary" id="m4valA">[ VALIDER LA LECTURE ]</button><div id="m4fbA" class="system"></div>`);
   $('#m4valA').onclick=()=>{
     const v=$('#m4codeA').value.trim().toUpperCase().replace(/\s/g,'');
-    if(v==='H-05'||v==='H05'){S.eval4.registerCode='H-05';S.eval4.step=3;save();$('#m4fbA').textContent='FACE A : LECTURE CONFIRMÉE.';setTimeout(eval4RegisterB,650)}
-    else $('#m4fbA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LA FACE A.';
+    if(v==='H-05'||v==='H05'){S.eval4.registerCode='H-05';S.eval4.step=3;save();$('#m4fbA').textContent='LECTURE CONFIRMÉE.';setTimeout(eval4RegisterB,650)}
+    else $('#m4fbA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LE BAS DE R04-C.';
   };
 }
 function eval4RegisterB(){
   S.eval4.step=3;save();
-  eval4Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nLA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
+  eval4Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p><div class="terminal">LA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
    <div class="menu">${['04-B7 -> 04-M2','04-M2 -> 04-K9','04-K9 -> 04-V4','04-V4 -> 04-R6','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
   document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
     if(b.dataset.v==='04-M2 -> 04-K9'){S.eval4.divergence='04-M2 -> 04-K9';S.eval4.step=4;save();$('#m4divfb').textContent='RELATION IDENTIFIÉE.';setTimeout(eval4Divergence,650)}
