@@ -1015,13 +1015,12 @@ function eval4RegisterA(){
 }
 function eval4RegisterB(){
   S.eval4.step=3;save();
-  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nCOMPAREZ-LA À VOTRE RECONSTRUCTION ET À LA FACE A.\n\nCOMBIEN D'ÉVÉNEMENTS SONT EXPLICITEMENT CONSERVÉS PAR CETTE VERSION DU REGISTRE ?</div>
-  <input id="m4count" class="input" inputmode="numeric" placeholder="NOMBRE">
-  <button class="btn primary" id="m4countBtn">[ TRANSMETTRE ]</button><div id="m4countfb" class="system"></div>`);
-  $('#m4countBtn').onclick=()=>{
-    if($('#m4count').value.trim()==='4'){S.eval4.step=4;save();$('#m4countfb').textContent='LECTURE CONFIRMÉE : 04 ÉLÉMENTS CONSERVÉS.';setTimeout(eval4Divergence,650)}
-    else $('#m4countfb').textContent='DONNÉE NON CONFIRMÉE. RELISEZ LA FACE B.';
-  };
+  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nLA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
+   <div class="menu">${['04-B7 -> 04-M2','04-M2 -> 04-K9','04-K9 -> 04-V4','04-V4 -> 04-R6','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
+  document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
+    if(b.dataset.v==='04-M2 -> 04-K9'){S.eval4.divergence='04-M2 -> 04-K9';S.eval4.step=5;save();$('#m4divfb').textContent='RELATION IDENTIFIÉE.';setTimeout(eval4Decision,650)}
+    else $('#m4divfb').textContent='RELATION NON CONFIRMÉE. COMPAREZ LES RELATIONS.';
+  });
 }
 function eval4Divergence(){
   S.eval4.step=4;save();
