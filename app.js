@@ -551,7 +551,7 @@ function eval1Confrontation(){
 }
 function eval1Restore(){
   S.eval1.step=10;save();
-  eval1Shell(`<p class="sub">PHASE 04 // RESTAURATION</p><div class="terminal">LES SIX CARTES CONTIENNENT CHACUNE UNE DIVERGENCE DE TRANSCRIPTION.\n\nCOMPAREZ CHAQUE TRANSCRIPTION AU SUPPORT ORIGINAL.\n\nPOUR CHAQUE CARTE, IDENTIFIEZ LE CARACTÈRE NÉCESSAIRE À LA RESTAURATION DE LA TRANSCRIPTION.\n\nCONSERVEZ LES SIX CARACTÈRES DANS L'ORDRE DES CARTES.\n\nAUCUNE AUTRE MODIFICATION DU SUPPORT N'EST AUTORISÉE.</div>
+  eval1Shell(`<p class="sub">PHASE 04 // RESTAURATION</p><div class="terminal">LES SIX CARTES CONTIENNENT CHACUNE UNE DIVERGENCE.\n\nPOUR CHAQUE CARTE, IDENTIFIEZ LE CARACTÈRE NÉCESSAIRE.\n\nAUCUNE AUTRE MODIFICATION DU SUPPORT N'EST AUTORISÉE.</div>
   <div class="menu"><button class="btn primary" id="restored">[ DONNÉE RESTAURÉE ]</button></div>`);
   $('#restored').onclick=()=>{S.eval1.step=11;save();eval1Control()};
 }
