@@ -992,7 +992,7 @@ function eval4Start(){
 function eval4Sequence(){
   S.eval4.step=1;save();
   const ids=['04-V4','04-R6','04-K9','04-B7','04-M2'];
-  eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ R04-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES R04-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nR04-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
+  eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ R04-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES R04-B DANS L'ORDRE DES ÉVÉNEMENTS SUR R04-C.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.</div>
   <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>POSITION ${i}<select class="seq4"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
   <button class="btn primary" id="m4seq">[ TRANSMETTRE LA SÉQUENCE ]</button><div id="m4seqfb" class="system"></div>`);
   $('#m4seq').onclick=()=>{
@@ -1004,13 +1004,13 @@ function eval4Sequence(){
 }
 function eval4RegisterA(){
   S.eval4.step=2;save();
-  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LE REGISTRE R04-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE R04-C.</div>
+  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE.</div>
   <input id="m4codeA" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
   <button class="btn primary" id="m4valA">[ VALIDER LA LECTURE ]</button><div id="m4fbA" class="system"></div>`);
   $('#m4valA').onclick=()=>{
     const v=$('#m4codeA').value.trim().toUpperCase().replace(/\s/g,'');
     if(v==='H-05'||v==='H05'){S.eval4.registerCode='H-05';S.eval4.step=3;save();$('#m4fbA').textContent='LECTURE CONFIRMÉE.';setTimeout(eval4RegisterB,650)}
-    else $('#m4fbA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ LE BAS DE R04-C.';
+    else $('#m4fbA').textContent='CODE NON CONFIRMÉ. VÉRIFIEZ AVEC LE MATÉRIEL À DISPOSITION.';
   };
 }
 function eval4RegisterB(){
