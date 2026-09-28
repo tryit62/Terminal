@@ -991,7 +991,7 @@ function eval4Start(){
 }
 function eval4Sequence(){
   S.eval4.step=1;save();
-  const ids=['04-B7','04-M2','04-K9','04-V4','04-R6'];
+  const ids=['04-V4','04-R6','04-K9','04-B7','04-M2'];
   eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ R04-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES R04-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nR04-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
   <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>POSITION ${i}<select class="seq4"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
   <button class="btn primary" id="m4seq">[ TRANSMETTRE LA SÉQUENCE ]</button><div id="m4seqfb" class="system"></div>`);
