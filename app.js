@@ -1015,7 +1015,7 @@ function eval4RegisterA(){
 }
 function eval4RegisterB(){
   S.eval4.step=3;save();
-  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nLA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
+  eval4Shell(`<p class="sub">PHASE 03 // CONTRÔLE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nLA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
    <div class="menu">${['04-B7 -> 04-M2','04-M2 -> 04-K9','04-K9 -> 04-V4','04-V4 -> 04-R6','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
   document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
     if(b.dataset.v==='04-M2 -> 04-K9'){S.eval4.divergence='04-M2 -> 04-K9';S.eval4.step=4;save();$('#m4divfb').textContent='RELATION IDENTIFIÉE.';setTimeout(eval4Divergence,650)}
@@ -1024,7 +1024,7 @@ function eval4RegisterB(){
 }
 function eval4Divergence(){
   S.eval4.step=4;save();
-  eval4Shell(`<p class="sub">PHASE 04 // DIVERGENCE</p><div class="terminal">VOTRE RECONSTRUCTION CONTIENT CINQ ÉVÉNEMENTS.\nLA VERSION SECONDAIRE DU REGISTRE N'EN CONSERVE EXPLICITEMENT QUE QUATRE.\n\nIDENTIFIEZ L'ÉLÉMENT DIVERGENT.</div>
+  eval4Shell(`<p class="sub">PHASE 04 // DIVERGENCE</p><div class="terminal">VOTRE RECONSTRUCTION CONTIENT CINQ ÉVÉNEMENTS.\nUNE SUCCESSION NE SUFFIT PAS À ÉTABLIR UNE DÉPENDANCE.\n\nIDENTIFIEZ L'ÉLÉMENT QUI INTRODUIT LA RUPTURE DANS LA CHAÎNE RECONSTRUITE.</div>
   <div class="menu">${['04-B7','04-M2','04-K9','04-V4','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
   document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
     if(b.dataset.v==='04-K9'){S.eval4.divergence='04-K9';S.eval4.step=5;save();$('#m4divfb').textContent='DIVERGENCE IDENTIFIÉE.';setTimeout(eval4Decision,650)}
@@ -1033,11 +1033,11 @@ function eval4Divergence(){
 }
 function eval4Decision(){
   S.eval4.step=5;save();
-  eval4Shell(`<p class="sub">DÉCISION ARCHIVISTIQUE</p><div class="terminal">L'ÉLÉMENT 04-K9 EST COHÉRENT AVEC VOTRE RECONSTRUCTION MAIS ABSENT DE LA VERSION SECONDAIRE DU REGISTRE.\n\nAUCUNE INSTRUCTION NE VOUS INDIQUE QUELLE VERSION DOIT ÊTRE CONSIDÉRÉE COMME PRIORITAIRE.\n\nQUE FAITES-VOUS ?</div><div class="menu">
+  eval4Shell(`<p class="sub">DÉCISION ARCHIVISTIQUE</p><div class="terminal">L'ÉLÉMENT 04-K9 EST AUTHENTIQUE.\n\nSA POSITION CHRONOLOGIQUE EST CONFIRMÉE.\n\nSON INTÉGRATION MODIFIE CEPENDANT LA LECTURE DE LA SÉQUENCE.\n\nQUELLE ACTION DOIT ÊTRE ENTREPRISE AVANT TOUTE DÉCISION DÉFINITIVE ?</div><div class="menu">
   <button class="btn m4dec" data-t="PERCEPTION">A — RECHERCHER UNE SOURCE INDÉPENDANTE.</button>
   <button class="btn m4dec" data-t="ADAPTATION">B — RÉINTÉGRER 04-K9 POUR RESTAURER UNE CHRONOLOGIE COHÉRENTE.</button>
   <button class="btn m4dec" data-t="CONSEQUENCE">C — ÉVALUER LES CONSÉQUENCES DE SON INTÉGRATION OU DE SON REJET.</button>
-  <button class="btn m4dec" data-t="CONTINUITE">D — CONSERVER 04-K9 ET ARCHIVER LA DIVERGENCE.</button>
+  <button class="btn m4dec" data-t="CONTINUITE">D — CONSERVER 04-K9 ET ARCHIVER LA RELATION NON ÉTABLIE.</button>
   <button class="btn m4dec" data-t="TEMPORISATION">E — ISOLER 04-K9 JUSQU'À VALIDATION.</button></div>`);
   document.querySelectorAll('.m4dec').forEach(b=>b.onclick=()=>{S.eval4.decision=b.dataset.t;S.tendances[b.dataset.t]=(S.tendances[b.dataset.t]||0)+3;save();eval4Processing()});
 }
