@@ -1018,7 +1018,7 @@ function eval4RegisterB(){
   eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nLA RECONSTRUCTION ÉTABLIT UNE SUCCESSION.\n\nPARMI LES RELATIONS SUIVANTES, LAQUELLE N'EST PAS ÉTABLIE PAR LES FAITS CONSERVÉS ?</div>
    <div class="menu">${['04-B7 -> 04-M2','04-M2 -> 04-K9','04-K9 -> 04-V4','04-V4 -> 04-R6','04-R6'].map(x=>`<button class="btn div4" data-v="${x}">[ ${x} ]</button>`).join('')}</div><div id="m4divfb" class="system"></div>`);
   document.querySelectorAll('.div4').forEach(b=>b.onclick=()=>{
-    if(b.dataset.v==='04-M2 -> 04-K9'){S.eval4.divergence='04-M2 -> 04-K9';S.eval4.step=5;save();$('#m4divfb').textContent='RELATION IDENTIFIÉE.';setTimeout(eval4Decision,650)}
+    if(b.dataset.v==='04-M2 -> 04-K9'){S.eval4.divergence='04-M2 -> 04-K9';S.eval4.step=4;save();$('#m4divfb').textContent='RELATION IDENTIFIÉE.';setTimeout(eval4Decision,650)}
     else $('#m4divfb').textContent='RELATION NON CONFIRMÉE. COMPAREZ LES RELATIONS.';
   });
 }
