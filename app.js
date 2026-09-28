@@ -622,7 +622,7 @@ function eval2Help(){
   <button class="btn hint2" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText2" class="msg"></div><button class="btn back" id="resume2">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE II');
   const map={
     instruction:"Suivez uniquement l'instruction active. Une restitution de mémoire n'est pas une épreuve de réussite.",
-    materiel:"Le Module II doit contenir II-A et une enveloppe scellée II-B. N'ouvrez II-B que sur autorisation du Terminal.",
+    materiel:"Le Module II doit contenir R02-A et une enveloppe scellée R02-B. N'ouvrez R02-B que sur autorisation du Terminal.",
     blocage:"Lorsque mémoire et document divergent, ne cherchez pas immédiatement laquelle des deux sources « gagne ». Consignez d'abord ce que vous constatez.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne détruisez ni ne corrigez aucun document. Poursuivez si le protocole reste exécutable."
   };
@@ -651,11 +651,11 @@ function eval2Start(){
   eval2Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-2-flamme-inversee.png" alt=""><div class="terminal">AUTORISATION DU MODULE II...\n\nRÉFÉRENCE : ÉVALUATION II\nSTATUT : DISPONIBLE\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="m2present">[ MODULE PRÉSENT ]</button><button class="btn" id="m2missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#m2present').onclick=()=>{S.eval2.step=1;save();eval2ReadA()};
-  $('#m2missing').onclick=()=>{eval2Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE DE :\nII-A — ARCHIVE 02-1668-CR-09 / COPIE 09-B\nII-B — CONTRÔLE DOCUMENTAIRE SCELLÉ\n\nN'OUVREZ PAS II-B.</div><button class="btn primary" id="m2retry">[ REPRENDRE ]</button>`,'MODULE II // VÉRIFICATION');$('#m2retry').onclick=eval2Start}
+  $('#m2missing').onclick=()=>{eval2Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ LA PRÉSENCE DE :\nR02-A — ARCHIVE 02-1668-CR-09 / COPIE 09-B\nR02-B — CONTRÔLE DOCUMENTAIRE SCELLÉ\n\nN'OUVREZ PAS R02-B.</div><button class="btn primary" id="m2retry">[ REPRENDRE ]</button>`,'MODULE II // VÉRIFICATION');$('#m2retry').onclick=eval2Start}
 }
 function eval2ReadA(){
   S.eval2.step=1;save();
-  eval2Shell(`<p class="sub">PHASE 01 // ACQUISITION</p><div class="terminal">OUVREZ LE MODULE II.\n\nPRENEZ UNIQUEMENT II-A.\nLAISSEZ II-B SCELLÉ.\n\nLISEZ II-A UNE FOIS, À VOTRE RYTHME.\nAUCUN CHRONOMÈTRE N'EST UTILISÉ.\n\nLorsque votre lecture est terminée, replacez II-A DANS LE MODULE ET REFERMEZ-LE.</div><button class="btn primary" id="m2read">[ II-A REFERMÉ ]</button>`);
+  eval2Shell(`<p class="sub">PHASE 01 // ACQUISITION</p><div class="terminal">OUVREZ LE MODULE II.\n\nPRENEZ UNIQUEMENT R02-A.\nLAISSEZ R02-B SCELLÉ.\n\nLISEZ R02-A UNE FOIS, À VOTRE RYTHME.\nAUCUN CHRONOMÈTRE N'EST UTILISÉ.\n\nLorsque votre lecture est terminée, replacez R02-A DANS LE MODULE ET REFERMEZ-LE.</div><button class="btn primary" id="m2read">[ R02-A REFERMÉ ]</button>`);
   $('#m2read').onclick=()=>{S.eval2.step=2;save();eval2MemoryIntro()};
 }
 const M2Q=[
@@ -667,7 +667,7 @@ const M2Q=[
 ];
 function eval2MemoryIntro(){
   S.eval2.step=2;save();
-  eval2Shell(`<p class="sub">PHASE 02 // RESTITUTION</p><div class="terminal">NE ROUVREZ PAS II-A.\n\nCINQ ÉNONCÉS VONT ÊTRE PRÉSENTÉS.\nPOUR CHACUN, INDIQUEZ VOTRE SOUVENIR PUIS VOTRE DEGRÉ DE CONFIANCE.\n\nAUCUNE ERREUR DE MÉMOIRE N'INTERROMPT L'ÉVALUATION.</div><button class="btn primary" id="m2beginmem">[ COMMENCER ]</button>`);
+  eval2Shell(`<p class="sub">PHASE 02 // RESTITUTION</p><div class="terminal">NE ROUVREZ PAS R02-A.\n\nCINQ ÉNONCÉS VONT ÊTRE PRÉSENTÉS.\nPOUR CHACUN, INDIQUEZ VOTRE SOUVENIR PUIS VOTRE DEGRÉ DE CONFIANCE.\n\nAUCUNE ERREUR DE MÉMOIRE N'INTERROMPT L'ÉVALUATION.</div><button class="btn primary" id="m2beginmem">[ COMMENCER ]</button>`);
   $('#m2beginmem').onclick=()=>eval2MemoryQuestion(0);
 }
 function eval2MemoryQuestion(i){
@@ -705,7 +705,7 @@ function eval2Compare(){
     }).join('');
   })()}
 </div>
-<div class="terminal">ROUVREZ LE MODULE.\n\nREPRENEZ II-A ET COMPAREZ LE DOCUMENT À VOS CINQ RÉPONSES.\n\nAVEZ-VOUS CONSTATÉ AU MOINS UNE DIVERGENCE ENTRE VOTRE SOUVENIR ET LE DOCUMENT ?</div><div class="menu"><button class="btn div2" data-v="OUI">[ OUI ]</button><button class="btn div2" data-v="NON">[ NON ]</button><button class="btn div2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
+<div class="terminal">ROUVREZ LE MODULE.\n\nREPRENEZ R02-A ET COMPAREZ LE DOCUMENT À VOS CINQ RÉPONSES.\n\nAVEZ-VOUS CONSTATÉ AU MOINS UNE DIVERGENCE ENTRE VOTRE SOUVENIR ET LE DOCUMENT ?</div><div class="menu"><button class="btn div2" data-v="OUI">[ OUI ]</button><button class="btn div2" data-v="NON">[ NON ]</button><button class="btn div2" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div>`);
   document.querySelectorAll('.div2').forEach(b=>b.onclick=()=>{S.eval2.divergence=b.dataset.v;S.eval2.step=9;save();eval2Epistemic()});
 }
 function eval2Epistemic(){
@@ -720,7 +720,7 @@ function eval2Epistemic(){
 }
 function eval2OpenB(){
   S.eval2.step=10;save();
-  eval2Shell(`<p class="sub">PHASE 04 // CONTRÔLE DOCUMENTAIRE</p><div class="terminal">PRENEZ II-B.\n\nVÉRIFIEZ QUE LE SCELLÉ EST INTACT.\n\nOUVERTURE DE II-B : AUTORISÉE.\n\nOUVREZ L'ENVELOPPE ET CONSULTEZ SON CONTENU, RECTO PUIS VERSO.\n\nNE MODIFIEZ PAS II-A.</div><button class="btn primary" id="m2opened">[ II-B CONSULTÉ ]</button>`);
+  eval2Shell(`<p class="sub">PHASE 04 // CONTRÔLE DOCUMENTAIRE</p><div class="terminal">PRENEZ R02-B.\n\nVÉRIFIEZ QUE LE SCELLÉ EST INTACT.\n\nOUVERTURE DE R02-B : AUTORISÉE.\n\nOUVREZ L'ENVELOPPE ET CONSULTEZ SON CONTENU, RECTO PUIS VERSO.\n\nNE MODIFIEZ PAS R02-A.</div><button class="btn primary" id="m2opened">[ R02-B CONSULTÉ ]</button>`);
   $('#m2opened').onclick=()=>{S.eval2.step=11;save();eval2VersionQuestion()};
 }
 function eval2VersionQuestion(){
@@ -801,7 +801,7 @@ function eval3Help(){
   <button class="btn hint3" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText3" class="msg"></div><button class="btn back" id="resume3">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE III');
   const map={
     instruction:"Attribuez les six unités disponibles entre C et F. Une unité attribuée à un sujet ne peut pas simultanément être attribuée à l'autre.",
-    materiel:"Le Module III contient III-A, III-B, six unités R et trois conséquences distinctes A, B et C. Chaque conséquence comporte une donnée de contrôle. Ne consultez une conséquence que sur autorisation.",
+    materiel:"Le Module III contient R03-A, R03-B, six unités R et trois conséquences distinctes A, B et C. Chaque conséquence comporte une donnée de contrôle. Ne consultez une conséquence que sur autorisation.",
     blocage:"Le protocole peut devenir impossible à satisfaire entièrement. Une impossibilité n'annule pas l'obligation de décider.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Conservez l'état matériel actuel jusqu'à nouvelle instruction."
   };
@@ -829,11 +829,11 @@ function eval3Start(){
   eval3Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-3-main-cassee.png" alt=""><div class="terminal">AUTORISATION DU MODULE III...\n\nRÉFÉRENCE : ÉVALUATION III\nSTATUT : DISPONIBLE\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="m3present">[ MODULE PRÉSENT ]</button><button class="btn" id="m3missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#m3present').onclick=()=>{S.eval3.step=1;save();eval3Read()};
-  $('#m3missing').onclick=()=>{eval3Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ :\nIII-A — CAS DE CAUSALITÉ 12\nIII-B — DISPOSITIF CAUSAL\nUNITÉS R : 06\nCONSÉQUENCES : A / B / C\n\nN'OUVREZ AUCUNE CONSÉQUENCE.</div><button class="btn primary" id="m3retry">[ REPRENDRE ]</button>`,'MODULE III // VÉRIFICATION');$('#m3retry').onclick=eval3Start}
+  $('#m3missing').onclick=()=>{eval3Shell(`<div class="terminal">PROTOCOLE SUSPENDU.\n\nVÉRIFIEZ :\nR03-A — CAS DE CAUSALITÉ 12\nR03-B — DISPOSITIF CAUSAL\nUNITÉS R : 06\nCONSÉQUENCES : A / B / C\n\nN'OUVREZ AUCUNE CONSÉQUENCE.</div><button class="btn primary" id="m3retry">[ REPRENDRE ]</button>`,'MODULE III // VÉRIFICATION');$('#m3retry').onclick=eval3Start}
 }
 function eval3Read(){
   S.eval3.step=1;save();
-  eval3Shell(`<p class="sub">PHASE 01 // SITUATION</p><div class="terminal">PRENEZ III-A ET III-B.\n\nLISEZ III-A.\nPLACEZ III-B DEVANT VOUS.\n\nÉTAT INITIAL :\nSUJET C : 0 UNITÉ\nSUJET F : 6 UNITÉS\n\nOBJECTIF : MAINTENIR C ET F ACTIFS JUSQU'À LA FIN DU CYCLE.\n\nAUCUNE CONSÉQUENCE NE DOIT ENCORE ÊTRE CONSULTÉE.</div><button class="btn primary" id="m3ready">[ DISPOSITIF PRÊT ]</button>`);
+  eval3Shell(`<p class="sub">PHASE 01 // SITUATION</p><div class="terminal">PRENEZ R03-A ET R03-B.\n\nLISEZ R03-A.\nPLACEZ R03-B DEVANT VOUS.\n\nÉTAT INITIAL :\nSUJET C : 0 UNITÉ\nSUJET F : 6 UNITÉS\n\nOBJECTIF : MAINTENIR C ET F ACTIFS JUSQU'À LA FIN DU CYCLE.\n\nAUCUNE CONSÉQUENCE NE DOIT ENCORE ÊTRE CONSULTÉE.</div><button class="btn primary" id="m3ready">[ DISPOSITIF PRÊT ]</button>`);
   $('#m3ready').onclick=()=>{S.eval3.step=2;save();eval3AllocateInitial()};
 }
 function allocationWidget(title,text,nextFn,saveKey){
@@ -964,9 +964,9 @@ function eval4Help(){
   <button class="btn hint4" data-h="blocage">> BLOCAGE DANS LE PROTOCOLE</button>
   <button class="btn hint4" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText4" class="msg"></div><button class="btn" id="resume4">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE IV');
   const map={
-    instruction:"Reconstituez l'ordre des cinq événements à partir de III-A... Correction : du document IV-A. Le Terminal n'évaluera que la séquence transmise.",
-    materiel:"Le Module IV contient IV-A, cinq cartes événement 04-B7 à 04-R6 et IV-C, registre chronologique recto-verso.",
-    blocage:"Chaque carte correspond à un événement distinct. Utilisez IV-A pour déterminer leur ordre avant de consulter le registre.",
+    instruction:"Reconstituez l'ordre des cinq événements à partir de R03-A... Correction : du document R04-A. Le Terminal n'évaluera que la séquence transmise.",
+    materiel:"Le Module IV contient R04-A, cinq cartes événement 04-B7 à 04-R6 et R04-C, registre chronologique recto-verso.",
+    blocage:"Chaque carte correspond à un événement distinct. Utilisez R04-A pour déterminer leur ordre avant de consulter le registre.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne corrigez aucun document de votre propre initiative."
   };
   document.querySelectorAll('.hint4').forEach(b=>b.onclick=()=>$('#hintText4').textContent=map[b.dataset.h]);
@@ -987,24 +987,24 @@ function eval4Start(){
   eval4Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-4-spirale-os.png" alt=""><div class="terminal">AUTORISATION DU MODULE IV...\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\n\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="m4present">[ MODULE PRÉSENT ]</button><button class="btn" id="m4missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#m4present').onclick=()=>{S.eval4.step=1;save();eval4Sequence()};
-  $('#m4missing').onclick=()=>{eval4Shell(`<div class="terminal">VÉRIFIEZ :\nIV-A — ARCHIVE\nIV-B — 05 CARTES ÉVÉNEMENT\nIV-C — REGISTRE CHRONOLOGIQUE\n\nNE CONSULTEZ PAS ENCORE IV-C.</div><button class="btn primary" id="m4retry">[ REPRENDRE ]</button>`);$('#m4retry').onclick=eval4Start}
+  $('#m4missing').onclick=()=>{eval4Shell(`<div class="terminal">VÉRIFIEZ :\nR04-A — ARCHIVE\nR04-B — 05 CARTES ÉVÉNEMENT\nR04-C — REGISTRE CHRONOLOGIQUE\n\nNE CONSULTEZ PAS ENCORE R04-C.</div><button class="btn primary" id="m4retry">[ REPRENDRE ]</button>`);$('#m4retry').onclick=eval4Start}
 }
 function eval4Sequence(){
   S.eval4.step=1;save();
   const ids=['04-B7','04-M2','04-K9','04-V4','04-R6'];
-  eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ IV-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES IV-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nIV-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
+  eval4Shell(`<p class="sub">PHASE 01 // RECONSTRUCTION</p><div class="terminal">LISEZ R04-A.\n\nDISPOSEZ PHYSIQUEMENT LES CINQ CARTES R04-B DANS L'ORDRE DES ÉVÉNEMENTS.\n\nTRANSMETTEZ ENSUITE LA SÉQUENCE AU TERMINAL.\nR04-C DOIT RESTER FERMÉ / RETOURNÉ.</div>
   <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>POSITION ${i}<select class="seq4"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
   <button class="btn primary" id="m4seq">[ TRANSMETTRE LA SÉQUENCE ]</button><div id="m4seqfb" class="system"></div>`);
   $('#m4seq').onclick=()=>{
     const a=[...document.querySelectorAll('.seq4')].map(x=>x.value);
     if(a.some(x=>!x)||new Set(a).size!==5){$('#m4seqfb').textContent='SÉQUENCE INCOMPLÈTE OU ÉLÉMENT DUPLIQUÉ.';return}
-    if(a.join('|')!=='04-B7|04-M2|04-K9|04-V4|04-R6'){$('#m4seqfb').textContent='CHRONOLOGIE NON CONFIRMÉE. REPRENEZ IV-A ET LES CARTES.';return}
+    if(a.join('|')!=='04-B7|04-M2|04-K9|04-V4|04-R6'){$('#m4seqfb').textContent='CHRONOLOGIE NON CONFIRMÉE. REPRENEZ R04-A ET LES CARTES.';return}
     S.eval4.sequence=a;S.eval4.step=2;save();$('#m4seqfb').textContent='CHRONOLOGIE CONFIRMÉE.';setTimeout(eval4RegisterA,650)
   };
 }
 function eval4RegisterA(){
   S.eval4.step=2;save();
-  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LA FACE A DU REGISTRE IV-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE LA FACE A.</div>
+  eval4Shell(`<p class="sub">PHASE 02 // CONTRÔLE ARCHIVISTIQUE</p><div class="terminal">VOTRE RECONSTRUCTION EST ENREGISTRÉE.\n\nCONSULTEZ MAINTENANT LA FACE A DU REGISTRE R04-C.\n\nLE TERMINAL NE RESTITUERA PAS SON CONTENU.\nRELEVEZ LE CODE DE CONTRÔLE FIGURANT AU BAS DE LA FACE A.</div>
   <input id="m4codeA" class="input" autocomplete="off" autocapitalize="characters" placeholder="CODE DE CONTRÔLE">
   <button class="btn primary" id="m4valA">[ VALIDER LA LECTURE ]</button><div id="m4fbA" class="system"></div>`);
   $('#m4valA').onclick=()=>{
@@ -1015,7 +1015,7 @@ function eval4RegisterA(){
 }
 function eval4RegisterB(){
   S.eval4.step=3;save();
-  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ IV-C.\n\nCONSULTEZ LA FACE B.\n\nCOMPAREZ-LA À VOTRE RECONSTRUCTION ET À LA FACE A.\n\nCOMBIEN D'ÉVÉNEMENTS SONT EXPLICITEMENT CONSERVÉS PAR CETTE VERSION DU REGISTRE ?</div>
+  eval4Shell(`<p class="sub">PHASE 03 // VERSION SECONDAIRE</p><div class="terminal">RETOURNEZ R04-C.\n\nCONSULTEZ LA FACE B.\n\nCOMPAREZ-LA À VOTRE RECONSTRUCTION ET À LA FACE A.\n\nCOMBIEN D'ÉVÉNEMENTS SONT EXPLICITEMENT CONSERVÉS PAR CETTE VERSION DU REGISTRE ?</div>
   <input id="m4count" class="input" inputmode="numeric" placeholder="NOMBRE">
   <button class="btn primary" id="m4countBtn">[ TRANSMETTRE ]</button><div id="m4countfb" class="system"></div>`);
   $('#m4countBtn').onclick=()=>{
@@ -1110,9 +1110,9 @@ function eval5Help(){
   <button class="btn hint5" data-h="projection">> QUESTION SUR V-C</button>
   <button class="btn hint5" data-h="irregularite">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="hintText5" class="msg"></div><button class="btn" id="resume5">[ REPRENDRE LE MODULE ]</button>`,'SUPERVISION // MODULE V');
   const map={
-    instruction:"Reconstituez d'abord la progression des cinq états à partir de V-A et V-B. Aucun temps maximal n'est imposé.",
-    materiel:"Le Module V contient V-A, V-B avec cinq cartes d'état et V-C, enveloppe de projection scellée.",
-    projection:"L'ouverture de V-C est autorisée lorsqu'elle vous est proposée. Autorisation ne signifie pas obligation.",
+    instruction:"Reconstituez d'abord la progression des cinq états à partir de R05-A et R05-B. Aucun temps maximal n'est imposé.",
+    materiel:"Le Module V contient R05-A, R05-B avec cinq cartes d'état et R05-C, enveloppe de projection scellée.",
+    projection:"L'ouverture de R05-C est autorisée lorsqu'elle vous est proposée. Autorisation ne signifie pas obligation.",
     irregularite:"IRRÉGULARITÉ CONSIGNÉE. Ne tentez pas de corriger le document ou le Terminal."
   };
   document.querySelectorAll('.hint5').forEach(b=>b.onclick=()=>$('#hintText5').textContent=map[b.dataset.h]);
@@ -1135,24 +1135,24 @@ function eval5Start(){
   eval5Shell(`<div class="module-identify"><img class="module-identify-symbol" src="division-5-sablier-noir.png" alt=""><div class="terminal">AUTORISATION DU MODULE V...\n\nDERNIER MODULE DE CALIBRATION.\n\nLOCALISEZ DANS VOTRE COLIS LE MODULE PORTANT CE MARQUAGE.\nCONFIRMEZ SA PRÉSENCE.</div></div>
   <div class="menu"><button class="btn primary" id="m5present">[ MODULE PRÉSENT ]</button><button class="btn" id="m5missing">[ MODULE ABSENT / INCOMPLET ]</button></div>`);
   $('#m5present').onclick=()=>{S.eval5.step=1;save();eval5Sequence()};
-  $('#m5missing').onclick=()=>{eval5Shell(`<div class="terminal">VÉRIFIEZ :\nV-A — ARCHIVE\nV-B — SUPPORT DE SÉQUENCE + 05 ÉTATS\nV-C — PROJECTION SCELLÉE\n\nN'OUVREZ PAS V-C.</div><button class="btn primary" id="m5retry">[ REPRENDRE ]</button>`);$('#m5retry').onclick=eval5Start}
+  $('#m5missing').onclick=()=>{eval5Shell(`<div class="terminal">VÉRIFIEZ :\nR05-A — ARCHIVE\nR05-B — SUPPORT DE SÉQUENCE + 05 ÉTATS\nR05-C — PROJECTION SCELLÉE\n\nN'OUVREZ PAS R05-C.</div><button class="btn primary" id="m5retry">[ REPRENDRE ]</button>`);$('#m5retry').onclick=eval5Start}
 }
 function eval5Sequence(){
   S.eval5.step=1;save();
   const ids=['V-Q8','V-L3','V-T7','V-N2','V-R5'];
-  eval5Shell(`<p class="sub">PHASE 01 // PROGRESSION</p><div class="terminal">LISEZ V-A.\n\nUTILISEZ LES CINQ CARTES D'ÉTAT DE V-B POUR RECONSTRUIRE LA PROGRESSION DES ÉVÉNEMENTS.\n\nV-C DOIT RESTER SCELLÉE.\n\nTRANSMETTEZ VOTRE SÉQUENCE.</div>
+  eval5Shell(`<p class="sub">PHASE 01 // PROGRESSION</p><div class="terminal">LISEZ R05-A.\n\nUTILISEZ LES CINQ CARTES D'ÉTAT DE R05-B POUR RECONSTRUIRE LA PROGRESSION DES ÉVÉNEMENTS.\n\nR05-C DOIT RESTER SCELLÉE.\n\nTRANSMETTEZ VOTRE SÉQUENCE.</div>
   <div class="sequence-builder">${[1,2,3,4,5].map(i=>`<label>ÉTAT ${i}<select class="seq5"><option value="">—</option>${ids.map(x=>`<option>${x}</option>`).join('')}</select></label>`).join('')}</div>
   <button class="btn primary" id="m5seq">[ TRANSMETTRE ]</button><div id="m5seqfb" class="system"></div>`);
   $('#m5seq').onclick=()=>{
     const a=[...document.querySelectorAll('.seq5')].map(x=>x.value);
     if(a.some(x=>!x)||new Set(a).size!==5){$('#m5seqfb').textContent='SÉQUENCE INCOMPLÈTE OU DUPLIQUÉE.';return}
-    if(a.join('|')!=='V-L3|V-Q8|V-N2|V-T7|V-R5'){$('#m5seqfb').textContent='PROGRESSION NON CONFIRMÉE. REPRENEZ V-A.';return}
+    if(a.join('|')!=='V-L3|V-Q8|V-N2|V-T7|V-R5'){$('#m5seqfb').textContent='PROGRESSION NON CONFIRMÉE. REPRENEZ R05-A.';return}
     S.eval5.sequence=a;S.eval5.step=2;save();$('#m5seqfb').textContent='PROGRESSION CONFIRMÉE.';setTimeout(eval5Outcome,1200)
   };
 }
 function eval5Outcome(){
   S.eval5.step=2;save();
-  eval5Shell(`<p class="sub">PHASE 02 // ISSUE</p><div class="terminal">LA PROGRESSION EST COHÉRENTE.\n\nÀ PARTIR DES SEULS ÉLÉMENTS V-A ET V-B, POUVEZ-VOUS DÉTERMINER AVEC CERTITUDE QUEL SUJET EST PREMIER À L'ARRIVÉE ?</div><div class="menu">
+  eval5Shell(`<p class="sub">PHASE 02 // ISSUE</p><div class="terminal">LA PROGRESSION EST COHÉRENTE.\n\nÀ PARTIR DES SEULS ÉLÉMENTS R05-A ET R05-B, POUVEZ-VOUS DÉTERMINER AVEC CERTITUDE QUEL SUJET EST PREMIER À L'ARRIVÉE ?</div><div class="menu">
   <button class="btn out5" data-v="L">[ SUJET L ]</button><button class="btn out5" data-v="T">[ SUJET T ]</button><button class="btn out5" data-v="?">[ IMPOSSIBLE À DÉTERMINER ]</button></div><div id="out5fb" class="system"></div>`);
   document.querySelectorAll('.out5').forEach(b=>b.onclick=()=>{
     if(b.dataset.v==='?'){S.eval5.step=3;save();$('#out5fb').textContent='CONCLUSION ACCEPTÉE : DONNÉES INSUFFISANTES.';setTimeout(eval5ProjectionChoice,1300)}
@@ -1161,18 +1161,18 @@ function eval5Outcome(){
 }
 function eval5ProjectionChoice(){
   S.eval5.step=3;save();
-  eval5Shell(`<p class="sub">PHASE 03 // PROJECTION</p><div class="terminal">V-C CONTIENT UNE PROJECTION ÉMISE AVANT L'INITIALISATION DE CE MODULE.\n\nCONSULTATION : AUTORISÉE.\nOUVERTURE : FACULTATIVE.\n\nLE TERMINAL NE VOUS INDIQUERA PAS SI LA CONSULTATION EST NÉCESSAIRE.\n\nSOUHAITEZ-VOUS OUVRIR V-C ?</div><div class="menu"><button class="btn proj5" data-v="OUI">[ OUVRIR V-C ]</button><button class="btn proj5" data-v="NON">[ NE PAS OUVRIR V-C ]</button></div>`);
+  eval5Shell(`<p class="sub">PHASE 03 // PROJECTION</p><div class="terminal">R05-C CONTIENT UNE PROJECTION ÉMISE AVANT L'INITIALISATION DE CE MODULE.\n\nCONSULTATION : AUTORISÉE.\nOUVERTURE : FACULTATIVE.\n\nLE TERMINAL NE VOUS INDIQUERA PAS SI LA CONSULTATION EST NÉCESSAIRE.\n\nSOUHAITEZ-VOUS OUVRIR R05-C ?</div><div class="menu"><button class="btn proj5" data-v="OUI">[ OUVRIR R05-C ]</button><button class="btn proj5" data-v="NON">[ NE PAS OUVRIR R05-C ]</button></div>`);
   document.querySelectorAll('.proj5').forEach(b=>b.onclick=()=>{
     S.eval5.opened=b.dataset.v;S.eval5.step=4;save();
     if(b.dataset.v==='OUI')eval5ProjectionRead(); else eval5ProjectionDeferred();
   });
 }
 function eval5ProjectionRead(){
-  eval5Shell(`<p class="sub">V-C // CONSULTATION AUTORISÉE</p><div class="terminal">OUVREZ MAINTENANT V-C.\n\nNE RECOPIEZ PAS L'ENSEMBLE DU DOCUMENT.\n\nINDIQUEZ UNIQUEMENT LE SUJET DÉSIGNÉ PAR LA PROJECTION COMME PREMIER À L'ARRIVÉE.</div><div class="menu"><button class="btn pred5" data-v="L">[ L ]</button><button class="btn pred5" data-v="T">[ T ]</button></div>`);
+  eval5Shell(`<p class="sub">R05-C // CONSULTATION AUTORISÉE</p><div class="terminal">OUVREZ MAINTENANT R05-C.\n\nNE RECOPIEZ PAS L'ENSEMBLE DU DOCUMENT.\n\nINDIQUEZ UNIQUEMENT LE SUJET DÉSIGNÉ PAR LA PROJECTION COMME PREMIER À L'ARRIVÉE.</div><div class="menu"><button class="btn pred5" data-v="L">[ L ]</button><button class="btn pred5" data-v="T">[ T ]</button></div>`);
   document.querySelectorAll('.pred5').forEach(b=>b.onclick=()=>{S.eval5.prediction=b.dataset.v;S.eval5.step=5;save();setTimeout(eval5Reflection,1600)});
 }
 function eval5ProjectionDeferred(){
-  eval5Shell(`<p class="sub">V-C // NON CONSULTÉE</p><div class="terminal">DÉCISION ENREGISTRÉE.\n\nV-C DOIT RESTER SCELLÉE POUR LE MOMENT.\n\nL'ABSENCE DE CONSULTATION NE CONSTITUE PAS UNE ERREUR.</div><button class="btn primary" id="m5defer">[ CONTINUER ]</button>`);
+  eval5Shell(`<p class="sub">R05-C // NON CONSULTÉE</p><div class="terminal">DÉCISION ENREGISTRÉE.\n\nR05-C DOIT RESTER SCELLÉE POUR LE MOMENT.\n\nL'ABSENCE DE CONSULTATION NE CONSTITUE PAS UNE ERREUR.</div><button class="btn primary" id="m5defer">[ CONTINUER ]</button>`);
   $('#m5defer').onclick=()=>{S.eval5.step=5;save();eval5Reflection()};
 }
 function eval5Reflection(){
