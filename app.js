@@ -1360,8 +1360,8 @@ const OATH_LINES=[
 function assignmentOathAuthorize(){
   S.sermentDisponible=true;save();
   shell(`<h1 class="title">PROTOCOLE 000 // SERMENT</h1>
-  <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nFEUILLET SERMENT : AUTORISÉ.\n\nLISEZ LE FEUILLET PHYSIQUE EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
-  <div class="menu"><button class="btn primary" id="oathRead">[ J'AI LU LE SERMENT ]</button><button class="btn" id="oathLater">[ DIFFÉRER ]</button></div>`,'PROTOCOLE 000 // SERMENT AUTORISÉ');
+  <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nFEUILLET SERMENT : AUTORISÉ.\n\nLISEZ L'ACTE D'ADMISSION EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
+  <div class="menu"><button class="btn primary" id="oathRead">[ LECTURE DU SERMENT ]</button><button class="btn" id="oathLater">[ DIFFÉRER ]</button></div>`,'PROTOCOLE 000 // SERMENT AUTORISÉ');
   $('#oathRead').onclick=oathDisplay;$('#oathLater').onclick=home;
 }
 function oathDisplay(){
