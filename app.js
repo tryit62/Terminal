@@ -1296,17 +1296,17 @@ function assignmentFinal(result){
   const d=DIVISIONS[result];
   S.affectation=d.name;S.affectationDone=true;S.affectationReady=false;save();
   shell(`<div class="assignment-final">
-    <div class="terminal">AFFECTATION PROVISOIRE CONFIRMÉE.</div>
+    <div class="terminal">AFFECTATION CONFIRMÉE.</div>
     <img class="assignment-symbol" src="${d.img}" alt="">
     <div class="assignment-name">${d.name}</div><div class="assignment-verb">${d.verb}</div>
     <div class="rule"></div><p class="assignment-line">${d.line}</p>
-    <div class="terminal">STATUT : CANDIDAT\nACCÈS AU SERMENT : AUTORISÉ\n\nN'OUVREZ L'ENVELOPPE « APRÈS » QUE SUR INSTRUCTION.</div>
-    <button class="btn primary" id="afterAccess">[ AUTORISER L'OUVERTURE DE « APRÈS » ]</button>
+    <div class="terminal">STATUT : CANDIDAT\nACCÈS AU SERMENT : AUTORISÉ\n\nN'OUVREZ L'ENVELOPPE « DIRECTIVE ZÉRO » QUE SUR INSTRUCTION.</div>
+    <button class="btn primary" id="afterAccess">[ AUTORISER L'OUVERTURE DE « DIRECTIVE ZÉRO » ]</button>
   </div>`,'AFFECTATION // CONFIRMÉE');
   $('#afterAccess').onclick=assignmentAfter;
 }
 function assignmentAfter(){
-  shell(`<h1 class="title">PROTOCOLE 000 // APRÈS</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « APRÈS » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // APRÈS');
+  shell(`<h1 class="title">PROTOCOLE 000 // DIRECTIVE ZÉRO</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « DIRECTIVE ZÉRO » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // DIRECTIVE ZÉRO');
   $('#afterOk').onclick=()=>{S.sermentDisponible=true;save();assignmentOathAuthorize()};
   $('#afterBad').onclick=assignmentMaterialIssue;
 }
