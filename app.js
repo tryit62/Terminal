@@ -1,4 +1,6 @@
+/* ORDRE TERMINAL V219 — restauration stricte et synchronisation anti-regression */
 const $=s=>document.querySelector(s); const app=$('#app');
+const ordreBetaLabActive=false; // V1 : laboratoire indisponible dans la version publique
 const defaults={matricule:'',statut:'CANDIDAT',accreditation:'0',affectation:'—',inventaire:null,progression:0,messages:1,installed:false,
 eval1:{step:0,factAttempts:0,epistemic:null,controlAttempts:0,decision:null,versions:null,memoryCount:null,cardAnswers:[],sourceObservation:null,complete:false},
 eval2:{step:0,memoryAnswers:[],confidence:[],divergence:null,epistemic:null,versionFirst:null,confidenceMaintained:null,decision:null,sincereFalse:null,authenticFalse:null,complete:false},
@@ -18,7 +20,37 @@ if(S.eval2.complete && (S.progression||0)<2) S.progression=2;
 if(S.eval3.complete && (S.progression||0)<3) S.progression=3;
 if(S.eval4.complete && (S.progression||0)<4) S.progression=4;
 if(S.eval5.complete && (S.progression||0)<5) S.progression=5;
-function save(){localStorage.setItem('ordre_terminal',JSON.stringify(S));profileSave()} function shell(body,status='SYS // SESSION : 1'){app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div>${body}<div class="status">PROTOCOLE ACTIF : 000 <span class="tag">${status}</span></div></section>`}
+/* V230 — visual-only module tracking; no changes to player answers or progression. */
+let ordreV230LastModule=null;
+function ordreV229Decorate(status){
+ const stage=document.querySelector('.candidate-stage');if(!stage)return;
+ const moduleHeading=stage.querySelector('.module-head .module-code');
+ const match=moduleHeading?.textContent?.match(/ÉVALUATION\s+(I|II|III|IV|V)\b/i);
+ const current=match?match[1]:null;
+ const label=document.querySelector('.candidate-status');
+ if(label)label.setAttribute('aria-label','Statut du terminal : '+status);
+ // Keep last module while visiting the home screen, but do not display progress there.
+ if(!current)return;
+ const numbers={I:1,II:2,III:3,IV:4,V:5};
+ const completedCount=[S.eval1,S.eval2,S.eval3,S.eval4,S.eval5].filter(x=>x?.complete===true).length;
+ const completed=S['eval'+numbers[current]]?.complete===true;
+ const progress=document.createElement('div');progress.className='v229-progress';progress.setAttribute('role','status');
+ const left=document.createElement('span');left.textContent='ÉVALUATION '+current+' / V';
+ const right=document.createElement('span');right.textContent=completed?'DOSSIER CONSIGNÉ':'SESSION EN COURS';
+ progress.append(left,right);stage.insertBefore(progress,stage.firstChild);
+ const track=document.createElement('div');track.className='v229-track';
+ track.setAttribute('role','progressbar');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','5');track.setAttribute('aria-valuenow',String(completedCount));track.setAttribute('aria-label','Évaluations terminées : '+completedCount+' sur 5');
+ const bar=document.createElement('span');bar.style.width=(completedCount*20)+'%';track.appendChild(bar);progress.after(track);
+ if(completed&&/ENREGISTRÉ|TERMINÉ|ACHEVÉ/i.test(status)){
+  const closure=document.createElement('div');closure.className='v229-closure';closure.textContent='ÉVALUATION '+current+' TERMINÉE — RÉSULTATS CONSIGNÉS';track.after(closure);
+ }
+ if(ordreV230LastModule!==null&&ordreV230LastModule!==current){
+  const transition=document.createElement('div');transition.className='v229-transition';transition.setAttribute('role','status');transition.textContent='MODULE '+current+' // ACCÈS AUTORISÉ';track.after(transition);
+  setTimeout(()=>{if(transition.isConnected)transition.remove()},900);
+ }
+ ordreV230LastModule=current;
+}
+function save(){if(ADMIN_MODE)return;localStorage.setItem('ordre_terminal',JSON.stringify(S));profileSave();ordreMarkLocalChange();ordreQueueSync()} function shell(body,status='SYS // SESSION : 1'){const lockButton=(!ordreLockActive&&ordreAuth?.access_token)?'<button class="candidate-footer-action" type="button" id="v214LockNow">⌑ VERROUILLER</button>':'';app.innerHTML=`<section class="shell"><div class="brand">ORDRE DES CINQ OMBRES</div><div class="rule"></div><div class="candidate-stage">${body}</div><div class="status candidate-status">● SESSION ACTIVE <span class="tag">${status}</span><span class="candidate-footer-actions">${lockButton}</span></div></section>`;const lock=document.getElementById('v214LockNow');if(lock)lock.onclick=ordreLock;ordreV229Decorate(status);if(ordreBetaLabActive&&ADMIN_MODE)ordreBetaLabAttachReturn();}
 function later(fn,ms=650){setTimeout(fn,ms)}
 
 /* V1.3 — PROTOTYPE : profils locaux par matricule + administration locale.
@@ -61,6 +93,7 @@ function adminSnapshot(){
   return JSON.parse(JSON.stringify(S));
 }
 function adminPrepare(divisionName){
+  if(!ordreBetaLabActive)return;
   ADMIN_MODE=true;
   S=JSON.parse(JSON.stringify(defaults));
   S.matricule='SIMULATION';
@@ -69,11 +102,13 @@ function adminPrepare(divisionName){
   S.affectationReady=true;
 }
 function adminExit(){
+  if(ordreBetaLabActive){window.location.href=window.location.pathname;return;}
   ADMIN_MODE=false;
   document.body.classList.remove('cinematic-mode','initiated','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
   boot();
 }
 function boot(){
+  if(ordreBetaLabActive&&ADMIN_MODE){adminPanel();return;}
   ADMIN_MODE=false;
   document.body.classList.remove('cinematic-mode','initiated','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
   shell(`<div class="boot-screen"><div class="terminal cursor">RÉSEAU DES CINQ OMBRES
@@ -88,41 +123,20 @@ IDENTIFICATION REQUISE
   later(()=>identify(),1450);
 }
 function identify(){
-  const last=localStorage.getItem('ordre_terminal_last_profile')||'';
-  shell(`<h1 class="title">IDENTIFICATION</h1>
-  <div class="terminal">SAISISSEZ VOTRE MATRICULE.
-
-UN DOSSIER LOCAL EXISTANT SERA RESTAURÉ AUTOMATIQUEMENT.
-UN MATRICULE INCONNU INITIALISERA UN NOUVEAU DOSSIER CANDIDAT.</div>
-  <div class="id-login">
-    <label>MATRICULE</label>
-    <input id="matricule" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="C-000-000" value="${last}">
-    <button class="btn primary" id="identifyGo">[ S'IDENTIFIER ]</button>
-  </div>
-  <div id="identifyFeedback" class="system"></div>`,'IDENTIFICATION // DOSSIER LOCAL');
-  const input=$('#matricule');
-  const go=()=>{
-    const m=String(input.value||'').trim().toUpperCase();
-    if(!m){$('#identifyFeedback').textContent='MATRICULE REQUIS.';return}
-    if(m===ADMIN_MATRICULE){ADMIN_MODE=true;adminPanel();return}
-    const existed=profileSwitch(m);
-    $('#identifyFeedback').textContent=existed?'DOSSIER LOCAL DÉTECTÉ — RESTAURATION...':'NOUVEAU DOSSIER — INITIALISATION...';
-    setTimeout(()=>environment(),900);
-  };
-  $('#identifyGo').onclick=go;
-  input.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
-  setTimeout(()=>input.focus(),50);
+ // V214 beta : a matricule alone never opens a local profile.
+ ordreShowLink();
 }
 function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
-function environment(){if(standalone()){S.installed=true;save();shell(`<div class="terminal">POINT D'ACCÈS DÉTECTÉ.\n\nAPPAREIL ENREGISTRÉ.\nCANAL CANDIDAT ÉTABLI.\n\nPROTOCOLE 000 AUTORISÉ.</div>`,'POINT D’ACCÈS ACTIF');later(home,1100)}else{shell(`<h1 class="title">ENVIRONNEMENT NON PERSISTANT</h1><p class="sub">Installation d'un point d'accès local recommandée. Cette opération permet les connexions ultérieures depuis votre appareil.</p><div class="menu"><button class="btn primary" id="install">[ ÉTABLIR LE POINT D'ACCÈS ]</button><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`);$('#install').onclick=installHelp;$('#continue').onclick=home}}
+function environment(){if(!ordreRequireConnection())return;if(standalone()){S.installed=true;save();shell(`<div class="terminal">POINT D'ACCÈS DÉTECTÉ.\n\nAPPAREIL ENREGISTRÉ.\nCANAL CANDIDAT ÉTABLI.\n\nPROTOCOLE 000 AUTORISÉ.</div>`,'POINT D’ACCÈS ACTIF');later(home,1100)}else{shell(`<h1 class="title">ENVIRONNEMENT NON PERSISTANT</h1><p class="sub">Installation d'un point d'accès local recommandée. Cette opération permet les connexions ultérieures depuis votre appareil.</p><div class="menu"><button class="btn primary" id="install">[ ÉTABLIR LE POINT D'ACCÈS ]</button><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`);$('#install').onclick=installHelp;$('#continue').onclick=home}}
 function installHelp(){shell(`<h1 class="title">AUTORISATION SYSTÈME REQUISE</h1><div class="terminal">LE TERMINAL NE DISPOSE PAS DES PRIVILÈGES NÉCESSAIRES POUR MODIFIER VOTRE APPAREIL.\n\nOUVREZ LES OPTIONS DE PARTAGE DE VOTRE NAVIGATEUR.\n\nSÉLECTIONNEZ :\n« SUR L'ÉCRAN D'ACCUEIL »\n\nCONSERVEZ LE NOM : TERMINAL\n\nPUIS OUVREZ LE POINT D'ACCÈS NOUVELLEMENT CRÉÉ.</div><div class="menu"><button class="btn" id="continue">[ POURSUIVRE CETTE SESSION ]</button></div>`,'AUTORISATION EXTERNE');$('#continue').onclick=home}
 
 function adminPanel(){
+  if(!ordreBetaLabActive)return;
   ADMIN_MODE=true;
   document.body.classList.remove('initiated','cinematic-mode','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
   const divisions=['ŒIL FENDU','FLAMME INVERSÉE','MAIN CASSÉE','SPIRALE D’OS','SABLIER NOIR'];
   shell(`<div class="admin-shell">
-    <div class="admin-warning">MODE ADMIN // SIMULATION LOCALE // PROTOTYPE</div>
+    <div class="admin-warning">LABORATOIRE BETA // DONNÉES FICTIVES // AUCUNE SAUVEGARDE JOUEUR</div>
     <h1 class="title">PANNEAU DE CONTRÔLE</h1>
     <div class="terminal">AUCUNE ACTION DE CET ÉCRAN NE DOIT ÊTRE UTILISÉE COMME DOSSIER JOUEUR RÉEL.
 
@@ -144,12 +158,15 @@ SÉLECTIONNEZ UN POINT D'ENTRÉE DANS LA TRAME.</div>
       <label>DIVISION SIMULÉE</label>
       <select id="adminDivision">${divisions.map(x=>`<option${x==='SPIRALE D’OS'?' selected':''}>${x}</option>`).join('')}</select>
     </div>
-    <div class="menu"><button class="btn" id="adminExit">[ QUITTER LE MODE ADMIN ]</button></div>
+    <div class="menu"><button class="btn" id="adminReset">[ REMETTRE LA SIMULATION À ZÉRO ]</button><button class="btn" id="adminExit">[ QUITTER LE LABORATOIRE ]</button></div>
   </div>`,'ADMINISTRATION // LOCAL');
   document.querySelectorAll('.admin-jump').forEach(b=>b.onclick=()=>adminJump(b.dataset.jump,$('#adminDivision').value));
   $('#adminExit').onclick=adminExit;
+  $('#adminReset').onclick=()=>{if(confirm('Réinitialiser uniquement la simulation BETA ?')){adminPrepare($('#adminDivision').value);adminPanel()}};
+  ordreBetaLabAttachReturn();
 }
 function adminJump(step,division){
+  if(!ordreBetaLabActive)return;
   adminPrepare(division);
   const complete=n=>{
     S.progression=n;
@@ -159,7 +176,7 @@ function adminJump(step,division){
     if(n>=4)S.eval4.complete=true;
     if(n>=5)S.eval5.complete=true;
   };
-  if(step==='start'){ADMIN_MODE=false;boot();return}
+  if(step==='start'){adminPrepare(division);eval1Start();return}
   if(step==='e1'){complete(0);eval1Start();return}
   if(step==='e2'){complete(1);eval2Start();return}
   if(step==='e3'){complete(2);eval3Start();return}
@@ -173,12 +190,13 @@ function adminJump(step,division){
   if(step==='oath'){assignmentOathAuthorize();return}
   if(step==='cine'){
     S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';
-    initiateCinematic();return
+    shell(`<h1 class="title">CÉRÉMONIE // SIMULATION</h1><div class="terminal">LE SERMENT A ÉTÉ VALIDÉ DANS LE LABORATOIRE.\n\nLA CÉRÉMONIE EXTERNE N’EST PAS LANCÉE POUR ÉVITER TOUTE INTERACTION AVEC UNE SESSION RÉELLE.\n\nDIVISION : ${S.affectation}\nACCRÉDITATION : OMBRE I</div><div class="menu"><button class="btn primary" id="labEnterInitiate">[ OUVRIR LE TERMINAL INITIÉ ]</button></div>`,'LAB BETA // CÉRÉMONIE');
+    document.getElementById('labEnterInitiate').onclick=()=>{S.initieAccueilVu=false;initiateFirstEntry()};return
   }
   if(step==='initiate'){
     S.serment=true;S.statut='INITIÉ';S.accreditation='OMBRE I';S.initieAccueilVu=true;
     document.body.classList.add('initiated');
-    home();return
+    initiateHome();return
   }
 }
 
@@ -240,29 +258,41 @@ CHARGEMENT DU DOSSIER PERSONNEL...</div>
    }
  },5000);
 }
-function initiateHome(){
+function initiateHome(){if(!ordreRequireConnection())return;
  applyInitiateTheme();
  const logo=divisionLogo(S.affectation);
- shell(`<section class="init-dashboard">
-   <div class="init-id">
-    <div><div class="eyebrow">DOSSIER ACTIF</div><h1>${S.matricule||'INITIÉ'}</h1>
-    <div class="init-meta">STATUT // INITIÉ<br>ACCRÉDITATION // OMBRE I<br>DIVISION // ${S.affectation}</div></div>
-    <img class="init-division-logo" src="${logo}" alt="">
-   </div>
-   <div class="mission-status"><span>DOSSIER ACTIF</span><strong>AUCUNE AFFECTATION OPÉRATIONNELLE</strong><small>Votre intégration au réseau est en cours.</small></div>
-   <div class="init-grid">
-    <button onclick="initiateMissions()"><b>MISSIONS</b><span>Aucune affectation</span></button>
-    <button onclick="initiateMessages()"><b>MESSAGERIE</b><span class="unread">${unreadMailCount()} NOUVEAU${unreadMailCount()>1?'X':''} MESSAGE${unreadMailCount()>1?'S':''}</span></button>
-    <button onclick="initiateArchives()"><b>ARCHIVES</b><span>ACCÈS OMBRE I</span></button>
-    <button onclick="initiateProfile()"><b>DOSSIER PERSONNEL</b><span>DOSSIER 000 // CLÔTURÉ</span></button>
-   </div>
-   <div class="init-foot">ACCÈS ARCHIVES : OMBRE I <span>ÉTAT DU RÉSEAU : STABLE</span></div>
- </section>`,'TERMINAL // ACCÈS INITIÉ');
+ let entrance='';
+ try{const k='OCI_V224_ENTRANCE_'+String(S.matricule||'');if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');entrance=' v224-entrance';}}catch(e){}
+ const grade=ordreV211Esc(S.reseauGrade||'OMBRE I');
+ const division=ordreV211Esc(S.reseauDivision||S.affectation||'—');
+ const matricule=ordreV211Esc(S.matricule||'INITIÉ');
+ const mission=S.reseauMission?ordreV211Esc(S.reseauMission.id)+' // '+ordreV211Esc(S.reseauMission.label):'AUCUNE AFFECTATION';
+ const lock=(!ordreLockActive&&ordreAuth?.access_token)?'<button class="v224-lock" id="v214LockNow" type="button">⌑ &nbsp; VERROUILLER</button>':'';
+ app.innerHTML=`<section class="v224-screen${entrance}" aria-label="Accueil Initié">
+   <header class="v224-header"><div class="v224-brand"><img src="order-logo.png" alt="Emblème officiel de l’Ordre"><div><span class="v224-brand-name">ORDRE DES CINQ OMBRES</span><span class="v224-brand-sub">TERMINAL INSTITUTIONNEL <i>◆</i> RÉSEAU SÉCURISÉ</span></div></div><span class="v224-clearance">ACCÈS ${grade}</span></header>
+   <main class="v224-main">
+    <section class="v224-identity"><div class="v224-identity-copy"><span class="v224-kicker">DOSSIER PERSONNEL <em> / </em> IDENTITÉ AUTHENTIFIÉE</span><h1>${matricule}</h1><div class="v224-identity-meta"><span>STATUT <b>INITIÉ</b></span><span>ACCRÉDITATION <b>${grade}</b></span><span>DIVISION <b>${division}</b></span></div></div><div class="v224-emblem"><img src="${logo}" alt="Emblème officiel de la Division ${division}"></div></section>
+    <section class="v224-mission" aria-label="Affectation"><span>TRANSMISSION OPÉRATIONNELLE</span><strong>${mission}</strong><small>${S.reseauMission?'DIRECTIVE REÇUE // CONTENU EN ATTENTE':'VOTRE INTÉGRATION AU RÉSEAU EST EN COURS'}</small></section>
+    <nav class="v224-grid" aria-label="Espaces réservés aux Initiés">
+      <button onclick="initiateMissions()"><span class="v224-card-top">01 <i>◆</i> OPÉRATIONS</span><span class="v224-card-name">MISSIONS</span><span class="v224-card-desc">${S.reseauMission?ordreV211Esc(S.reseauMission.id):'AUCUNE AFFECTATION'}</span><span class="v224-card-arrow">↗</span></button>
+      <button onclick="initiateMessages()"><span class="v224-card-top">02 <i>◆</i> TRANSMISSIONS</span><span class="v224-card-name">MESSAGERIE</span><span class="v224-card-desc">${ordreV210UnreadCount()} NON LU(S)</span><span class="v224-card-arrow">↗</span></button>
+      <button onclick="initiateArchives()"><span class="v224-card-top">03 <i>◆</i> DOCUMENTATION</span><span class="v224-card-name">ARCHIVES</span><span class="v224-card-desc">ACCÈS ${grade}</span><span class="v224-card-arrow">↗</span></button>
+      <button onclick="initiateProfile()"><span class="v224-card-top">04 <i>◆</i> IDENTITÉ</span><span class="v224-card-name">DOSSIER PERSONNEL</span><span class="v224-card-desc">D000 // CLÔTURÉ</span><span class="v224-card-arrow">↗</span></button>
+    </nav>
+   </main>
+   <footer class="v224-footer"><span class="v224-network">● &nbsp; RÉSEAU DES OMBRES // ACCÈS ${grade}</span><span class="v224-directives">DIRECTIVES REÇUES : ${ordreV210UnreadCount()}</span>${lock}</footer>
+ </section>`;
+ const lockBtn=document.getElementById('v214LockNow');if(lockBtn)lockBtn.onclick=ordreLock;
 }
 function initBack(){initiateHome()}
 function initiateMissions(){
+ const mission=S.reseauMission;
+ if(mission&&ordreAuth?.matricule===S.matricule){
+  shell('<h1 class="title">MISSIONS</h1><div class="classified-block"><div class="eyebrow">DIRECTIVE OPÉRATIONNELLE REÇUE</div><h2 id="v211MissionCode"></h2><p id="v211MissionLabel"></p><p>Votre affectation est enregistrée. Le contenu du dossier n’est pas encore disponible dans ce terminal.</p></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>','MISSIONS // OMBRE I');
+  $('#v211MissionCode').textContent=mission.id;$('#v211MissionLabel').textContent=mission.label;return;
+ }
  shell(`<h1 class="title">MISSIONS</h1><div class="classified-block"><div class="eyebrow">AFFECTATIONS OPÉRATIONNELLES</div><h2>AUCUNE AFFECTATION</h2><p>Votre intégration au réseau est en cours.</p><p>Une première affectation vous sera transmise par votre Division.</p></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MISSIONS // OMBRE I');
-}
+} 
 const INITIATE_MESSAGES=[
  {from:'ADMINISTRATION',subject:'CHANGEMENT DE STATUT',date:'AUJOURD’HUI',preview:'Confirmation de votre nouveau niveau d’accès.',body:()=>`Votre dossier candidat a été clôturé.\n\nVotre statut est désormais INITIÉ.\nAccréditation attribuée : OMBRE I.\n\nLes informations accessibles restent soumises au principe de compartimentation. Toute consultation excédant votre niveau d’autorisation doit être interrompue et signalée.`},
  {from:()=>S.affectation,subject:'AFFECTATION DE DIVISION',date:'AUJOURD’HUI',preview:'Communication réservée à votre affectation.',body:()=>divisionMeta(S.affectation).msg},
@@ -270,7 +300,7 @@ const INITIATE_MESSAGES=[
 ];
 function readMailSet(){if(!Array.isArray(S.initieMessagesLus))S.initieMessagesLus=[];return new Set(S.initieMessagesLus)}
 function unreadMailCount(){const r=readMailSet();return INITIATE_MESSAGES.filter((_,i)=>!r.has(i)).length}
-function initiateMessages(){
+function initiateMessages(){ordreV210Inbox();return;
  const read=readMailSet(), unread=unreadMailCount();
  shell(`<h1 class="title">MESSAGERIE</h1><div class="mail-toolbar"><span>BOÎTE DE RÉCEPTION</span><b>${unread} NON LU${unread>1?'S':''}</b></div><div class="mail-inbox">${INITIATE_MESSAGES.map((m,i)=>{const from=typeof m.from==='function'?m.from():m.from;const isUnread=!read.has(i);return `<button class="mail-row ${isUnread?'unread-mail':'read-mail'}" onclick="openInitiateMessage(${i})"><span class="mail-status">${isUnread?'●':'○'}</span><span class="mail-from">${from}</span><span class="mail-subject"><b>${m.subject}</b><small>${m.preview}</small></span><span class="mail-date">${m.date}</span></button>`}).join('')}</div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'MESSAGERIE // BOÎTE DE RÉCEPTION');
 }
@@ -283,7 +313,7 @@ function openInitiateMessage(i){
 const OMBRE1_ARCHIVES=[["OI-GEN-001", "L’ORDRE DES CINQ OMBRES", "Doctrine institutionnelle, mission et principes."], ["OI-GEN-002", "LES CINQ DIVISIONS", "Rôles, philosophies et compartimentation."], ["OI-GEN-003", "NIVEAUX D’ACCRÉDITATION", "Structure officielle des accès OMBRE I à III."], ["OI-NEB-001", "NEBULINE — NOTICE INTRODUCTIVE", "Doctrine opérationnelle sur la Nebuline."], ["OI-VOI-001", "LES CINQ VOILES", "Noms, fonctions et signes accessibles à OMBRE I."], ["OI-FRA-001", "FRACTURES — CLASSIFICATION GÉNÉRALE", "Définition, origine et conduite initiale."], ["OI-ART-001", "ARTEFACTS ET ANCRAGES", "Objets persistants et moyens de stabilisation."], ["OI-MAN-001", "LES MANIFESTÉS", "Définition et protocole concernant les sujets altérés."], ["OI-PRO-004", "PROTOCOLE FACE À UNE ANOMALIE", "Procédure générale de terrain."], ["OI-PRO-007", "COLLECTE ET CONSERVATION DES PREUVES", "Méthode de documentation en contexte instable."], ["OI-HIS-001", "CHRONOLOGIE INSTITUTIONNELLE", "Édition historique abrégée OMBRE I."], ["OI-GEO-001", "RÉSEAU DE L’ORDRE", "Bastions et organisation géographique."], ["OI-GEO-002", "ZONES SOUS SURVEILLANCE", "Ancrages et zones géographiques indexées."], ["OI-INC-014", "INCIDENT LANTERNUM — 1864", "Incident historique ; reproduction interdite."], ["OI-RAP-001", "RAPPORT D’INTERVENTION — 24-071", "Exemple d’intervention OMBRE I clôturée."]];
 const OMBRE1_BODIES=["CLASSIFICATION : OMBRE I\nCATÉGORIE : FONDAMENTAUX / DOCTRINE\n\nL’Ordre des Cinq Ombres est une organisation transséculaire chargée d’identifier, étudier, contenir et, lorsque nécessaire, corriger les phénomènes susceptibles de compromettre la continuité de la réalité humaine observable.\n\nMISSION\n— Identifier les anomalies et Fractures.\n— Étudier les Artefacts, Ancrages et individus affectés.\n— Préserver les traces nécessaires à l’analyse.\n— Limiter l’exposition publique.\n— Corriger les conséquences lorsqu’une intervention est autorisée.\n— Maintenir la continuité dans la limite des moyens disponibles.\n\nL’Ordre ne garantit pas la préservation de toute information.\nIl garantit la continuité dans la limite de ses moyens.\n\nPRINCIPES\nI — « La réalité n’est qu’une version. »\nLa perception humaine ne constitue pas une description exhaustive du réel.\n\nII — « L’Histoire est une barrière. »\nLa continuité historique participe à la stabilité de l’expérience humaine.\n\nIII — « L’unité mène à la dissolution. »\nToute convergence supprimant les séparations nécessaires à la continuité doit être considérée comme un risque.\n\nOBLIGATION DE L’INITIÉ\nN’expliquez jamais au-delà de ce que les preuves permettent d’établir.\n\nSi une observation et la doctrine disponible sont incompatibles :\nCONSIGNEZ L’INCOMPATIBILITÉ.\nNE LA RÉSOLVEZ PAS PAR SUPPOSITION.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : FONDAMENTAUX / ORGANISATION\n\nŒIL FENDU — OBSERVER\nSurveillance, analyse, anticipation, information sans intervention prématurée.\n« Voir n’autorise pas à agir. »\n\nFLAMME INVERSÉE — ADAPTER\nIntervention, modification, infiltration et correction.\n« Préserver n’implique pas toujours de laisser intact. »\n\nMAIN CASSÉE — ANTICIPER\nConséquences, relations causales, évaluation et stabilisation structurelle.\n« Toute correction crée une conséquence. »\n\nSPIRALE D’OS — PRÉSERVER\nArchives, traces, continuité historique et reconstruction.\n« Ce qui disparaît peut continuer d’avoir eu lieu. »\n\nSABLIER NOIR — CONTENIR\nConfinement, sécurité interne, information restreinte et contrôle prolongé.\n« Toute information n’a pas vocation à circuler. »\n\n[ANNEXE SN-00 : ACCÈS REFUSÉ]\n\nCOOPÉRATION\nAucune Division n’est autonome lors d’une Fracture majeure.\nUn désaccord entre Divisions ne constitue pas nécessairement une défaillance.\n\nPlusieurs réponses incompatibles peuvent être simultanément justifiées.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : FONDAMENTAUX / SÉCURITÉ\n\nOMBRE I — PERSONNEL INITIÉ\nDoctrine générale, protocoles communs, classifications élémentaires et archives nécessaires aux opérations autorisées.\n\nOMBRE II — ACCÈS RENFORCÉ\nMécanismes, opérations sensibles, histoire restreinte et protocoles avancés.\nL’accès n’est pas accordé par ancienneté seule.\n\nOMBRE III — DIRECTION\nPlus haut niveau reconnu par les protocoles institutionnels.\nLes informations OMBRE III ne doivent pas être recherchées, reconstruites ou déduites par du personnel inférieur.\n\nCOMPARTIMENTATION\nUne accréditation identique ne garantit pas un accès identique.\nLes droits peuvent dépendre de la Division, de l’opération, de la fonction, du site et du besoin d’en connaître.\n\nUn refus d’accès ne constitue pas la preuve qu’un niveau supérieur existe pour la référence consultée.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PHÉNOMÈNES / NEBULINE\n\nNebuline est la désignation employée pour un état fondamental de la réalité associé aux phénomènes observés lorsque sa stabilité ordinaire est compromise.\n\nSa nature exacte n’est pas accessible au niveau OMBRE I.\n\nNE PAS INTERPRÉTER LA NEBULINE COMME :\n— une énergie ;\n— une matière ;\n— un espace ou une dimension ;\n— une substance ;\n— une entité consciente.\n\nToute représentation n’est qu’un modèle de travail.\n\nLa Nebuline n’est pas directement observée dans les conditions ordinaires. Sa présence est inférée à partir de divergences documentables : perception, mémoire, causalité, histoire, cohérence d’un lieu, d’un objet ou d’un individu.\n\nMANIFESTATIONS INDIRECTES POSSIBLES\nInformations sans source identifiable, souvenirs incompatibles, événements sans cause observable, objets à l’historique impossible, divergences temporelles, altérations perceptives partagées, répétitions, absences et contradictions entre témoignage, mémoire et preuve.\n\nCes phénomènes sont des conséquences observées. Ils ne sont pas la Nebuline elle-même.\n\nPRINCIPE FONDAMENTAL\nAucune intention de la Nebuline n’est démontrée au niveau OMBRE I.\nUne séquence intelligible ne constitue pas une preuve de communication.\n\n« Une coïncidence signifiante n’est pas une intention démontrée. »\n\nCAS N-17-██\nTrois agents demeurent cinq minutes dans une même pièce.\nA rapporte quatre minutes.\nB en rapporte dix-sept.\nC affirme n’être jamais entré malgré l’enregistrement vidéo, mais décrit correctement un objet absent de tous les enregistrements.\nL’objet n’a jamais été retrouvé.\n\nCONCLUSION : instabilité Nebulinique confirmée. Cause non établie.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PHÉNOMÈNES / VOILES\n\nL’Ordre reconnaît cinq mécanismes fondamentaux associés au maintien d’une expérience humaine cohérente de la réalité.\n\nIls ne doivent pas être interprétés comme des lieux, dimensions, frontières physiques ou réalités parallèles.\n\nI — CONSCIENCE\nCohérence de la perception individuelle.\n« Voir quelque chose ne prouve pas son existence. Ne pas le voir ne prouve pas son absence. »\n\nII — MÉMOIRE\nContinuité des souvenirs.\n« Un souvenir est un élément d’enquête. Il n’est pas une preuve. »\n\nIII — CAUSALITÉ\nCohérence entre causes et conséquences.\n« L’absence de cause observable n’autorise pas l’invention d’une cause. »\n\nIV — HISTOIRE\nContinuité entre événements, traces et versions documentées.\n« L’Histoire n’est pas déterminée par ce dont nous nous souvenons. »\n\nV — OMBRES\nFonction : [ACCÈS OMBRE II]\nTout comportement non attribuable aux quatre premiers Voiles, persistant après stabilisation ou récurrent dans des contextes indépendants doit être signalé.\nNe procédez pas vous-même à une classification OMBRES.\n\nINTERACTIONS\nPlusieurs Voiles peuvent être concernés simultanément.\n\nLa relation fondamentale entre Nebuline et Voiles n’est pas accessible au niveau OMBRE I.\n\nFORMULATIONS NON AUTORISÉES SANS PREUVE :\n« le Voile s’est ouvert » ;\n« quelque chose vit derrière le Voile » ;\n« la Nebuline cherche à entrer ».\n\nNOTE\nLes évaluations du Recrutement exposent volontairement les Candidats à des modèles contrôlés de divergence.\n[MÉTHODES : COMPARTIMENTÉES]", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PHÉNOMÈNES / FRACTURES\n\nUne Fracture est une instabilité persistante ou évolutive affectant la cohérence d’un ou plusieurs Voiles.\n\nUne Fracture n’est pas nécessairement une fissure physique.\nElle peut concerner un lieu, un objet, un événement, une période, un groupe ou un individu.\n\n« Une Fracture est définie par ce qu’elle rend instable. »\n\nANOMALIE ≠ FRACTURE\nUn événement isolé ne suffit pas.\nLa persistance, l’évolution, la propagation ou les conséquences durables participent à la classification.\n\nORIGINE OPÉRATIONNELLE\nSPONTANÉE — aucune intervention identifiable.\nCONSÉCUTIVE — apparition après un événement identifiable.\nINDUITE — une action consciente a participé à son apparition.\n[PROCÉDURES D’INDUCTION : ACCÈS REFUSÉ]\n\nÉVOLUTION POSSIBLE\nRésolution, persistance, propagation, déplacement, changement de manifestation ou implication de plusieurs Voiles.\n\nUne stabilisation ne signifie pas nécessairement disparition.\n\nÉVALUATION INITIALE\n1. Qu’est-ce qui est observé ?\n2. Qu’est-ce qui diverge ?\n3. Qui ou quoi est affecté ?\n4. Quels Voiles sont suspectés ?\n5. Le phénomène évolue-t-il ?\n6. Persiste-t-il ?\n7. Que faut-il préserver ?\n\nCAS F-28\nUne chambre disparaît d’un logement. Une famille se souvient d’un fils dont les documents cessent progressivement d’exister. Après stabilisation, l’inventaire d’intervention mentionne quatre agents ; le registre de mission n’en reconnaît que trois. L’identité du quatrième demeure non établie.\n\nL’absence d’explication n’autorise jamais l’invention d’une intention.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PHÉNOMÈNES / OBJETS\n\nARTEFACT\nObjet conservant durablement des propriétés anormales documentées associées à une Fracture ou à une exposition Nebulinique.\n\nUn Artefact n’est pas nécessairement ancien. Il peut être manufacturé récemment.\n\n« Un Artefact n’est pas défini par ce qu’il est. Il est défini par ce qu’il continue de faire. »\n\nSes propriétés doivent rester cohérentes avec l’instabilité observée. Un même Artefact peut impliquer plusieurs Voiles.\n\nMANIPULATION\nDocumenter position, état initial, photographies, inventaire et personnes exposées.\nLimiter les interactions.\nNe pas tenter de reproduire une propriété sans autorisation.\n\nNE PAS DÉTRUIRE PAR DÉFAUT\nLa destruction peut supprimer une preuve, modifier une Fracture, retirer un stabilisateur inconnu ou provoquer une manifestation secondaire.\n\n« Un objet anormal n’est pas nécessairement la cause de l’anomalie. »\n\nANCRAGE\nMoyen matériel ou structurel reconnu ou employé par l’Ordre pour contribuer à la stabilisation d’une situation.\nUn Ancrage peut être installé, découvert ou préexistant.\n\nARTEFACT ≠ ANCRAGE\nLe premier conserve une propriété anormale.\nLe second contribue à la stabilité.\nUn même objet peut exceptionnellement relever des deux catégories.\n\nCAS A-19\nUne cassette récupérée en 1991 contient une phrase décrivant le déplacement futur d’une chaise. Lorsque la chaise est déplacée en 1993, quatre secondes supplémentaires deviennent audibles. Elles disparaissent lors du retrait de la chaise et reviennent lorsqu’elle est replacée.\nClassification : Causalité.\nConclusion : relation anormale confirmée ; direction causale inconnue.\n\nUn dispositif construit par l’Ordre pour mesurer ou interagir avec une instabilité n’est pas nécessairement un Artefact.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PHÉNOMÈNES / SUJETS BIOLOGIQUES\n\nUn Manifesté est un être vivant présentant une altération durable documentée à la suite d’une exposition à une Fracture.\n\nUn Manifesté demeure un individu.\n\nLa classification ne présume ni hostilité, ni perte de conscience, ni altération morale, ni dangerosité.\n\n« Un Manifesté doit être considéré comme un sujet avant d’être considéré comme un phénomène. »\n\nMANIFESTATION ≠ POSSESSION\nLes termes « possédé », « habité », « contrôlé par la Nebuline » ou « remplacé » ne constituent pas des classifications reconnues.\n\nSTABILITÉ\nCertains Manifestés demeurent parfaitement stables pendant de longues périodes.\nLa classification Manifesté ne justifie pas à elle seule un confinement.\n\nLes altérations peuvent concerner perception, mémoire, identité, relation au temps, lieux, objets, présence physique ou conservation des traces.\n[TYPOLOGIE COMPLÈTE : OMBRE II]\n\nPREMIER CONTACT\nÉtablir le danger immédiat.\nNe pas présumer l’hostilité.\nDocumenter séparément comportement et phénomène.\nÉviter toute exposition supplémentaire.\nNe jamais provoquer volontairement une Manifestation.\n\nLe confinement exige un risque documenté.\n\nCAS M-104\nSujet féminin, 34 ans lors de la première observation. Après une Fracture de Mémoire, elle peut restituer à la première personne les souvenirs détaillés qui lui sont racontés, tout en distinguant parfaitement ses propres souvenirs des souvenirs reçus.\n\n« Je sais lesquels sont à moi. Je ne sais simplement pas pourquoi j’ai les autres. »\n\nAucune agressivité. Aucune perte d’identité.\nDÉCISION — 1982 : ████████████████████\nNOTE — 1991 : DOSSIER ROUVERT.\nMOTIF : ████████████████", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PROCÉDURES / TERRAIN\n\nOBJECTIF\nÉtablir ce qui s’est produit, ce qui peut être prouvé, ce qui demeure incohérent et ce qui risque de changer.\n\n« L’explication vient après l’observation. »\n\nI — NE TOUCHEZ À RIEN\nEn l’absence de danger immédiat : ne déplacez pas, ne corrigez pas, ne reproduisez pas, ne détruisez pas.\n\nII — ÉTABLISSEZ L’OBSERVABLE\nDécrivez des faits, pas une explication.\n\nIII — SÉPAREZ LES SOURCES\nOBSERVATION — constat direct.\nTÉMOIGNAGE — déclaration d’un tiers.\nMÉMOIRE — souvenir d’un individu.\nPREUVE — élément examinable indépendamment.\nINTERPRÉTATION — conclusion.\n\nIV — IDENTIFIEZ LA DIVERGENCE\n« Qu’est-ce qui devrait être vrai ici, mais ne l’est pas ? »\n\nV — TESTEZ SANS PROVOQUER\nComparer, mesurer passivement, confronter des sources indépendantes et consulter les Archives.\n« Vérifier n’est pas provoquer. »\n\nVI — ÉVALUEZ LES VOILES\nConscience / Mémoire / Causalité / Histoire.\nOmbres : signalement uniquement.\n\nVII — RECHERCHEZ LA PERSISTANCE\nFracture active ? Artefact potentiel ? Manifesté potentiel ? Anomalie résiduelle ?\n\nVIII — PRÉSERVEZ\nPersonnes, preuves, traces et Ancrages.\n\nIX — TRANSMETTEZ\nFAITS CONFIRMÉS / NON CONFIRMÉS / DIVERGENCES / VOILES SUSPECTÉS / RISQUES / ÉLÉMENTS PERSISTANTS / ACTION RECOMMANDÉE.\n\n« JE NE SAIS PAS » est une conclusion acceptable.\n\nPROTOCOLE D’INCOHÉRENCE\nSi les preuves sont incompatibles avec la doctrine connue :\nINCOHÉRENCE DOCTRINALE\nConsignez-la. Ne modifiez pas les preuves pour restaurer la doctrine.\n\n« La doctrine organise les observations. Elle ne remplace pas les observations. »\n\nSIGNALEMENT PRIORITAIRE\nDanger vital, évolution rapide, disparition d’un agent, modification inexpliquée d’un Ancrage, atteinte multi-Voiles, suspicion Ombres ou phénomène semblant réagir spécifiquement à l’observateur.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : PROCÉDURES / INVESTIGATION\n\nDans une situation instable, la preuve elle-même peut devenir instable.\n\nRÈGLE DES TROIS TRACES\nTout élément critique doit, lorsque possible, être documenté sous au moins trois formes indépendantes.\n\nOn ne multiplie pas les preuves parce qu’elles sont fiables.\nOn les multiplie parce qu’elles peuvent cesser d’être d’accord.\n\nAucune hiérarchie absolue n’existe entre photographie, document, témoignage ou mémoire.\n\nHORODATAGE\nConsigner découverte, enregistrement, collecteur, position, état initial et modifications.\nNe jamais corriger une divergence d’horodatage sans préserver les valeurs originales.\n\nDOCUMENTS\nNe jamais annoter l’original.\nIdentifier toute COPIE, TRANSCRIPTION ou RECONSTITUTION.\n\nIMAGE / VIDÉO\nSi l’enregistrement diverge de l’observation :\nDIVERGENCE OBSERVATION / ENREGISTREMENT\n\nAUDIO\nDécrire une voix non identifiée avant d’interpréter son origine.\n\nMÉMOIRE\nRecueillir le témoignage avant confrontation avec les autres sources lorsque possible.\nUne mémoire divergente peut être la dernière trace d’un état antérieur.\n\nINVENTAIRE\nChaque pièce reçoit une référence unique.\nExemple : D001-P01 / D001-A01 / D001-T01.\n\nPREUVE DISPARUE\nNe jamais supprimer sa référence.\nÉLÉMENT ABSENT\nou\nORIGINE DE RÉFÉRENCE NON ÉTABLIE\n\nCHAÎNE DE CONSERVATION\nToute transmission doit être enregistrée.\nUne rupture de chaîne peut elle-même constituer une donnée opérationnelle.\n\nRÈGLE FINALE\n« Ne cherchez pas la preuve qui confirme votre hypothèse.\nCherchez la preuve qui devrait exister si votre hypothèse était fausse. »", "CLASSIFICATION : OMBRE I\nCATÉGORIE : HISTOIRE / RÉFÉRENCE\nÉDITION : ABRÉGÉE\n\nCette chronologie n’est pas l’intégralité des archives.\nCertaines dates sont approximatives, certaines entrées abrégées ou retirées.\n\n~1280 — Premières « Taches Noires ». Environ 1 280 occurrences historiques classifiées rétrospectivement.\n\nDÉBUT XIVe — Émergence de l’Ordre. La date exacte de constitution demeure discutée dans les archives accessibles.\n[DOSSIER DE FONDATION : OMBRE III]\n\n1347 — Grande Peste. Corrélations locales avec des phénomènes aujourd’hui associés aux Fractures. Causalité générale non établie.\n\n1350 — Premiers dossiers biologiques correspondant aux futures classifications de Manifestés.\n\n1478 — GRANDE PURGE. Destruction et réorganisation documentaire majeure.\nMOTIF OFFICIEL : PRÉSERVATION DE LA CONTINUITÉ.\n\n1520 — Formalisation des cinq Divisions.\n\n1633 — INCIDENT CALDERÓN. Une expérimentation dirigée par Ruiz Calderón entraîne trente morts. Certaines utilisations actives de phénomènes Nebuliniques sont ensuite interdites.\n\n1740 — Révision des protocoles relatifs aux Manifestés. Certains sont employés en surveillance et reconnaissance. Ces pratiques ne correspondent plus aux protocoles contemporains.\n\n1791 — Fragment : « Cinq Ombres… mais une seulement restera. »\nOrigine contestée. Interprétation officielle : aucune.\n\n1864 — INCIDENT LANTERNUM. 8 Initiés engagés, 0 récupéré, divergence de 7 minutes.\n\n1915 — Augmentation d’instabilités dans plusieurs zones de conflit.\n\n1947 — PACTE DU SILENCE. Protocoles internationaux de limitation de l’exposition publique.\n\n1972 — DÉFECTIONS. Plusieurs membres quittent simultanément l’Ordre et emportent des archives.\n\n1991 — Augmentation durable d’incidents relevant de classifications Ombres.\n[DÉTAILS : ACCÈS REFUSÉ]\n\n2003 — INCIDENT DES ARCHIVES FRAGMENTÉES. Une partie des archives internes est soustraite au contrôle de l’Ordre. Récupération incomplète.\n\nDEPUIS 2021 — SATURATION NEBULAIRE. Hausse durable du nombre, de la fréquence et de la complexité de certaines anomalies. Cause non établie.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : GÉOGRAPHIE / ORGANISATION\n\nL’Ordre opère au moyen d’un réseau décentralisé de cellules, sites d’observation, dépôts documentaires et Bastions.\n\nUn Bastion est une implantation majeure disposant de capacités permanentes de coordination et d’intervention.\n\nBASTIONS INDEXÉS OMBRE I\n— FLORENCE\n— PRAGUE\n— ISTANBUL\n— KYOTO\n— MONTRÉAL\n— DAKAR\n\nLes coordonnées précises, effectifs, capacités et responsabilités spécifiques sont compartimentés.\n\nL’appartenance à une Division ne correspond pas à un Bastion.\nLes cinq Divisions peuvent opérer à travers plusieurs implantations.\n\nUne mission peut être administrativement rattachée à un Bastion différent de la localisation physique de l’Initié.\n\n[MODULE CARTOGRAPHIQUE : EN PRÉPARATION]", "CLASSIFICATION : OMBRE I\nCATÉGORIE : GÉOGRAPHIE / PHÉNOMÈNES\n\nUne zone surveillée ne constitue pas nécessairement une Fracture active.\n\nANCRAGES SURVEILLÉS\nNAPLES — activité historique complexe. [OMB I : DONNÉES PARTIELLES]\nHAÏTI — phénomènes documentaires, mémoriels et historiques récurrents.\nTCHERNOBYL — surveillance renforcée. Toute corrélation historique/Nebuline demeure non établie sans dossier autorisé.\nBRUNIQUEL — relevés historiques et anomalies de continuité.\n\nANCRAGES À FORTE STABILITÉ\nROME\nJÉRUSALEM\nSHANGHAI\nNEW YORK\n\nLa cause de cette stabilité n’est pas accessible au niveau OMBRE I.\n\nCOULOIRS NEBULINIQUES\nCertaines archives décrivent des phénomènes de continuité entre zones géographiquement éloignées.\n\nZones indexées :\nSAHARA\nAMAZONIE\nTSINGY DE L’ANKARANA\n\n[DÉFINITION : OMBRE II]\n[CARTOGRAPHIE : DONNÉES PARTIELLES]\n\n17 RÉFÉRENCES CARTOGRAPHIQUES SONT ACTUELLEMENT AUTORISÉES AU NIVEAU OMBRE I.", "CLASSIFICATION : OMBRE I\nCATÉGORIE : INCIDENTS / HISTORIQUE\nSTATUT : CLOS — REPRODUCTION INTERDITE\n\nLANTERNUM désigne un dispositif expérimental employé par l’Ordre en 1864 dans le cadre de l’observation contrôlée d’un phénomène Nebulinique.\n\nPERSONNEL ENGAGÉ : 8 INITIÉS\nPERSONNEL RÉCUPÉRÉ : 0\nDIVERGENCE DOCUMENTÉE : 00:07:00\nSTATUT DU SITE : ACCÈS INTERDIT\n\nCHRONOLOGIE PARTIELLE\n21:03:14 — Activation.\n21:04:02 — Huit Initiés en position.\n21:04:19 — Première divergence instrumentale.\n21:04:31 — Perte simultanée de plusieurs mesures.\n21:04:██ — ████████████████████\n21:11:██ — Reprise des systèmes.\n\nAucune source exploitable ne permet d’établir ce qui s’est produit pendant l’intervalle.\nAucune sortie n’est enregistrée.\n\nRECHERCHE\n0 corps.\n0 survivant.\n0 sortie documentée.\n\nClassification officielle : DISPARITION EN CONTEXTE DE FRACTURE.\nDécès non confirmé.\n\nLE DISPOSITIF\nConstruit intentionnellement, destiné à interagir avec des conditions Nebuliniques, utilisé dans un environnement contrôlé et non classifié comme Artefact lors de son inventaire initial.\n\n[ARCHITECTURE : OMBRE III]\n[PRINCIPES DE FONCTIONNEMENT : OMBRE III]\n[OBJECTIF COMPLET : OMBRE III]\n\nANNEXES RÉPERTORIÉES : 11\nACCESSIBLES OMBRE I : 0\n\nToute pièce, transcription, composant ou référence Lanternum absente de l’index actuel doit être signalée immédiatement.\n\nCAUSE : NON ACCESSIBLE\nDESTINATION DES INITIÉS : INCONNUE\nNATURE DES SEPT MINUTES : NON ÉTABLIE\nREPRODUCTION : FORMELLEMENT INTERDITE", "CLASSIFICATION : OMBRE I\nCATÉGORIE : RAPPORTS / INTERVENTION\nSTATUT : CLOS\nDATE : 18.04.2024\nSITE : ████████ / FRANCE\nÉQUIPE : 3 AGENTS\n\nSIGNALEMENT\nTrois lettres sont adressées à l’ancienne occupante d’une maison, décédée en 2018. Les cachets postaux datent de 2024. Aucun expéditeur.\n\nLETTRE 01 : « La fuite commence dans la cuisine. »\nUne fuite survient deux jours plus tard.\n\nLETTRE 02 : « Ne laissez pas la fenêtre ouverte jeudi. »\nUne tempête endommage la fenêtre le jeudi suivant.\n\nLETTRE 03 : « Il faudra déplacer l’armoire. »\nAucun événement correspondant.\n\nCOLLECTE\nChaque lettre est conservée, photographiée et transcrite indépendamment.\n\nDIVERGENCE\nÀ 17:21, Lettre 03 :\n« Merci d’avoir déplacé l’armoire. »\nLes photographies et transcriptions conservent la formulation initiale.\nL’armoire n’a pas été déplacée.\n\nCAUSALITÉ SUSPECTÉE.\n\nUne inspection non invasive révèle une cavité derrière l’armoire, absente des plans.\nLe propriétaire affirme avoir toujours signalé qu’il ne fallait jamais déplacer l’armoire. Les enregistrements contredisent cette affirmation.\n\nRECLASSIFICATION : CAUSALITÉ / MÉMOIRE SUSPECTÉE.\n\nDÉCISION\nL’armoire n’est pas déplacée.\nSurveillance passive.\nAucune tentative de provoquer une quatrième lettre.\n\nJ+14 : Lettre 03 retrouve sa formulation originale.\nJ+30 : aucune nouvelle lettre.\n\nSTATUT : STABILISÉ / SURVEILLANCE.\n\nINVENTAIRE FINAL\nP01 à P10 — pièces transférées : 10.\n\nCONTRÔLE DE DÉPÔT\nPIÈCES RÉCEPTIONNÉES : 11.\n\nP11 — ENVELOPPE 04\nÉTAT : FERMÉE\nDESTINATAIRE : ████████████████\nCACHET : 18.04.2027\n\nOUVERTURE : NON AUTORISÉE\nDOSSIER : CLOS"];
 
-function initiateArchives(){
+function initiateArchives(){if(!ordreRequireConnection())return;
  shell(`<h1 class="title">ARCHIVES</h1><div class="archive-head">ACCRÉDITATION ACTIVE // OMBRE I<br>${OMBRE1_ARCHIVES.length} DOCUMENTS CONSULTABLES // RÉFÉRENCES SUPÉRIEURES COMPARTIMENTÉES</div><div class="carto-launch"><button class="btn carto-main-btn" onclick="openCartography()">[ OUVRIR CARTOGRAPHIE OPÉRATIONNELLE ]</button><small>17 RÉFÉRENCES CARTOGRAPHIQUES AUTORISÉES // OMBRE I</small></div><div class="archive-personal"><button class="btn" onclick="replayInitiationCeremony()">[ ARCHIVE PERSONNELLE // REVOIR LA CÉRÉMONIE D’INITIATION ]</button><small>D000 — LE RECRUTEMENT // SOUVENIR DE CARRIÈRE // AUCUNE MODIFICATION DE PROGRESSION</small></div><div class="archive-list">${OMBRE1_ARCHIVES.map((a,i)=>`<button onclick="openArchive(${i})"><code>${a[0]}</code><b>${a[1]}</b><span>CONSULTABLE</span></button>`).join('')}<div class="locked-archive"><code>OII-MAN-001</code><b>TYPOLOGIE DES MANIFESTÉS</b><span>ACCÈS OMBRE II REQUIS</span></div><div class="locked-archive"><code>OII-███-███</code><b>RÉFÉRENCE RESTREINTE</b><span>ACCÈS OMBRE II REQUIS</span></div><div class="locked-archive"><code>OIII-HIS-00</code><b>INCIDENT FONDATEUR</b><span>ACCÈS OMBRE III REQUIS</span></div><div class="locked-archive"><code>█████████</code><b>████████████████</b><span>ACCÈS REFUSÉ</span></div></div><button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'ARCHIVES // OMBRE I');
 }
 function openArchive(i){
@@ -389,7 +419,7 @@ function initiateProfile(){
  <div class="profile-restricted"><b>MOTIF D'AFFECTATION</b><span>[ACCÈS OMBRE II REQUIS]</span></div>
  <button class="btn" onclick="initBack()">[ RETOUR ]</button>`,'DOSSIER PERSONNEL // INITIÉ');
 }
-function home(){
+function home(){if(!ordreRequireConnection())return;
   if(S.serment||S.statut==='INITIÉ'){ if(!S.initieAccueilVu){initiateFirstEntry();return} initiateHome();return }
 
   const now=new Date();
@@ -415,7 +445,7 @@ function home(){
         <div class="home-menu">
           <button class="nav-card" data-go="dossier"><span class="nav-mark">▱</span><span class="nav-title">DOSSIER 000</span><span class="nav-sub">RECRUTEMENT</span><span class="nav-arrow">›</span><span class="nav-index">01</span></button>
           <button class="nav-card" data-go="evals"><span class="nav-mark">◉</span><span class="nav-title">ÉVALUATIONS</span><span class="nav-sub">${S.progression} / 5</span><span class="nav-arrow">›</span><span class="nav-index">02</span></button>
-          <button class="nav-card" data-go="messages"><span class="nav-mark">□</span><span class="nav-title">MESSAGERIE</span><span class="nav-sub">${S.messages?S.messages+' NOUVEAU MESSAGE':'AUCUN NOUVEAU MESSAGE'}</span><span class="nav-arrow">›</span><span class="nav-index">03</span></button>
+          <button class="nav-card" data-go="messages"><span class="nav-mark">□</span><span class="nav-title">MESSAGERIE</span><span class="nav-sub">${ordreV210UnreadCount()} NON LU(S)</span><span class="nav-arrow">›</span><span class="nav-index">03</span></button>
           <button class="nav-card" data-go="archives"><span class="nav-mark">≡</span><span class="nav-title">ARCHIVES</span><span class="nav-sub">ACCÈS REFUSÉ</span><span class="nav-arrow">›</span><span class="nav-index">04</span></button>
           ${S.eval5.complete&&!S.affectationDone?`<button class="nav-card assignment-card" id="assignment"><span class="nav-mark">◇</span><span class="nav-title">AFFECTATION</span><span class="nav-sub">PROCÉDURE DISPONIBLE</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>`:''}
           ${S.affectationDone&&!S.serment&&S.sermentDisponible?`<button class="nav-card oath-resume-card" id="resumeOath"><span class="nav-mark">◇</span><span class="nav-title">SERMENT</span><span class="nav-sub">VALIDATION EN ATTENTE</span><span class="nav-arrow">›</span><span class="nav-index">05</span></button>`:''}
@@ -448,22 +478,23 @@ function evals(){
       S.eval5&&S.eval5.complete?5:0
     );
     let st=n<=effectiveProgress?'ENREGISTRÉ':n===effectiveProgress+1?'DISPONIBLE':'VERROUILLÉ';
-    let active=((n===1||n===2||n===3||n===4||n===5) && st==='DISPONIBLE') ? ` data-eval="${n}" role="button" tabindex="0"` : '';
+    if(st==='VERROUILLÉ' && S.reseauDeblocages?.includes('EVAL'+n) && ordreAuth?.matricule===S.matricule) st='AUTORISÉ PAR LE CENTRE';
+    let active=((n===1||n===2||n===3||n===4||n===5) && (st==='DISPONIBLE'||st==='AUTORISÉ PAR LE CENTRE')) ? ` data-eval="${n}" role="button" tabindex="0"` : '';
     const symbols=['division-1-oeil-fendu.png','division-2-flamme-inversee.png','division-3-main-cassee.png','division-4-spirale-os.png','division-5-sablier-noir.png'];
     return `<div class="eval ${active?'eval-open':''}"${active}><span class="eval-id"><img class="eval-symbol" src="${symbols[n-1]}" alt="">${['I','II','III','IV','V'][n-1]}</span><span class="eval-state">${st}${active?' &nbsp; ›':''}</span></div>`
   }).join('');
   shell(`<h1 class="title">ÉVALUATIONS</h1><div class="eval-list">${rows}</div><p class="sub evals-progress">PROGRESSION : ${S.progression} / 5</p>${back()}`);
   wireBack();
   const e1=document.querySelector('[data-eval="1"]');
-  if(e1){e1.onclick=eval1Start;e1.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval1Start()}}}
+  if(e1){e1.onclick=()=>{if(S.eval1.step>0)eval1Resume();else eval1Start()};e1.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e1.click()}}}
   const e2=document.querySelector('[data-eval="2"]');
-  if(e2){e2.onclick=eval2Start;e2.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval2Start()}}}
+  if(e2){e2.onclick=()=>{if(S.eval2.step>0)eval2Resume();else eval2Start()};e2.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e2.click()}}}
   const e3=document.querySelector('[data-eval="3"]');
-  if(e3){e3.onclick=eval3Start;e3.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval3Start()}}}
+  if(e3){e3.onclick=()=>{if(S.eval3.step>0)eval3Resume();else eval3Start()};e3.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e3.click()}}}
   const e4=document.querySelector('[data-eval="4"]');
-  if(e4){e4.onclick=eval4Start;e4.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval4Start()}}}
+  if(e4){e4.onclick=()=>{if(S.eval4.step>0)eval4Resume();else eval4Start()};e4.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e4.click()}}}
   const e5=document.querySelector('[data-eval="5"]');
-  if(e5){e5.onclick=eval5Start;e5.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();eval5Start()}}}
+  if(e5){e5.onclick=()=>{if(S.eval5.step>0)eval5Resume();else eval5Start()};e5.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e5.click()}}}
 }
 function eval1Shell(body,status='MODULE I // ACTIF'){
   shell(`<div class="module-head"><div><span class="module-code">ÉVALUATION I</span><h1 class="title">MODULE I</h1></div><img class="module-division-symbol" src="division-1-oeil-fendu.png" alt=""></div><div class="rule"></div>${body}<div class="module-help"><button class="btn" id="moduleHelp">[ SOLLICITER LE SUPERVISEUR ]</button></div>`,status);
@@ -538,9 +569,10 @@ function eval1CardQuestion(i){
     if(!Array.isArray(S.eval1.cardAnswers))S.eval1.cardAnswers=[];
     S.eval1.cardAnswers[i]=b.dataset.v;
     S.eval1.step=4+i;save();
-    eval1CardQuestion(i+1);
+    ordreCandidateCardTransition(i+1);
   });
 }
+function ordreCandidateCardTransition(nextCardIndex){const host=document.querySelector('.shell');if(!host){eval1CardQuestion(nextCardIndex);return}const notice=document.createElement('div');notice.className='candidate-card-confirmation';notice.setAttribute('role','status');notice.textContent='DÉCISION CONSIGNÉE // CARTE '+String(nextCardIndex).padStart(2,'0')+' / 06';host.appendChild(notice);host.querySelectorAll('.card-judgement').forEach(b=>b.disabled=true);setTimeout(()=>eval1CardQuestion(nextCardIndex),560)}
 function eval1Confrontation(){
   S.eval1.step=9;save();
   const labels={ETABLI:'ÉTABLI',NON_ETABLI:'NON ÉTABLI',INCERTAIN:'INCERTAIN'};
@@ -1306,7 +1338,7 @@ function assignmentFinal(result){
   $('#afterAccess').onclick=assignmentAfter;
 }
 function assignmentAfter(){
-  shell(`<h1 class="title">PROTOCOLE 000 // DIRECTIVE ZÉRO</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « DIRECTIVE ZÉRO » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — CARTE DES CINQ DIVISIONS\nD — CARTE D'ACCÈS OMBRE I\nE — FEUILLET SERMENT\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // DIRECTIVE ZÉRO');
+  shell(`<h1 class="title">PROTOCOLE 000 // DIRECTIVE ZÉRO</h1><div class="terminal">OUVERTURE DE L'ENVELOPPE « DIRECTIVE ZÉRO » : AUTORISÉE.\n\nRETIREZ SON CONTENU SANS JETER L'ENVELOPPE.\n\nVÉRIFIEZ LA PRÉSENCE DES ÉLÉMENTS SUIVANTS :\nA — CARTE D'INITIÉ\nB — CINQ SCEAUX\nC — ACTE D'ADMISSION\n\nNE PRÊTEZ PAS ENCORE SERMENT.</div><div class="menu"><button class="btn primary" id="afterOk">[ CONTENU CONFORME ]</button><button class="btn" id="afterBad">[ CONTENU INCOMPLET ]</button></div>`,'PROTOCOLE 000 // DIRECTIVE ZÉRO');
   $('#afterOk').onclick=()=>{S.sermentDisponible=true;save();assignmentOathAuthorize()};
   $('#afterBad').onclick=assignmentMaterialIssue;
 }
@@ -1317,9 +1349,7 @@ function assignmentMaterialIssue(){
   <div class="material-checks">
     <label class="material-check"><input type="checkbox" value="A"><div><strong>A — CARTE D'INITIÉ</strong><span>ABSENTE / NON CONFORME</span></div></label>
     <label class="material-check"><input type="checkbox" value="B"><div><strong>B — CINQ SCEAUX</strong><span>ABSENTS / NOMBRE INCORRECT / NON CONFORMES</span></div></label>
-    <label class="material-check"><input type="checkbox" value="C"><div><strong>C — CARTE DES CINQ DIVISIONS</strong><span>ABSENTE / NON CONFORME</span></div></label>
-    <label class="material-check"><input type="checkbox" value="D"><div><strong>D — CARTE D'ACCÈS OMBRE I</strong><span>ABSENTE / NON CONFORME</span></div></label>
-    <label class="material-check"><input type="checkbox" value="E"><div><strong>E — FEUILLET SERMENT</strong><span>ABSENT / NON CONFORME</span></div></label>
+    <label class="material-check"><input type="checkbox" value="C"><div><strong>C — ACTE D'ADMISSION</strong><span>ABSENT / NON CONFORME</span></div></label>
   </div>
   <div class="menu"><button class="btn primary" id="materialSend">[ TRANSMETTRE L'ANOMALIE ]</button><button class="btn" id="materialRetry">[ VÉRIFIER À NOUVEAU ]</button></div>
   <div id="materialFeedback" class="system"></div>`,'SUPERVISION // INVENTAIRE');
@@ -1345,7 +1375,12 @@ function assignmentMaterialSuspended(missing){
 /* V2.0.3 — pont vers le module V1.4.0 EXACT */
 function ceremonyUnlock(){}
 function ceremonyOpen(mode="first"){
- try{sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify({mode,matricule:S.matricule,division:S.affectation}));}catch(e){}
+ try{
+  sessionStorage.setItem("OCI_CEREMONY_PAYLOAD",JSON.stringify({mode,matricule:S.matricule,division:S.affectation}));
+  // V222 : autorisation éphémère, propre à cet onglet et uniquement au retour de cérémonie.
+  if(!ADMIN_MODE && !ordreLockActive && ordreAuth?.matricule===S.matricule)
+    sessionStorage.setItem("OCI_CEREMONY_AUTH",JSON.stringify(ordreAuth));
+ }catch(e){}
  location.href="ceremony.html?v=206";
 }
 function replayInitiationCeremony(){ceremonyOpen("replay");}
@@ -1360,7 +1395,7 @@ const OATH_LINES=[
 function assignmentOathAuthorize(){
   S.sermentDisponible=true;save();
   shell(`<h1 class="title">PROTOCOLE 000 // SERMENT</h1>
-  <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nFEUILLET SERMENT : AUTORISÉ.\n\nLISEZ L'ACTE D'ADMISSION EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
+  <div class="terminal">CONTENU : CONFORME.\nAFFECTATION : ${S.affectation}\nSTATUT : CANDIDAT\n\nPROCÉDURE D’ADMISSION : AUTORISÉE.\n\nLISEZ L'ACTE D'ADMISSION EN ENTIER AVANT DE CONTINUER.\nLE TERMINAL N'ENREGISTRE AUCUNE DONNÉE VOCALE.</div>
   <div class="menu"><button class="btn primary" id="oathRead">[ LECTURE DU SERMENT ]</button><button class="btn" id="oathLater">[ DIFFÉRER ]</button></div>`,'PROTOCOLE 000 // SERMENT AUTORISÉ');
   $('#oathRead').onclick=oathDisplay;$('#oathLater').onclick=home;
 }
@@ -1404,15 +1439,45 @@ ENREGISTREMENT...
   }
   setTimeout(next,900);
 }
-function oathTransition(){
-  S.serment=true;
-  S.sermentDisponible=false;
-  S.statut='INITIÉ';
-  S.accreditation='OMBRE I';
-  S.initiationDate=new Date().toISOString();
-  save();
-  document.body.classList.remove('initiated');
-  initiateCinematic();
+// V221 BÊTA : la cérémonie ne commence qu'après confirmation distante du serment.
+let ordreOathTransitionBusy=false;
+async function oathTransition(){
+  if(ordreOathTransitionBusy)return;
+  ordreOathTransitionBusy=true;
+  const previous={serment:S.serment,sermentDisponible:S.sermentDisponible,statut:S.statut,
+    accreditation:S.accreditation,initiationDate:S.initiationDate};
+  try{
+    if(!ordreSyncReady||ordreLockActive||!ordreAuth?.player_id||!navigator.onLine)
+      throw Error('CONNEXION AU RÉSEAU REQUISE POUR VALIDER LE SERMENT.');
+    // Ne pas confondre une sauvegarde antérieure en cours avec celle du serment.
+    for(let i=0;ordreSyncBusy&&i<40;i++)await new Promise(resolve=>setTimeout(resolve,250));
+    if(ordreSyncBusy)throw Error('SYNCHRONISATION PRÉCÉDENTE EN COURS.');
+    S.serment=true;
+    S.sermentDisponible=false;
+    S.statut='INITIÉ';
+    S.accreditation='OMBRE I';
+    S.initiationDate=new Date().toISOString();
+    save();
+    if(ordreSyncTimer){clearTimeout(ordreSyncTimer);ordreSyncTimer=null;}
+    await ordreSyncNow();
+    if(!ordreSyncReady||ordrePendingChanges||!ordreServerVersion)
+      throw Error('SAUVEGARDE DU SERMENT NON CONFIRMÉE.');
+    const token=await ordreValidToken();
+    if(!token)throw Error('SESSION RÉSEAU EXPIRÉE.');
+    const remote=await ordreGetServerProgress(token);
+    if(remote?.state?.profile?.serment!==true)
+      throw Error('LE SERVEUR N’A PAS CONFIRMÉ LE SERMENT.');
+    document.body.classList.remove('initiated');
+    initiateCinematic();
+  }catch(e){
+    Object.assign(S,previous);
+    // Conserver le profil local cohérent sans écraser silencieusement le serveur.
+    localStorage.setItem('ordre_terminal',JSON.stringify(S));
+    profileSave();
+    ordrePendingChanges=false;
+    alert('VALIDATION DU SERMENT INTERROMPUE : '+e.message+'\nVotre progression précédente est conservée. Reconnectez-vous puis vérifiez votre dossier avant de réessayer.');
+    initiateHome();
+  }finally{ordreOathTransitionBusy=false;}
 }
 function initiateCinematic(){
   /* La V1.4.0 est désormais la cérémonie canonique. */
@@ -1424,17 +1489,705 @@ function assignmentConfirmed(){
   shell(`<div class="assignment-final"><div class="terminal">AFFECTATION PROVISOIRE CONFIRMÉE.</div><img class="assignment-symbol" src="${d.img}" alt=""><div class="assignment-name">${d.name}</div><div class="assignment-verb">${d.verb}</div><p class="assignment-line">${d.line}</p><button class="btn primary" id="afterAccess">[ ACCÉDER À « APRÈS » ]</button></div>`,'AFFECTATION // CONFIRMÉE');
   $('#afterAccess').onclick=assignmentAfter;
 }
-function messages(){S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
+function messages(){ordreV210Inbox();return;S.messages=0;save();shell(`<h1 class="title">MESSAGERIE</h1><div class="msg"><b>SUPERVISION — 000</b><p>Le matériel déclaré a été enregistré.</p><p>Procédez au Module I.</p><span class="tiny">AUCUNE RÉPONSE REQUISE.</span></div>${back()}`);wireBack()}
 function archives(){shell(`<h1 class="title">ARCHIVES CENTRALES</h1><div class="terminal">VÉRIFICATION DES DROITS...\n\nSTATUT : CANDIDAT\nACCRÉDITATION : 0\n\nACCÈS REFUSÉ.\n\nLA TENTATIVE D'ACCÈS A ÉTÉ CONSIGNÉE.</div>${back()}`,'ACCÈS REFUSÉ');wireBack()}
 function assistance(){shell(`<h1 class="title">SOLLICITER LE SUPERVISEUR</h1><p class="sub">MOTIF DE LA SOLLICITATION</p><div class="menu"><button class="btn help">> INSTRUCTION INCOMPRISE</button><button class="btn help">> MATÉRIEL NON IDENTIFIÉ</button><button class="btn help">> BLOCAGE DANS LE PROTOCOLE</button><button class="btn help">> SIGNALER UNE IRRÉGULARITÉ</button></div><div id="helpmsg" class="system"></div>${back()}`);document.querySelectorAll('.help').forEach(b=>b.onclick=()=>{$('#helpmsg').textContent='SYS // DEMANDE ENREGISTRÉE — SUPERVISION NOTIFIÉE'});wireBack()}
 function profile(){shell(`<h1 class="title">PROFIL</h1><div class="kv"><b>IDENTIFIANT</b><span>${S.matricule}</span><b>STATUT</b><span>${S.serment?'INITIÉ':'CANDIDAT'}</span><b>ACCRÉDITATION</b><span>${S.serment?'OMBRE I':'0'}</span><b>DIVISION</b><span>${S.affectationDone?S.affectation:'—'}</span><b>DOSSIERS TERMINÉS</b><span>${S.serment?'1':'0'}</span></div><div class="rule"></div><div class="terminal">${S.serment?'PROTOCOLE 000 CLÔTURÉ — ACCÈS OMBRE I ACTIF':(S.affectationDone?'AFFECTATION PROVISOIRE CONFIRMÉE — SERMENT EN ATTENTE':'AFFECTATION EN ATTENTE')}</div>${back()}`);wireBack()}
 const views={dossier,evals,messages,archives,profile};
-if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});boot();
+/* Terminal V207 — Mise à jour sur consentement, hors de la carrière. */
+const ORDRE_RELEASE='208';
+let ordreUpdateRegistration=null;
+let ordreUpdateVisible=false;
+let ordreUpdateBusy=false;
+function ordreShowUpdate(reg){
+  if(!reg?.waiting||ordreUpdateVisible)return;
+  ordreUpdateVisible=true;
+  const banner=document.createElement('aside');
+  banner.id='ordre-update-banner';
+  banner.setAttribute('role','status');
+  banner.innerHTML=`<div class="update-head">TERMINAL // MISE À JOUR DISPONIBLE</div><div class="update-description">Une nouvelle version du terminal est prête. Votre dossier local ne sera pas effacé par cette opération.</div><div class="update-actions"><button type="button" id="ordreUpdateAccept">[ INSTALLER LA MISE À JOUR ]</button><button type="button" id="ordreUpdateLater">[ PLUS TARD ]</button></div>`;
+  document.body.appendChild(banner);
+  banner.querySelector('#ordreUpdateLater').onclick=()=>{banner.remove();ordreUpdateVisible=false};
+  banner.querySelector('#ordreUpdateAccept').onclick=()=>{
+    if(ordreUpdateBusy)return;
+    ordreUpdateBusy=true;
+    try { if(typeof save==='function'&&!ADMIN_MODE)save(); } catch(e) {console.warn('Sauvegarde avant mise à jour',e)}
+    banner.querySelector('#ordreUpdateAccept').disabled=true;
+    banner.querySelector('.update-description').textContent='INSTALLATION EN COURS — CONSERVER LE TERMINAL OUVERT.';
+    reg.waiting?.postMessage({type:'ORDRE_ACTIVATE_UPDATE'});
+  };
+}
+async function ordreCheckUpdate(){
+  const reg=ordreUpdateRegistration;
+  if(!reg||!navigator.onLine)return;
+  try{await reg.update();if(reg.waiting)ordreShowUpdate(reg)}catch(e){console.warn('Vérification des mises à jour impossible',e)}
+}
+async function ordreInitUpdates(){
+  if(!('serviceWorker' in navigator))return;
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(reloaded||!ordreUpdateBusy)return;
+    reloaded=true;
+    window.location.reload();
+  });
+  try{
+    const reg=await navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'});
+    ordreUpdateRegistration=reg;
+    if(reg.waiting&&navigator.serviceWorker.controller)ordreShowUpdate(reg);
+    reg.addEventListener('updatefound',()=>{
+      const installing=reg.installing;
+      installing?.addEventListener('statechange',()=>{
+        if(installing.state==='installed'&&navigator.serviceWorker.controller)ordreShowUpdate(reg);
+      });
+    });
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)ordreCheckUpdate()});
+    window.addEventListener('online',ordreCheckUpdate);
+    setTimeout(ordreCheckUpdate,1500);
+    // Browsers may keep a standalone app open for days.
+    setInterval(()=>{if(!document.hidden)ordreCheckUpdate()},60*60*1000);
+  }catch(e){console.warn('Service de mise à jour indisponible',e)}
+}
+ordreInitUpdates();
 
-window.addEventListener("load",()=>{
- let r=null;try{r=sessionStorage.getItem("OCI_CEREMONY_RESULT")}catch(e){}
- if(!r)return;
- try{sessionStorage.removeItem("OCI_CEREMONY_RESULT")}catch(e){}
- if(r==="complete"){S.ceremonieInitiationVue=true;S.initieAccueilVu=true;save();applyInitiateTheme();initiateHome();}
- else if(r==="replay"){applyInitiateTheme();initiateArchives();}
-});
+/* V222 : reprise authentifiée de la cérémonie, avant tout écran d'identification.
+   Le serveur reste la source de vérité ; aucune progression locale n'est injectée. */
+async function ordreV222ResumeCeremony(){
+ let result=null, bridge=null;
+ try{
+  result=sessionStorage.getItem('OCI_CEREMONY_RESULT');
+  bridge=JSON.parse(sessionStorage.getItem('OCI_CEREMONY_AUTH')||'null');
+ }catch(e){}
+ if(!result || !['complete','replay'].includes(result)){boot();return;}
+ if(!bridge?.access_token||!bridge?.player_id||!bridge?.matricule){
+  // V223 : garder la preuve de fin en attente pendant une nouvelle authentification.
+  boot();return;
+ }
+ shell('<h1 class="title">RETOUR DE CÉRÉMONIE</h1><div class="terminal" id="v222Status">RÉTABLISSEMENT DU CANAL SÉCURISÉ...</div>','INITIATION // SYNCHRONISATION');
+ try{
+  ordreAuth=bridge;
+  ordreLockActive=false;
+  const token=await ordreValidToken();
+  if(!token)throw Error('SESSION EXPIRÉE');
+  // Ne jamais faire confiance à un matricule provenant seulement de sessionStorage.
+  const users=await ordreNetFetch('/rest/v1/players?select=id,matricule,user_id&id=eq.'+encodeURIComponent(bridge.player_id),{token});
+  if(!Array.isArray(users)||users.length!==1||users[0].matricule!==bridge.matricule||users[0].user_id!==bridge.user_id)
+    throw Error('IDENTITÉ NON CONFIRMÉE');
+  await ordreRestoreProgress(token);
+  ordrePendingChanges=false;ordreSyncReady=true;ordreScheduleLock();
+  if(!S.serment||S.statut!=='INITIÉ')throw Error('INITIATION NON CONFIRMÉE SUR LE RÉSEAU');
+  if(result==='complete'){
+   S.ceremonieInitiationVue=true;
+   S.initieAccueilVu=true;
+   save();
+   if(ordreSyncTimer){clearTimeout(ordreSyncTimer);ordreSyncTimer=null;}
+   await ordreSyncNow();
+   if(!ordreSyncReady||ordrePendingChanges)throw Error('SAUVEGARDE NON CONFIRMÉE');
+   const verified=await ordreGetServerProgress(await ordreValidToken());
+   if(verified?.state?.profile?.ceremonieInitiationVue!==true||verified?.state?.profile?.initieAccueilVu!==true)
+    throw Error('CLÔTURE NON CONFIRMÉE PAR SUPABASE');
+  }
+  sessionStorage.removeItem('OCI_CEREMONY_RESULT');
+  sessionStorage.removeItem('OCI_CEREMONY_AUTH');
+  sessionStorage.removeItem('OCI_CEREMONY_PAYLOAD');
+  if(result==='replay')initiateArchives();else initiateHome();
+ }catch(e){
+  // On conserve le marqueur de fin pour réessayer, sans valider localement à tort.
+  ordreClearAuth();ordreLockActive=true;
+  shell('<h1 class="title">RETOUR DE CÉRÉMONIE EN ATTENTE</h1><div class="terminal" id="v222Error"></div><div class="menu"><button class="btn primary" id="v222Retry">[ RÉESSAYER LA SYNCHRONISATION ]</button><button class="btn" id="v222Login">[ CONNEXION PERSONNELLE ]</button></div>','INITIATION // VÉRIFICATION');
+  document.getElementById('v222Error').textContent='La cérémonie est terminée, mais la sauvegarde n’a pas été confirmée : '+e.message;
+  document.getElementById('v222Retry').onclick=ordreV222ResumeCeremony;
+  document.getElementById('v222Login').onclick=()=>{sessionStorage.removeItem('OCI_CEREMONY_AUTH');ordreShowLink()};
+ }
+}
+
+
+/* V208 TEST — Liaison facultative du profil local à une identité Supabase authentifiée.
+   Important : l'identité est vérifiée côté Supabase ; un matricule seul ne donne aucun accès réseau.
+   Il s'agit de télémétrie de test (déclarations clientes) et non d'un système anti-triche. */
+const ORDRE_SUPABASE_URL='https://onpghpkjivetztfgaoev.supabase.co';
+const ORDRE_SUPABASE_KEY='sb_publishable_NV_yQhC6CJoq4I5SweOuZg_okjeJy4l';
+const ORDRE_LINK_STORE='ordre_network_beta_v1';
+let ordreAuth=null,ordreSyncTimer=null,ordreSyncBusy=false;
+let ordreSyncReady=false,ordreServerVersion=null;
+let ordrePendingChanges=false;
+// V214 : no persisted authenticated session between app openings.
+try{localStorage.removeItem(ORDRE_LINK_STORE)}catch(e){}
+let ordreLockActive=true;
+let ordreLockTimer=null;
+let ordreLastActivity=Date.now();
+const ORDRE_IDLE_MS=10*60*1000;
+function ordreClearAuth(){
+ ordreSyncReady=false;ordreServerVersion=null;ordrePendingChanges=false;
+ ordreAuth=null;
+ try{localStorage.removeItem(ORDRE_LINK_STORE)}catch(e){}
+ if(ordreSyncTimer){clearTimeout(ordreSyncTimer);ordreSyncTimer=null;}
+}
+async function ordreLock(){
+ const old=ordreAuth;
+ ordreLockActive=true;
+ ordreClearAuth();
+ if(ordreLockTimer){clearInterval(ordreLockTimer);ordreLockTimer=null;}
+ document.body.classList.remove('initiated','cinematic-mode','div-eye','div-flame','div-hand','div-spiral','div-hourglass');
+ ordreShowLink();
+ // Best effort server-side logout. Browser storage is cleared regardless.
+ if(old?.access_token){try{await ordreNetFetch('/auth/v1/logout',{method:'POST',token:old.access_token,body:'{}'})}catch(e){}}
+}
+function ordreScheduleLock(){
+ ordreLockActive=false;
+ ordreLastActivity=Date.now();
+ if(ordreLockTimer)clearInterval(ordreLockTimer);
+ ordreLockTimer=setInterval(()=>{if(!ordreLockActive && Date.now()-ordreLastActivity>=ORDRE_IDLE_MS)ordreLock()},15000);
+}
+['pointerdown','keydown','touchstart'].forEach(name=>document.addEventListener(name,()=>{
+ if(!ordreLockActive)ordreLastActivity=Date.now();
+},{passive:true}));
+// When opening the application again, no authenticated session survives.
+window.addEventListener('pagehide',()=>{ordreClearAuth();ordreLockActive=true});
+function ordreRequireConnection(){
+ if(ordreBetaLabActive&&ADMIN_MODE)return true;
+ if(ordreLockActive||!ordreAuth?.access_token){ordreShowLink();return false;}
+ return true;
+}
+
+function ordreNetHeaders(token){return {'apikey':ORDRE_SUPABASE_KEY,'Authorization':'Bearer '+token,'Content-Type':'application/json'}}
+async function ordreNetFetch(path,opts={}){
+ const r=await fetch(ORDRE_SUPABASE_URL+path,{...opts,headers:{...ordreNetHeaders(opts.token||ORDRE_SUPABASE_KEY),...(opts.headers||{})}});
+ const raw=await r.text();let v;try{v=raw?JSON.parse(raw):null}catch(_){v={message:raw}}
+ if(!r.ok)throw Error(v?.msg||v?.error_description||v?.message||v?.error||('HTTP '+r.status));
+ return v;
+}
+async function ordreValidToken(){
+ if(ordreLockActive||!ordreAuth?.access_token)return null;
+ if(Date.now()<((ordreAuth.expires_at||0)-90)*1000)return ordreAuth.access_token;
+ if(!ordreAuth.refresh_token)return null;
+ const x=await ordreNetFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:ordreAuth.refresh_token})});
+ ordreAuth={...ordreAuth,...x,expires_at:Math.floor(Date.now()/1000)+(x.expires_in||3600)};
+ localStorage.setItem(ORDRE_LINK_STORE,JSON.stringify(ordreAuth));return ordreAuth.access_token;
+}
+/* V214 BETA — Enrôlement via serveur. Codes jamais enregistrés dans les fichiers du terminal. */
+function ordreShowLink(){
+ ordreLockActive=true;
+ shell(`<section class="ordre-gateway" aria-label="Identification des candidats">
+ <style>
+ .ordre-gateway{max-width:860px;margin:clamp(16px,5vh,64px) auto 0;padding:clamp(14px,3vw,36px);border:1px solid rgba(190,198,186,.22);background:linear-gradient(155deg,rgba(24,29,28,.74),rgba(5,7,7,.9));box-shadow:inset 0 0 0 1px rgba(255,255,255,.025);color:#d8ded6}
+ .ordre-gateway .gw-kicker{font:11px/1.7 'Courier New',monospace;letter-spacing:.28em;color:#a4b4aa;text-align:center}
+ .ordre-gateway .gw-rule{height:1px;background:linear-gradient(90deg,transparent,#6b8176,transparent);margin:19px auto 27px;max-width:330px}
+ .ordre-gateway h1{font-family:'Courier New',monospace;font-size:clamp(23px,4.3vw,39px);font-weight:400;letter-spacing:.14em;line-height:1.3;text-align:center;margin:0;color:#f0f0e8}
+ .ordre-gateway .gw-intro{font:13px/1.85 'Courier New',monospace;text-align:center;color:#b2bbb2;max-width:600px;margin:20px auto 30px}
+ .ordre-gateway .gw-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+ .ordre-gateway .gw-card{border:1px solid rgba(172,187,175,.42);padding:25px 21px 20px;background:rgba(8,11,11,.66);display:flex;flex-direction:column;min-height:265px}
+ .ordre-gateway .gw-number{font:11px 'Courier New',monospace;color:#8eab9b;letter-spacing:.2em}
+ .ordre-gateway h2{font:normal clamp(16px,2.3vw,20px)/1.5 'Courier New',monospace;letter-spacing:.09em;color:#e6ebe4;margin:19px 0 10px}
+ .ordre-gateway .gw-desc{font:12px/1.8 'Courier New',monospace;color:#aab4aa;flex:1;margin:0 0 24px}
+ .ordre-gateway .gw-action{font:12px/1.4 'Courier New',monospace;letter-spacing:.09em;background:transparent;color:#e5ece5;border:1px solid #9caca0;padding:14px 10px;cursor:pointer;min-height:48px;width:100%;transition:background .15s,color .15s}
+ .ordre-gateway .gw-action:hover,.ordre-gateway .gw-action:focus-visible{background:#d9e2d8;color:#111917;outline:2px solid #a6c0b0;outline-offset:3px}
+ .ordre-gateway .gw-footer{text-align:center;margin-top:26px;font:10px/1.8 'Courier New',monospace;letter-spacing:.15em;color:#87998d}
+ @media(max-width:610px){.ordre-gateway .gw-options{grid-template-columns:1fr}.ordre-gateway .gw-card{min-height:0;padding:21px}.ordre-gateway .gw-desc{margin-bottom:18px}.ordre-gateway{margin-top:12px}}
+ </style>
+ <div class="gw-kicker">ORDRE DES CINQ OMBRES · PROTOCOLE D000</div>
+ <div class="gw-rule"></div>
+ <h1>LIAISON AU RÉSEAU</h1>
+ <p class="gw-intro">Identifiez-vous pour accéder à votre dossier personnel. Choisissez la procédure correspondant à votre situation.</p>
+ <div class="gw-options">
+  <article class="gw-card">
+   <div class="gw-number">PROCÉDURE 01 / NOUVEAU CANDIDAT</div>
+   <h2>PREMIÈRE ACTIVATION</h2>
+   <p class="gw-desc">Vous venez de recevoir votre dossier D000 ? Munissez-vous du matricule et du code d’activation remis par l’Ordre.</p>
+   <button class="gw-action" id="v214Activate" type="button">[ ACTIVER MON DOSSIER → ]</button>
+  </article>
+  <article class="gw-card">
+   <div class="gw-number">PROCÉDURE 02 / DOSSIER EXISTANT</div>
+   <h2>CONNEXION PERSONNELLE</h2>
+   <p class="gw-desc">Votre dossier est déjà activé ? Retrouvez votre progression avec votre matricule et votre code personnel.</p>
+   <button class="gw-action" id="v214Login" type="button">[ ACCÉDER À MON DOSSIER → ]</button>
+  </article>
+ </div>
+ <div class="gw-footer">RÉSEAU SÉCURISÉ // IDENTIFICATION INDIVIDUELLE // ACCÈS CONTRÔLÉ</div>
+ </section>`,'RÉSEAU // IDENTIFICATION');
+ $('#v214Activate').onclick=ordreV214Activate;
+ $('#v214Login').onclick=ordreV214Login;
+}
+function ordreV214Email(m){return 'agent-'+m.toLowerCase()+'@example.com'}
+async function ordreV214CompleteLink(x){
+ const token=x.access_token;
+ const rows=await ordreNetFetch('/rest/v1/players?select=id,matricule,user_id&user_id=eq.'+encodeURIComponent(x.user.id),{token});
+ if(!Array.isArray(rows)||rows.length!==1)throw Error('AUCUN DOSSIER JOUEUR AUTORISÉ POUR CETTE SESSION.');
+ const linked=rows[0];
+ // V219 : un autre candidat peut utiliser le même navigateur.
+ // L'identité est vérifiée par Supabase Auth et la liaison user_id dans players.
+ // Ne pas charger un profil local avant la restauration distante.
+ ordreAuth={access_token:token,refresh_token:x.refresh_token,expires_at:Math.floor(Date.now()/1000)+x.expires_in,user_id:x.user.id,player_id:linked.id,matricule:linked.matricule};
+ localStorage.setItem(ORDRE_LINK_STORE,JSON.stringify(ordreAuth));
+ try{await ordreRestoreProgress(token)}catch(e){ordreClearAuth();ordreLockActive=true;throw e}
+ ordrePendingChanges=false;ordreSyncReady=true;ordreScheduleLock();
+ // V223 : reprendre une cérémonie terminée uniquement après vérification de l'identité.
+ try{await ordreV223CompleteAfterLogin()}catch(e){console.warn('V223 : clôture en attente après authentification',e);}
+ // Ne pas écrire automatiquement au simple fait de se connecter.
+ // Une nouvelle sauvegarde partira uniquement après une action du joueur. 
+}
+/* V223 BÊTA — reprise de la première cérémonie après reconnexion authentifiée. */
+async function ordreV223CompleteAfterLogin(){
+ let result=null,payload=null;
+ try{
+  result=sessionStorage.getItem('OCI_CEREMONY_RESULT');
+  payload=JSON.parse(sessionStorage.getItem('OCI_CEREMONY_PAYLOAD')||'null');
+ }catch(e){}
+ if(result!=='complete' && result!=='replay')return;
+ // Le marqueur ne constitue jamais une autorisation d'accès ou une preuve de serment.
+ if(!payload?.matricule || payload.matricule!==ordreAuth?.matricule || S.matricule!==ordreAuth.matricule)return;
+ if(!S.serment || S.statut!=='INITIÉ')return;
+ if(result==='replay'){
+  sessionStorage.removeItem('OCI_CEREMONY_RESULT');
+  sessionStorage.removeItem('OCI_CEREMONY_PAYLOAD');
+  sessionStorage.removeItem('OCI_CEREMONY_AUTH');
+  return;
+ }
+ // Vérifier d'abord la source distante, puis ne modifier que les indicateurs de clôture.
+ const token=await ordreValidToken();
+ if(!token)throw Error('SESSION EXPIRÉE PENDANT LA REPRISE DE CÉRÉMONIE');
+ const remote=await ordreGetServerProgress(token);
+ if(remote?.state?.profile?.serment!==true)throw Error('SERMENT NON CONFIRMÉ SUR LE RÉSEAU');
+ if(remote?.state?.profile?.ceremonieInitiationVue===true && remote?.state?.profile?.initieAccueilVu===true){
+  S.ceremonieInitiationVue=true;S.initieAccueilVu=true;
+ }else{
+  S.ceremonieInitiationVue=true;S.initieAccueilVu=true;
+  save();
+  if(ordreSyncTimer){clearTimeout(ordreSyncTimer);ordreSyncTimer=null;}
+  await ordreSyncNow();
+  if(!ordreSyncReady||ordrePendingChanges)throw Error('CLÔTURE NON SYNCHRONISÉE');
+  const check=await ordreGetServerProgress(await ordreValidToken());
+  if(check?.state?.profile?.ceremonieInitiationVue!==true||check?.state?.profile?.initieAccueilVu!==true)
+   throw Error('CLÔTURE NON CONFIRMÉE PAR SUPABASE');
+ }
+ sessionStorage.removeItem('OCI_CEREMONY_RESULT');
+ sessionStorage.removeItem('OCI_CEREMONY_PAYLOAD');
+ sessionStorage.removeItem('OCI_CEREMONY_AUTH');
+}
+function ordreV214Activate(){
+ shell(`<h1 class="title">ACTIVATION DU DOSSIER // V214</h1>
+ <p class="sub">Saisissez les identifiants de votre carte candidat, puis choisissez une phrase secrète personnelle d’au moins 14 caractères. Elle vous servira lors de vos prochaines connexions.</p>
+ <label class="tiny" for="v214Mat">MATRICULE</label><input class="input" id="v214Mat" autocomplete="off" autocapitalize="characters" placeholder="C-BETA-002">
+ <label class="tiny" for="v214Code">CODE D'ACTIVATION (32 CARACTÈRES)</label><input class="input" id="v214Code" autocapitalize="characters" autocomplete="off" spellcheck="false" style="text-transform:none">
+ <label class="tiny" for="v214Personal">CHOISIR MON CODE PERSONNEL (14 CARACTÈRES MINIMUM)</label><input class="input" id="v214Personal" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="text-transform:none">
+ <label class="tiny" for="v214PersonalRepeat">CONFIRMER MON CODE PERSONNEL</label><input class="input" id="v214PersonalRepeat" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="text-transform:none">
+ <div class="menu"><button class="btn" id="v214ShowSecret">[ AFFICHER / MASQUER LES CODES ]</button>
+ <button class="btn primary" id="v214Confirm">[ ACTIVER MON DOSSIER ]</button>
+ <button class="btn" id="v214Return">[ RETOUR ]</button></div>
+ <div class="system" id="v214Status" role="status"></div>`,'ACTIVATION // BÊTA');
+ $('#v214ShowSecret').onclick=()=>{const visible=$('#v214Personal').type==='password';$('#v214Personal').type=visible?'text':'password';$('#v214PersonalRepeat').type=visible?'text':'password'};
+ $('#v214Return').onclick=ordreShowLink;
+ $('#v214Confirm').onclick=async()=>{
+  const btn=$('#v214Confirm'),status=$('#v214Status');
+  const matricule=$('#v214Mat').value.trim().toUpperCase();
+  const activation_code=$('#v214Code').value.replace(/[\s-]/g,'').toUpperCase();
+  const personal_code=$('#v214Personal').value;
+  const confirmation=$('#v214PersonalRepeat').value;
+  if(!/^C-[A-Z0-9-]{4,32}$/.test(matricule)||!/^[0-9A-F]{32}$/.test(activation_code)){status.textContent='MATRICULE OU CODE D’ACTIVATION INVALIDE.';return}
+  if(personal_code.length<14||personal_code.length>128){status.textContent='LE CODE PERSONNEL DOIT CONTENIR ENTRE 14 ET 128 CARACTÈRES.';return}
+  if(personal_code!==confirmation){status.textContent='LES DEUX CODES PERSONNELS NE CORRESPONDENT PAS.';return}
+  if(!confirm('Avez-vous mémorisé votre CODE PERSONNEL ? Sans procédure de récupération active, un oubli peut bloquer votre accès.'))return;
+  btn.disabled=true;status.textContent='VÉRIFICATION DU DOSSIER...';
+  try{
+   const r=await ordreNetFetch('/functions/v1/ordre-enrolement',{method:'POST',body:JSON.stringify({action:'activate',matricule,activation_code,personal_code})});
+   if(!r.activated)throw Error('ACTIVATION NON CONFIRMÉE');
+   status.textContent='DOSSIER ACTIVÉ. ÉTABLISSEMENT DE LA SESSION...';
+   const x=await ordreNetFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:ordreV214Email(matricule),password:personal_code})});
+   await ordreV214CompleteLink(x);
+   status.textContent='LIAISON ÉTABLIE.';setTimeout(()=>environment(),1000);
+  }catch(e){status.textContent='ACTIVATION / CONNEXION NON FINALISÉE : '+e.message+' SI LE CODE A ÉTÉ UTILISÉ, ESSAYEZ « CONNEXION PERSONNELLE ».';btn.disabled=false}
+ };
+}
+function ordreV214Login(){
+ shell(`<h1 class="title">CONNEXION PERSONNELLE // V214</h1>
+ <p class="sub">Retrouvez votre dossier avec le matricule et le code personnel conservé lors de la première activation.</p>
+ <label class="tiny" for="v214LoginMat">MATRICULE</label><input class="input" id="v214LoginMat" autocapitalize="characters" autocomplete="username" placeholder="C-BETA-002">
+ <label class="tiny" for="v214LoginCode">CODE PERSONNEL</label><input class="input" id="v214LoginCode" type="password" autocomplete="current-password" style="text-transform:none">
+ <div class="menu"><button class="btn primary" id="v214LoginGo">[ ÉTABLIR LA LIAISON ]</button><button class="btn" id="v214LoginBack">[ RETOUR ]</button></div>
+ <div class="system" id="v214LoginStatus" role="status"></div>`,'CONNEXION // BÊTA');
+ $('#v214LoginBack').onclick=ordreShowLink;
+ $('#v214LoginGo').onclick=async()=>{
+  const btn=$('#v214LoginGo'),status=$('#v214LoginStatus');
+  const matricule=$('#v214LoginMat').value.trim().toUpperCase(),personal_code=$('#v214LoginCode').value;
+  if(!/^C-[A-Z0-9-]{4,32}$/.test(matricule)||!personal_code){status.textContent='MATRICULE ET CODE REQUIS.';return}
+  btn.disabled=true;status.textContent='CONTRÔLE DES IDENTIFIANTS...';
+  try{
+   const x=await ordreNetFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:ordreV214Email(matricule),password:personal_code})});
+   await ordreV214CompleteLink(x);
+   status.textContent='LIAISON ÉTABLIE.';setTimeout(()=>environment(),1000);
+  }catch(e){status.textContent='CONNEXION REFUSÉE : '+e.message;btn.disabled=false}
+ };
+}
+function ordreLegacyLink(){
+ shell(`<h1 class="title">ANCIEN COMPTE DE TEST // V208</h1>
+ <p class="sub">Accès conservé pour les profils bêta liés à une adresse e-mail.</p>
+ <label class="tiny" for="ordreMail">ADRESSE E-MAIL DU COMPTE DE TEST</label>
+ <input class="input" id="ordreMail" type="email" autocomplete="username" autocapitalize="off" style="text-transform:none">
+ <label class="tiny" for="ordrePass">MOT DE PASSE DU COMPTE DE TEST</label>
+ <input class="input" id="ordrePass" type="password" autocomplete="current-password" style="text-transform:none">
+ <div class="menu"><button class="btn primary" id="ordreLinkConfirm">[ ACTIVER LA LIAISON ]</button><button class="btn" id="ordreLinkBack">[ RETOUR ]</button></div>
+ <div class="system" id="ordreLinkStatus" role="status"></div>`,'RÉSEAU // ANCIENNE LIAISON');
+ $('#ordreLinkBack').onclick=ordreShowLink;
+ $('#ordreLinkConfirm').onclick=async()=>{
+  const status=$('#ordreLinkStatus'),button=$('#ordreLinkConfirm');button.disabled=true;status.textContent='VÉRIFICATION DES AUTORISATIONS...';
+  try{
+   const mail=$('#ordreMail').value.trim(),password=$('#ordrePass').value;
+   if(!mail||!password)throw Error('ADRESSE E-MAIL ET MOT DE PASSE REQUIS.');
+   const x=await ordreNetFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:mail,password})});
+   await ordreV214CompleteLink(x);
+   status.textContent='LIAISON ACTIVÉE. SYNCHRONISATION EFFECTUÉE.';setTimeout(()=>environment(),1100);
+  }catch(e){status.textContent='LIAISON REFUSÉE : '+e.message;button.disabled=false}
+ };
+}
+/* V215 BETA : sauvegarde complète et restauration du dossier D000.
+   Les données restent déclaratives : elles ne remplacent pas les décisions administratives. */
+const ORDRE_PROGRESS_FIELDS=Object.keys(defaults).filter(k=>k!=='matricule'&&k!=='installed');
+function ordreProgressSnapshot(){
+ const out={};
+ for(const key of ORDRE_PROGRESS_FIELDS)out[key]=JSON.parse(JSON.stringify(S[key]===undefined?defaults[key]:S[key]));
+ return out;
+}
+function ordreProgressKey(m){return 'ordre_d000_modified_'+String(m||'').trim().toUpperCase()}
+function ordreMarkLocalChange(){
+ if(ADMIN_MODE||!S.matricule)return;
+ if(ordreSyncReady){ordreLegacySummaryOnly=false;ordrePendingChanges=true;}
+ try{localStorage.setItem(ordreProgressKey(S.matricule),new Date().toISOString())}catch(e){}
+}
+function ordreLocalChangedAt(m){
+ const t=Date.parse(localStorage.getItem(ordreProgressKey(m))||'');
+ return Number.isFinite(t)?t:0;
+}
+function ordreApplyRemoteProfile(profile,matricule){
+ if(!profile||typeof profile!=='object'||Array.isArray(profile))throw Error('SAUVEGARDE DISTANTE INVALIDE.');
+ if(Object.keys(profile).length && ![1,2,3,4,5].every(i=>profile['eval'+i]&&typeof profile['eval'+i]==='object'))throw Error('SAUVEGARDE DISTANTE INCOMPLÈTE.');
+ const fresh=profileCreate(matricule);
+ for(const key of ORDRE_PROGRESS_FIELDS){
+  if(Object.prototype.hasOwnProperty.call(profile,key))fresh[key]=profile[key];
+ }
+ for(let i=1;i<=5;i++){
+  const k='eval'+i;
+  if(!fresh[k]||typeof fresh[k]!=='object'||Array.isArray(fresh[k]))throw Error('ÉVALUATION DISTANTE INVALIDE.');
+  fresh[k]={...defaults[k],...fresh[k]};
+ }
+ fresh.tendances={...defaults.tendances,...(fresh.tendances||{})};
+ S=fresh;ACTIVE_PROFILE=matricule;
+ localStorage.setItem('ordre_terminal',JSON.stringify(S));
+ profileSave();
+}
+async function ordreGetServerProgress(token){
+ const path='/rest/v1/dossier_progress?select=state,updated_at&player_id=eq.'+encodeURIComponent(ordreAuth.player_id)+'&dossier_id=eq.D000';
+ const rows=await ordreNetFetch(path,{token});
+ if(!Array.isArray(rows)||rows.length>1)throw Error('DOSSIER DISTANT AMBIGU.');
+ return rows[0]||null;
+}
+async function ordreRestoreProgress(token){
+ if(!navigator.onLine)throw Error('RÉSEAU REQUIS POUR RESTAURER LE DOSSIER.');
+ const row=await ordreGetServerProgress(token);
+ ordreServerVersion=row?.updated_at||null;
+ if(!row){
+  // Nouveau dossier uniquement : ne jamais reprendre silencieusement une sauvegarde locale ancienne.
+  ordreApplyRemoteProfile({},ordreAuth.matricule);
+  return;
+ }
+ const remote=row.state?.profile;
+ if(!remote)throw Error('DOSSIER RÉSEAU INCOMPLET : RESTAURATION BLOQUÉE. CONTACTEZ L’ADMINISTRATION.');
+ ordreLegacySummaryOnly=false;
+ // V216 : le serveur fait autorité à chaque nouvelle authentification.
+ // Les horodatages locaux ne permettent pas de prouver qu'un profil est plus avancé.
+ // Ne jamais réinjecter un ancien profil local par-dessus une sauvegarde serveur.
+ ordreApplyRemoteProfile(remote,ordreAuth.matricule);
+ try{localStorage.setItem(ordreProgressKey(ordreAuth.matricule),row.updated_at||new Date().toISOString())}catch(e){}
+}
+let ordreLegacySummaryOnly=false;
+// Une progression déjà acquise ne peut jamais être rétrogradée par une ancienne session.
+function ordreIsRegression(local,remote){
+ if(!remote||typeof remote!=='object')return false;
+ for(let i=1;i<=5;i++){
+  const a=local['eval'+i]||{},b=remote['eval'+i]||{};
+  if(b.complete&&!a.complete)return true;
+  if((Number(b.step)||0)>(Number(a.step)||0))return true;
+ }
+ if((Number(remote.progression)||0)>(Number(local.progression)||0))return true;
+ if(remote.serment&&!local.serment)return true;
+ return false;
+}
+function ordreStopUnsafeSync(message){
+ ordreSyncReady=false;ordrePendingChanges=false;
+ alert(message+' AUCUNE DONNÉE RÉSEAU N’A ÉTÉ MODIFIÉE. VERROUILLEZ LE TERMINAL ET RECONNECTEZ-VOUS.');
+}
+function ordreQueueSync(){
+ if(!ordreSyncReady||!ordreAuth?.matricule||ADMIN_MODE||!S.matricule||S.matricule!==ordreAuth.matricule)return;
+ if(ordreSyncTimer)clearTimeout(ordreSyncTimer);
+ ordreSyncTimer=setTimeout(()=>ordreSyncNow().catch(e=>console.warn('Synchro différée:',e.message)),1500);
+}
+async function ordreSyncNow(){
+ if(!ordreSyncReady||!ordrePendingChanges||ordreLockActive||ordreSyncBusy||!ordreAuth?.player_id||ADMIN_MODE||!S.matricule||S.matricule!==ordreAuth.matricule||!navigator.onLine)return;
+ ordreSyncBusy=true;
+ try{
+  const token=await ordreValidToken();if(!token)return;
+  const current=await ordreGetServerProgress(token);
+  if(current&&!current.state?.profile){ordreStopUnsafeSync('SAUVEGARDE RÉSEAU INCOMPLÈTE.');return;}
+  if(ordreIsRegression(ordreProgressSnapshot(),current?.state?.profile)){ordreStopUnsafeSync('PROGRESSION PLUS AVANCÉE SUR LE RÉSEAU.');return;}
+  // Ne jamais écraser une sauvegarde modifiée ailleurs après notre dernière lecture.
+  if(current?.updated_at&&ordreServerVersion&&current.updated_at!==ordreServerVersion){
+   console.warn('Dossier modifié sur un autre appareil : synchronisation interrompue.');
+   ordreStopUnsafeSync('DOSSIER MODIFIÉ SUR UN AUTRE APPAREIL.');
+   return;
+  }
+  if(current?.updated_at&&!ordreServerVersion){
+   console.warn('Sauvegarde distante inconnue : synchronisation interrompue.');
+   return;
+  }
+  const evals=[S.eval1,S.eval2,S.eval3,S.eval4,S.eval5];
+  const finished=evals.reduce((n,e)=>n+(e?.complete?1:0),0);
+  const i=evals.findIndex(e=>!e?.complete);
+  const stage=i===-1?(S.serment?'INITIATION_TERMINEE':'AFFECTATION_ET_SERMENT'):'EVALUATION_'+(i+1)+'_ETAPE_'+(evals[i]?.step||0);
+  const state={schema_version:2,profile:ordreProgressSnapshot(),
+   evaluations:evals.map((e,j)=>({number:j+1,step:e?.step||0,complete:!!e?.complete})),
+   progression:S.progression||0,serment:!!S.serment,
+   statutLocal:S.statut||'CANDIDAT',affectationLocale:S.affectationDone?S.affectation:null,
+   decisions:{eval1:S.eval1?.decision??null,eval2:S.eval2?.decision??null,eval3:S.eval3?.decision??null,eval4:S.eval4?.decision??null,eval5:S.eval5?.decision??null},
+   synced_at:new Date().toISOString()};
+  const body=[{player_id:ordreAuth.player_id,dossier_id:'D000',stage_id:stage,status:S.serment?'TERMINE':finished===0?'NON_COMMENCE':'EN_COURS',state}];
+  // Mise à jour conditionnelle : l'horodatage connu doit encore correspondre.
+  // Une autre session ne peut plus être écrasée entre notre lecture et l'écriture.
+  if(current){
+   if(!ordreServerVersion){ordreStopUnsafeSync('VERSION RÉSEAU INCONNUE.');return;}
+   const patchPath='/rest/v1/dossier_progress?player_id=eq.'+encodeURIComponent(ordreAuth.player_id)+'&dossier_id=eq.D000&updated_at=eq.'+encodeURIComponent(ordreServerVersion);
+   const changed=await ordreNetFetch(patchPath,{method:'PATCH',token,headers:{'Prefer':'return=representation'},body:JSON.stringify({stage_id:stage,status:body[0].status,state,updated_at:new Date().toISOString()})});
+   if(!Array.isArray(changed)||changed.length!==1){ordreStopUnsafeSync('CONFLIT DE SYNCHRONISATION.');return;}
+   ordreServerVersion=changed[0].updated_at;
+  }else{
+   const created=await ordreNetFetch('/rest/v1/dossier_progress',{method:'POST',token,headers:{'Prefer':'return=representation'},body:JSON.stringify(body)});
+   if(!Array.isArray(created)||created.length!==1)throw Error('CRÉATION DU DOSSIER NON CONFIRMÉE.');
+   ordreServerVersion=created[0].updated_at;
+  }
+  ordrePendingChanges=false;
+ }finally{ordreSyncBusy=false}
+}
+window.addEventListener('online',()=>ordreSyncNow().catch(()=>{}));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)ordreSyncNow().catch(()=>{})});
+setTimeout(()=>ordreSyncNow().catch(()=>{}),4000);
+
+
+/* V209 BÊTA : réception sécurisée des commandes destinées au compte authentifié.
+   Ne révèle pas les documents ni archives non implémentés ; un ordre d'accès ne change
+   pas le contenu de la bibliothèque locale par lui-même. */
+const ORDRE_V2_APPLIED='ordre_v2_applied_commands';
+function ordreV2Seen(){try{return JSON.parse(localStorage.getItem(ORDRE_V2_APPLIED+'_'+(ordreAuth?.matricule||S.matricule))||'{}')}catch(_){return {}}}
+async function ordreV2Poll(){
+ if(!ordreAuth?.player_id||ADMIN_MODE||!navigator.onLine||!S.matricule||S.matricule!==ordreAuth.matricule)return;
+ const token=await ordreValidToken();if(!token)return;
+ const pid=encodeURIComponent(ordreAuth.player_id);
+ const [commands, msgs, p, acc]=await Promise.all([
+  ordreNetFetch('/rest/v1/admin_commands?select=id,command_type,payload,status&player_id=eq.'+pid+'&command_type=in.(UNLOCK_STAGE,ASSIGN_MISSION)&status=in.(PENDING,APPLIED)&order=created_at.asc',{token}),
+  ordreNetFetch('/rest/v1/player_messages?select=id,subject,body,created_at,read_at&player_id=eq.'+pid+'&order=created_at.desc&limit=100',{token}),
+  ordreNetFetch('/rest/v1/players?select=grade,division&id=eq.'+pid,{token}),
+  ordreNetFetch('/rest/v1/player_access?select=access_key,revoked_at&player_id=eq.'+pid,{token})]);
+ S.reseauMessages=msgs||[];S.reseauGrade=p?.[0]?.grade||null;S.reseauDivision=p?.[0]?.division||null;
+ S.reseauAcces=(acc||[]).filter(x=>!x.revoked_at).map(x=>x.access_key);
+ // Réhydrate les autorisations depuis Supabase, même lorsqu'elles sont déjà APPLIED.
+ // Une confirmation distante n'est pas une preuve que le navigateur a conservé son cache local.
+ const seen=ordreV2Seen();
+ let changed=false;
+ for(const c of commands||[]){
+  if(!c||!['PENDING','APPLIED'].includes(c.status))continue;
+  const value=typeof c.payload?.value==='string'?c.payload.value:'';
+  let supported=false;
+  if(c.command_type==='UNLOCK_STAGE'){
+   if(/^EVAL[1-5]$/.test(value)){
+    supported=true;
+    S.reseauDeblocages=Array.isArray(S.reseauDeblocages)?S.reseauDeblocages:[];
+    if(!S.reseauDeblocages.includes(value)){
+     S.reseauDeblocages.push(value);
+     changed=true;
+    }
+    if(S.reseauDeblocage!==value){S.reseauDeblocage=value;changed=true}
+   }else if(value==='AFFECTATION'||value==='INITIATION'){
+    supported=true;
+    if(S.reseauDeblocage!==value){S.reseauDeblocage=value;changed=true}
+   }
+  }else if(c.command_type==='ASSIGN_MISSION'&&/^D[0-9]{3}$/.test(value)){
+   supported=true;
+   const label=typeof c.payload?.label==='string'?c.payload.label.slice(0,180):value;
+   if(S.reseauMission?.id!==value||S.reseauMission?.label!==label){
+    S.reseauMission={id:value,label};changed=true;
+   }
+  }
+  if(!supported)continue;
+  if(!seen[c.id]){seen[c.id]=true;changed=true}
+  // Acknowledge uniquement les commandes encore en attente, après sauvegarde.
+  if(c.status==='PENDING'){
+   profileSave();
+   localStorage.setItem('ordre_terminal',JSON.stringify(S));
+   localStorage.setItem(ORDRE_V2_APPLIED+'_'+ordreAuth.matricule,JSON.stringify(seen));
+   await ordreNetFetch('/rest/v1/rpc/v2_player_ack',{token,method:'POST',body:JSON.stringify({p_command:c.id})});
+  }
+ }
+ if(changed){
+  localStorage.setItem(ORDRE_V2_APPLIED+'_'+ordreAuth.matricule,JSON.stringify(seen));
+  profileSave();localStorage.setItem('ordre_terminal',JSON.stringify(S));
+ }
+ // Met à jour le menu d'évaluations si la commande est arrivée pendant son affichage.
+ if(changed&&document.querySelector('.eval-list')&&typeof evals==='function')evals();
+}
+let ordreV2Busy=false;
+async function ordreV2Refresh(){if(ordreV2Busy)return;ordreV2Busy=true;try{await ordreV2Poll()}catch(e){console.warn('Ordres V2:',e.message)}finally{ordreV2Busy=false}}
+setInterval(()=>ordreV2Refresh(),30000);
+window.addEventListener('online',()=>ordreV2Refresh());
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)ordreV2Refresh()});
+setTimeout(()=>ordreV2Refresh(),4800);
+function ordreV2Messages(){
+ const msgs=S.reseauMessages||[];
+ shell('<h1 class="title">TRANSMISSIONS DU RÉSEAU</h1><div id="v2Mails"></div><div class="menu"><button class="btn" id="v2Return">[ RETOUR ]</button></div>','MESSAGERIE // RÉSEAU');
+ const list=$('#v2Mails');
+ if(!msgs.length)list.textContent='AUCUNE TRANSMISSION DISTANTE.';
+ for(const m of msgs){const item=document.createElement('button');item.className='btn';item.textContent=(m.read_at?'○ ':'● ')+m.subject;item.onclick=()=>ordreV2ReadMessage(m);list.append(item)}
+ $('#v2Return').onclick=()=>S.serment?initiateHome():home();
+}
+async function ordreV2ReadMessage(m){
+ shell('<h1 class="title" id="v2Subject"></h1><div class="terminal" id="v2Body"></div><div class="menu"><button class="btn" id="v2Back">[ RETOUR AUX TRANSMISSIONS ]</button></div>','MESSAGERIE // TRANSMISSION');
+ $('#v2Subject').textContent=m.subject;$('#v2Body').textContent=m.body;$('#v2Back').onclick=ordreV2Messages;
+ // Read receipt intentionally deferred: V2 does not grant direct update on player_messages.
+}
+function ordreV2Orders(){
+ shell('<h1 class="title">DIRECTIVES DU RÉSEAU</h1><div id="v2Orders"></div><div class="menu"><button class="btn" id="v2Back">[ RETOUR ]</button></div>','RÉSEAU // DIRECTIVES');
+ const out=$('#v2Orders'); const items=[];
+ if(S.reseauMission)items.push('MISSION ATTRIBUÉE : '+S.reseauMission.id+' — '+S.reseauMission.label);
+ if(S.reseauDeblocage)items.push('AUTORISATION DE DÉBLOCAGE : '+S.reseauDeblocage);
+ if(S.reseauGrade)items.push('GRADE ADMINISTRATIF : '+S.reseauGrade);
+ if(S.reseauDivision)items.push('DIVISION ADMINISTRATIVE : '+S.reseauDivision);
+ if(S.reseauAcces?.length)items.push('ACCÈS AUTORISÉS : '+S.reseauAcces.join(', '));
+ out.textContent=items.join('\n\n')||'AUCUNE DIRECTIVE REÇUE.';
+ $('#v2Back').onclick=()=>S.serment?initiateHome():home();
+}
+// Persistent, separate access point; does not rewrite the canonical evaluation/mission story.
+function ordreV2MenuButton(){if(!ordreAuth?.player_id||ADMIN_MODE)return;const el=document.createElement('div');el.className='menu';el.innerHTML='<button class="btn" id="v2Directives">[ DIRECTIVES REÇUES ]</button>'; const sh=document.querySelector('.shell');if(sh){const footer=sh.querySelector('.candidate-footer-actions');if(footer){el.className='candidate-footer-inline';el.querySelector('button').className='candidate-footer-action';footer.prepend(el)}else sh.append(el);el.querySelector('#v2Directives').onclick=()=>{ordreV2Refresh().then(ordreV2Orders)}}}
+const ordreV2NativeShell=shell;
+shell=function(...args){ordreV2NativeShell(...args);if(typeof ordreAuth!=='undefined')ordreV2MenuButton();if(ordreBetaLabActive&&ADMIN_MODE)ordreBetaLabAttachReturn()};
+
+
+/* V210 BÊTA : boîte unique locale + distant, non-lus et reçu de lecture sécurisé. */
+function ordreV210Escape(t){return String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function ordreV210UnreadCount(){
+ const r=Array.isArray(S.reseauMessages)?S.reseauMessages:[];
+ const remote=r.filter(m=>!m.read_at).length;
+ return (S.serment?unreadMailCount():(S.messages?1:0))+remote;
+}
+function ordreV210UnreadIds(){return (S.reseauMessages||[]).filter(m=>!m.read_at).map(m=>m.id)}
+let ordreV210LastUnreads=null;
+function ordreV210Decorate(){
+ if(!ordreAuth?.player_id||ADMIN_MODE||S.matricule!==ordreAuth.matricule)return;
+ const count=ordreV210UnreadCount();
+ document.querySelectorAll('[data-go="messages"] .nav-sub').forEach(x=>x.textContent=count+' NON LU(S)');
+ document.querySelectorAll('.init-grid button').forEach(x=>{if(x.getAttribute('onclick')==='initiateMessages()'){const t=x.querySelector('span');if(t)t.textContent=count+' NON LU(S)'}});
+ let bar=document.getElementById('ordreV210Indicator');
+ if(!bar){bar=document.createElement('button');bar.type='button';bar.id='ordreV210Indicator';bar.className='ordre-v210-indicator';bar.onclick=ordreV210Inbox;document.body.append(bar)}
+ bar.hidden=!count;bar.textContent='● NOUVELLE TRANSMISSION // '+count+' NON LU(S)';
+}
+function ordreV210Inbox(){
+ const msgs=Array.isArray(S.reseauMessages)?S.reseauMessages:[];
+ const candidateLegacy=!S.serment&&!!S.messages;
+ const builtIn=S.serment?INITIATE_MESSAGES.map((m,i)=>({kind:'builtin',i,subject:m.subject,from:typeof m.from==='function'?m.from():m.from,unread:!readMailSet().has(i)})):(candidateLegacy?[{kind:'candidate',subject:'SUPERVISION — 000',from:'SUPERVISION',unread:true}]:[]);
+ const remote=msgs.map(m=>({kind:'remote',msg:m,subject:m.subject,from:'CENTRE DE COMMANDEMENT',unread:!m.read_at}));
+ const rows=[...remote,...builtIn];
+ shell('<h1 class="title">MESSAGERIE</h1><p class="sub">TRANSMISSIONS INSTITUTIONNELLES ET COMMUNICATIONS DU RÉSEAU</p><div class="mail-toolbar"><span>BOÎTE DE RÉCEPTION</span><b>'+ordreV210UnreadCount()+' NON LU(S)</b></div><div class="ordre-v210-list" id="ordreV210List"></div><button class="btn back" id="ordreV210Back">[ RETOUR ]</button>','MESSAGERIE // RÉSEAU');
+ const el=document.getElementById('ordreV210List');
+ if(!rows.length)el.textContent='AUCUN MESSAGE.';
+ rows.forEach(r=>{const b=document.createElement('button');b.className='btn ordre-v210-mail'+(r.unread?' ordre-v210-unread':'');b.innerHTML='<span class="ordre-v210-dot">'+(r.unread?'●':'○')+'</span><span><strong>'+ordreV210Escape(r.subject)+'</strong><small>'+ordreV210Escape(r.from)+'</small></span>';b.onclick=()=>{if(r.kind==='remote')ordreV210OpenRemote(r.msg);else if(r.kind==='builtin')openInitiateMessage(r.i);else ordreV210OpenCandidate()};el.append(b)});
+ document.getElementById('ordreV210Back').onclick=()=>S.serment?initiateHome():home();
+}
+function ordreV210OpenCandidate(){S.messages=0;save();shell(`<div class="candidate-transmission"><p class="candidate-kicker">TRANSMISSION AUTHENTIFIÉE // SUPERVISION</p><h1 class="title">ACTIVATION CONFIRMÉE</h1><p>Candidat,</p><p>Votre accès au Terminal a été établi avec succès.</p><p>À compter de cet instant, votre progression est placée sous la supervision de l'Ordre des Cinq Ombres.</p><p>Les épreuves qui vous attendent participent à l'évaluation de votre aptitude à poursuivre le processus d'admission.</p><p>Suivez les directives. Observez avec attention. Ne présumez de rien.</p><p class="candidate-emphasis">Vous êtes désormais attendu au Module I.</p><p class="tiny">FIN DE TRANSMISSION // AUCUNE RÉPONSE REQUISE</p></div><button class="btn back" id="ordreV210Back">[ BOÎTE DE RÉCEPTION ]</button>`,'SUPERVISION // ACTIVATION');document.getElementById('ordreV210Back').onclick=ordreV210Inbox}
+async function ordreV210OpenRemote(m){
+ shell('<h1 class="title" id="ordreV210Subject"></h1><p class="sub">CENTRE DE COMMANDEMENT // TRANSMISSION INDIVIDUELLE</p><div class="terminal" id="ordreV210Body"></div><button class="btn back" id="ordreV210Back">[ BOÎTE DE RÉCEPTION ]</button>','MESSAGERIE // LECTURE');
+ document.getElementById('ordreV210Subject').textContent=m.subject;
+ document.getElementById('ordreV210Body').textContent=m.body;
+ document.getElementById('ordreV210Back').onclick=ordreV210Inbox;
+ if(m.read_at)return;
+ try{
+  const token=await ordreValidToken();if(!token)return;
+  const confirmed=await ordreNetFetch('/rest/v1/rpc/v210_mark_message_read',{method:'POST',token,body:JSON.stringify({p_message:m.id})});
+  if(confirmed){m.read_at=new Date().toISOString();profileSave();ordreV210Decorate()}
+ }catch(e){console.warn('Accusé de lecture différé :',e.message)}
+}
+// Preserve V209 poll and refresh; repaint only when message count changes, without rerendering active screens.
+const ordreV210OriginalPoll=ordreV2Poll;
+ordreV2Poll=async function(){
+ const old=ordreV210UnreadIds().join(',');await ordreV210OriginalPoll();
+ const current=ordreV210UnreadIds().join(',');
+ if(old!==current&&ordreV210LastUnreads!==null&&current.length>old.length&&document.visibilityState==='visible'){
+  const alert=document.createElement('div');alert.className='ordre-v210-toast';alert.textContent='● TRANSMISSION REÇUE // CANAL ADMINISTRATION';alert.onclick=ordreV210Inbox;document.body.append(alert);setTimeout(()=>alert.remove(),6200);
+ }
+ ordreV210LastUnreads=current;ordreV210Decorate();
+};
+const ordreV210PriorShell=shell;
+shell=function(...args){ordreV210PriorShell(...args);ordreV210Decorate()};
+const ordreV210Home=home;
+home=function(...args){ordreV210Home(...args);ordreV210Decorate()};
+
+/* V211 — affichage sécurisé des libellés administratifs reçus. */
+function ordreV211Esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+
+/* V213 — remote archive catalogue. Metadata only is listed; content is read via authorized RPC. */
+let ordreV213Catalogue=[];
+async function ordreV213Rpc(name,payload){
+ if(ordreLockActive||!ordreAuth?.player_id||ordreAuth.matricule!==S.matricule)throw Error('LIAISON DU MATRICULE REQUISE');
+ const token=await ordreValidToken();if(!token)throw Error('SESSION RÉSEAU EXPIRÉE');
+ return ordreNetFetch('/rest/v1/rpc/'+name,{token,method:'POST',body:JSON.stringify(payload)});
+}
+const ordreV213NativeArchives=initiateArchives;
+initiateArchives=function(){
+ ordreV213NativeArchives();
+ if(!S.serment||!ordreAuth?.player_id||ordreAuth.matricule!==S.matricule)return;
+ const pane=document.createElement('section');pane.className='archive-v213';
+ pane.innerHTML='<h2>ARCHIVES // RÉSEAU</h2><p class="tiny">INDEX DOCUMENTAIRE SOUS ACCRÉDITATION. Les documents non publiés restent indisponibles.</p><div id="v213ArchiveItems" class="archive-list">CHARGEMENT...</div><button class="btn" id="v213Refresh">[ ACTUALISER LES ARCHIVES ]</button>';
+ const list=document.querySelector('.archive-list');if(!list)return;
+ list.parentNode.insertBefore(pane,list);
+ pane.querySelector('#v213Refresh').onclick=ordreV213List;
+ ordreV213List();
+};
+async function ordreV213List(){
+ const el=document.getElementById('v213ArchiveItems');if(!el)return;
+ el.textContent='CHARGEMENT DES AUTORISATIONS...';
+ try{
+  const data=await ordreV213Rpc('v213_archive_index',{});
+  ordreV213Catalogue=Array.isArray(data)?data:[];
+  el.replaceChildren();
+  if(!ordreV213Catalogue.length){el.textContent='AUCUNE ARCHIVE SUPPLÉMENTAIRE PUBLIÉE POUR VOTRE ACCRÉDITATION.';return}
+  for(const doc of ordreV213Catalogue){
+   const btn=document.createElement('button');
+   const code=document.createElement('code');code.textContent=doc.doc_id;
+   const title=document.createElement('b');title.textContent=doc.title;
+   const state=document.createElement('span');state.textContent='CONSULTABLE // '+doc.level;
+   btn.append(code,title,state);btn.onclick=()=>ordreV213Read(doc.doc_id);el.append(btn);
+  }
+ }catch(e){el.textContent='ACCÈS AUX ARCHIVES INDISPONIBLE : '+e.message}
+}
+async function ordreV213Read(docId){
+ if(!S.serment)return;
+ shell('<h1 class="title">ARCHIVES // CONSULTATION RÉSEAU</h1><div class="terminal" id="v213Reading">VÉRIFICATION DES AUTORISATIONS...</div><button class="btn" id="v213Back">[ RETOUR AUX ARCHIVES ]</button>','ARCHIVES // LECTURE AUTHENTIFIÉE');
+ document.getElementById('v213Back').onclick=initiateArchives;
+ const out=document.getElementById('v213Reading');
+ try{const d=await ordreV213Rpc('v213_archive_read',{p_doc:docId});
+  if(!d){out.textContent='ACCÈS REFUSÉ OU DOCUMENT RETIRÉ.';return}
+  out.replaceChildren();const h=document.createElement('h2');h.textContent=d.doc_id+' // '+d.title;
+  const pre=document.createElement('pre');pre.style.whiteSpace='pre-wrap';pre.style.overflowWrap='anywhere';pre.textContent=d.body;
+  out.append(h,pre);
+ }catch(e){out.textContent='LECTURE REFUSÉE : '+e.message}
+}
+
+// V222: traiter le retour de cérémonie avant le démarrage ordinaire.
+ordreV222ResumeCeremony();
+
+/* V231 — isolated in-memory BETA laboratory. Never commit simulated S to player storage. */
+function ordreBetaLabAttachReturn(){
+ if(!ordreBetaLabActive||!ADMIN_MODE)return;
+ let b=document.getElementById('ordreBetaReturn');
+ if(!b){b=document.createElement('button');b.id='ordreBetaReturn';b.type='button';b.className='ordre-beta-return';document.body.appendChild(b)}
+ b.textContent='⌘ LAB BETA · MENU';b.onclick=adminPanel;
+}
+if(ordreBetaLabActive){
+ document.body.classList.add('ordre-beta-lab');
+ // Delay until the ordinary startup routines have registered; keep simulated state ephemeral.
+ setTimeout(()=>{adminPrepare('SPIRALE D’OS');adminPanel()},1800);
+}
