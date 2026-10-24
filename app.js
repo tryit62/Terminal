@@ -1813,7 +1813,7 @@ function ordreV214Activate(){
   const activation_code=$('#v214Code').value.replace(/[\s-]/g,'').toUpperCase();
   const personal_code=$('#v214Personal').value;
   const confirmation=$('#v214PersonalRepeat').value;
-  if(!/^C-[A-Z0-9-]{4,32}$/.test(matricule)||!/^[0-9A-F]{32}$/.test(activation_code)){status.textContent='MATRICULE OU CODE D’ACTIVATION INVALIDE.';return}
+  if(!/^(?:OCI-26-[A-Z0-9]{3}|C-[A-Z0-9-]{4,32})$/.test(matricule)||!/^[0-9A-F]{32}$/.test(activation_code)){status.textContent='MATRICULE OU CODE D’ACTIVATION INVALIDE.';return}
   if(personal_code.length<14||personal_code.length>128){status.textContent='LE CODE PERSONNEL DOIT CONTENIR ENTRE 14 ET 128 CARACTÈRES.';return}
   if(personal_code!==confirmation){status.textContent='LES DEUX CODES PERSONNELS NE CORRESPONDENT PAS.';return}
   if(!confirm('Avez-vous mémorisé votre CODE PERSONNEL ? Sans procédure de récupération active, un oubli peut bloquer votre accès.'))return;
@@ -1831,7 +1831,7 @@ function ordreV214Activate(){
 function ordreV214Login(){
  shell(`<h1 class="title">CONNEXION PERSONNELLE // V214</h1>
  <p class="sub">Retrouvez votre dossier avec le matricule et le code personnel conservé lors de la première activation.</p>
- <label class="tiny" for="v214LoginMat">MATRICULE</label><input class="input" id="v214LoginMat" autocapitalize="characters" autocomplete="username" placeholder="C-BETA-002">
+ <label class="tiny" for="v214LoginMat">MATRICULE</label><input class="input" id="v214LoginMat" autocapitalize="characters" autocomplete="username" placeholder="OCI-26-XXX">
  <label class="tiny" for="v214LoginCode">CODE PERSONNEL</label><input class="input" id="v214LoginCode" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" style="text-transform:none">
  <button class="btn" id="v214LoginReveal" type="button" aria-pressed="false">[ AFFICHER LE CODE ]</button>
  <div class="menu"><button class="btn primary" id="v214LoginGo">[ ÉTABLIR LA LIAISON ]</button><button class="btn" id="v214LoginBack">[ RETOUR ]</button></div>
@@ -1841,7 +1841,7 @@ function ordreV214Login(){
  $('#v214LoginGo').onclick=async()=>{
   const btn=$('#v214LoginGo'),status=$('#v214LoginStatus');
   const matricule=$('#v214LoginMat').value.trim().toUpperCase(),personal_code=$('#v214LoginCode').value;
-  if(!/^C-[A-Z0-9-]{4,32}$/.test(matricule)||!personal_code){status.textContent='MATRICULE ET CODE REQUIS.';return}
+  if(!/^(?:OCI-26-[A-Z0-9]{3}|C-[A-Z0-9-]{4,32})$/.test(matricule)||!personal_code){status.textContent='MATRICULE ET CODE REQUIS.';return}
   btn.disabled=true;status.textContent='CONTRÔLE DES IDENTIFIANTS...';
   try{
    const x=await ordreNetFetch('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email:ordreV214Email(matricule),password:personal_code})});
