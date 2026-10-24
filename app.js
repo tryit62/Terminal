@@ -1797,7 +1797,7 @@ async function ordreV223CompleteAfterLogin(){
 function ordreV214Activate(){
  shell(`<h1 class="title">ACTIVATION DU DOSSIER // V214</h1>
  <p class="sub">Saisissez les identifiants de votre carte candidat, puis choisissez une phrase secrète personnelle d’au moins 14 caractères. Elle vous servira lors de vos prochaines connexions.</p>
- <label class="tiny" for="v214Mat">MATRICULE</label><input class="input" id="v214Mat" autocomplete="off" autocapitalize="characters" placeholder="C-BETA-002">
+ <label class="tiny" for="v214Mat">MATRICULE</label><input class="input" id="v214Mat" autocomplete="off" autocapitalize="characters" placeholder="OCI-26-XXX">
  <label class="tiny" for="v214Code">CODE D'ACTIVATION (32 CARACTÈRES)</label><input class="input" id="v214Code" autocapitalize="characters" autocomplete="off" spellcheck="false" style="text-transform:none">
  <label class="tiny" for="v214Personal">CHOISIR MON CODE PERSONNEL (14 CARACTÈRES MINIMUM)</label><input class="input" id="v214Personal" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="text-transform:none">
  <label class="tiny" for="v214PersonalRepeat">CONFIRMER MON CODE PERSONNEL</label><input class="input" id="v214PersonalRepeat" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" style="text-transform:none">
